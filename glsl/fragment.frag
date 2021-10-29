@@ -7,5 +7,5 @@ out vec4 color;
 uniform float tim;
 
 void main() {
-    color = vec4(outcolor, tim);
+    color = vec4(tim, outcolor.y, tim, 1.0);
 }
