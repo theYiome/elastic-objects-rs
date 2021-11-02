@@ -4,7 +4,7 @@ mod graphics;
 use std::ops::RangeInclusive;
 
 use glium::glutin::event_loop;
-use glutin::{event::Event, event_loop::ControlFlow};
+use glutin::{event::{Event, WindowEvent}, event_loop::ControlFlow};
 use glium::{glutin, Surface};
 
 use egui;
@@ -33,34 +33,25 @@ fn main() {
 
     let mut egui = egui_glium::EguiGlium::new(&display);
 
+    let mut now = std::time::Instant::now();
+    let mut fps_counter = 0;
 
-    let main_loop = move |ev: Event<()>, _: &event_loop::EventLoopWindowTarget<()>, control_flow: &mut ControlFlow| {
+    let main_loop = move |event: Event<()>, _: &event_loop::EventLoopWindowTarget<()>, control_flow: &mut ControlFlow| {
         
+        fps_counter += 1;
+        if now.elapsed().as_millis() > 1000 {
+            println!("{}", fps_counter);
+            now = std::time::Instant::now();
+            fps_counter = 0;
+        }
+
         // create egui interface
-        let (_needs_repaint, shapes) = {
-            egui.begin_frame(&display);
-            // egui::WindowBuilder::
-            // egui::SidePanel::left("my_side_panel").show(egui.ctx(), |ui| {
-            //     ui.heading("Hello World!");
-            //     if ui.button("Quit").clicked() {
-            //         println!("Quit clecked!");
-            //     }
-            //     ui.add(egui::Slider::new(&mut t, RangeInclusive::new(0.1, 5.2)));
-            // });
-    
-            // this returns (needs_repaint, shapes)
-            egui.end_frame(&display)
-        };
-
-        // *control_flow = if quit {
-        //     glutin::event_loop::ControlFlow::Exit
-        // } else if needs_repaint {
-        //     display.gl_window().window().request_redraw();
-        //     glutin::event_loop::ControlFlow::Poll
-        // } else {
-        //     glutin::event_loop::ControlFlow::Wait
-        // };
-
+        egui.begin_frame(&display);
+        egui::Window::new("My Window").show(egui.ctx(), |ui| {
+            ui.label("Hello World!");
+            ui.add(egui::Slider::new(&mut t, RangeInclusive::new(0.1, 5.2)));
+        });
+        let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
         let mut target = display.draw();
 
         // draw things behind egui here
@@ -68,25 +59,19 @@ fn main() {
         target.draw(&vertex_buffer, &index_buffer, &program, &glium::uniform! {tim: (t.sin() + 1.0) * 0.5 }, &Default::default()).unwrap();
 
         // draw egui
-        egui.paint(&display, &mut target, shapes);
+        egui.paint(&display, &mut target, egui_shapes);
 
         // draw things on top of egui here
 
         target.finish().unwrap();
 
-        // let next_frame_time = std::time::Instant::now() + std::time::Duration::from_nanos(16_666_667);
-        t += 0.01;
+        match event {
 
-        match ev {
             glutin::event::Event::WindowEvent { event, .. } => {
-                if !egui.on_event(&event) {
-                    // didnt click on egui, should be handled by app
+                if egui.is_quit_event(&event) {
+                    *control_flow = glium::glutin::event_loop::ControlFlow::Exit;
                 }
-
-                // match event {
-                //     glutin::event::Event::WindowEvent => println!("hello"),
-                //     _ => ()
-                // }
+                egui.on_event(&event);
             }
 
             _ => (),
