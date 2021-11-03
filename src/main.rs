@@ -7,7 +7,6 @@ use glium::glutin::event_loop;
 use glutin::{event::{Event, WindowEvent}, event_loop::ControlFlow};
 use glium::{glutin, Surface};
 
-use egui;
 fn main() {
     let mut vert: Vec<graphics::Vertex> = Vec::new();
     let mut ind: Vec<u16> = Vec::new();
@@ -52,8 +51,8 @@ fn main() {
             ui.add(egui::Slider::new(&mut t, RangeInclusive::new(0.1, 5.2)));
         });
         let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
+        
         let mut target = display.draw();
-
         // draw things behind egui here
         target.clear_color(1.0, 1.0, 1.0, 1.0);
         target.draw(&vertex_buffer, &index_buffer, &program, &glium::uniform! {tim: (t.sin() + 1.0) * 0.5 }, &Default::default()).unwrap();
@@ -62,19 +61,23 @@ fn main() {
         egui.paint(&display, &mut target, egui_shapes);
 
         // draw things on top of egui here
-
         target.finish().unwrap();
 
         match event {
 
             glutin::event::Event::WindowEvent { event, .. } => {
-                if egui.is_quit_event(&event) {
-                    *control_flow = glium::glutin::event_loop::ControlFlow::Exit;
-                }
                 egui.on_event(&event);
-            }
 
-            _ => (),
+                match event {
+                    WindowEvent::CursorEntered {..} => (),
+                    WindowEvent::CloseRequested { } => {
+                        *control_flow = glutin::event_loop::ControlFlow::Exit;
+                    }
+                    _ => ()
+                }
+            },
+            glutin::event::Event::RedrawRequested {..} => (),
+            _ => ()
         }
     };
 
