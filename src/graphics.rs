@@ -36,13 +36,13 @@ pub fn add_circle(verticies: &mut Vec<Vertex>, indices: &mut Vec<u16>, center_x:
     // circle center vertex, index (zero_index + 0)
     verticies.push(Vertex {
         position: [center_x, center_y],
-        col: [0.0, 0.05, 0.0]
+        col: [0.3, 0.0, 0.0]
     });
 
     // index (zero_index + 1)
     verticies.push(Vertex {
         position: [center_x, center_y + radius],
-        col: [0.0, 1.0, 0.0]
+        col: [0.0, 0.0, 0.0]
     });
 
     for i in 2..nr_of_triangles+1 {
