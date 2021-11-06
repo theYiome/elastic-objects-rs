@@ -13,7 +13,7 @@ https://win.rustup.rs/x86_64
 cargo run
 ```
 
-## Linux
+## Linux (Debian based)
 ### Install rust tools
 ```bash
 cd ~/Downloads

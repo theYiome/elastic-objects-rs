@@ -5,6 +5,8 @@ use std::fmt;
 pub struct Node {
     pub position: Vec2,
     pub velocity: Vec2,
+    pub last_acceleration: Vec2,
+    pub current_acceleration: Vec2,
     pub mass: f32
 }
 
