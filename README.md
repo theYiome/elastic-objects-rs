@@ -1,4 +1,4 @@
-# Elastic objects symultion with Rust
+# Elastic objects simulation with Rust
 (not yet) Using GPU acceleration.
 
 # How to run

@@ -16,20 +16,23 @@ fn main() {
 
     let mut nodes2 = build_scene::build_object(6, 4, 0.1, 0.3, 0.7);
 
-    let v = -4.6;
+    let mut nodes3 = build_scene::build_object(3, 3, 0.1, -0.3, 0.7);
+
+    let v = 0.0;
     for n in &mut nodes2 {
         n.velocity.x += v;
         n.velocity.y += v;
     }
 
     nodes.append(&mut nodes2);
+    nodes.append(&mut nodes3);
 
 
     let connections = build_scene::build_connections(&nodes, 0.11);
 
 
     for n in &nodes {
-        graphics::add_circle(&mut vert, &mut ind, n.position.x, n.position.y, 0.1, 16);
+        graphics::add_circle(&mut vert, &mut ind, n.position.x, n.position.y, 0.1, 16, [0.0, 0.0, 0.0]);
     }
     
     let event_loop = glutin::event_loop::EventLoop::new();
@@ -69,7 +72,7 @@ fn main() {
         vert.clear();
         ind.clear();
         for n in &nodes {
-            graphics::add_circle(&mut vert, &mut ind, n.position.x, n.position.y, 0.04, 16);
+            graphics::add_circle(&mut vert, &mut ind, n.position.x, n.position.y, 0.04, 16, [0.0, 0.0, 0.0]);
         }
         vertex_buffer.write(&vert);
         index_buffer.write(&ind);

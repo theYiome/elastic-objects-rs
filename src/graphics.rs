@@ -22,7 +22,7 @@ glium::implement_vertex!(Vertex, position, col);
 /// 
 /// 6 => hexagon
 /// 
-pub fn add_circle(verticies: &mut Vec<Vertex>, indices: &mut Vec<u16>, center_x: f32, center_y: f32, radius: f32, nr_of_triangles: u16) {
+pub fn add_circle(verticies: &mut Vec<Vertex>, indices: &mut Vec<u16>, center_x: f32, center_y: f32, radius: f32, nr_of_triangles: u16, color: [f32; 3]) {
     assert!(nr_of_triangles > 2);
     assert!(radius > 0.0);
 
@@ -36,13 +36,13 @@ pub fn add_circle(verticies: &mut Vec<Vertex>, indices: &mut Vec<u16>, center_x:
     // circle center vertex, index (zero_index + 0)
     verticies.push(Vertex {
         position: [center_x, center_y],
-        col: [0.3, 0.0, 0.0]
+        col: color
     });
 
     // index (zero_index + 1)
     verticies.push(Vertex {
         position: [center_x, center_y + radius],
-        col: [0.0, 0.0, 0.0]
+        col: color
     });
 
     for i in 2..nr_of_triangles+1 {
@@ -52,7 +52,7 @@ pub fn add_circle(verticies: &mut Vec<Vertex>, indices: &mut Vec<u16>, center_x:
 
         let vert = Vertex {
             position: [center_x + x, center_y + y],
-            col: [0.0, 0.0, 0.0]
+            col: color
         };
 
         verticies.push(vert);
