@@ -1,5 +1,6 @@
 use crate::elastic_node::Node;
 use glam::Vec2;
+use rayon::prelude::*;
 
 pub fn build_object(
     size_x: usize,
@@ -48,20 +49,21 @@ pub fn build_connections(object: &Vec<Node>, search_distance: f32) -> Vec<Vec<us
 
 // https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
 fn start_integrate_velocity_verlet(dt: f32, object: &mut Vec<Node>) {
-    for n in object {
+    object.iter_mut().for_each(|n| {
         n.position += (n.velocity * dt) + (0.5 * n.current_acceleration * dt * dt);
 
         n.last_acceleration = n.current_acceleration;
         n.current_acceleration *= 0.0;
-    }
+    });
 }
 
 fn end_integrate_velocity_verlet(dt: f32, object: &mut Vec<Node>) {
-    for n in object {
+    object.iter_mut().for_each(|n| {
         n.velocity += 0.5 * (n.last_acceleration + n.current_acceleration) * dt;
-    }
+    });
 }
 
+// https://users.rust-lang.org/t/help-with-parallelizing-a-nested-loop/22568/2
 fn attraction_force(object: &mut Vec<Node>, connections: &Vec<Vec<usize>>) {
     let v0 = 500.0;
     let dx = 0.1;
@@ -80,7 +82,9 @@ fn attraction_force(object: &mut Vec<Node>, connections: &Vec<Vec<usize>>) {
     }
 }
 
-fn repulsion_force(object: &mut Vec<Node>) {
+
+
+fn repulsion_force_simple(object: &mut Vec<Node>) {
     let v0 = 500.0;
     let dx = 0.1;
 
@@ -100,27 +104,177 @@ fn repulsion_force(object: &mut Vec<Node>) {
     }
 }
 
+fn repulsion_force_stack_overflow(object: &mut Vec<Node>) {
+    let v0 = 500.0;
+    let dx = 0.1;
+
+    for i in 0..object.len() {
+        let (left, right) = object.split_at_mut(i + 1);
+        let mut node_i = &mut left[i];
+
+        right.iter_mut().for_each(|node_j| {
+            let dir = node_j.position - node_i.position;
+            let l = dir.length();
+            let mi = node_i.mass;
+            let mj = node_j.mass;
+
+            let c = (dx / l).powi(13);
+            let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+
+            node_i.current_acceleration -= v / mi;
+            node_j.current_acceleration += v / mj;
+        });
+    }
+}
+
+
+// fn repulsion_force_stack_overflow_2(object: &mut Vec<Node>) {
+//     let v0 = 500.0;
+//     let dx = 0.1;
+
+//     let lenght = object.len();
+//     (0..lenght).par_bridge().for_each(|i| {
+//         let (left, right) = object.split_at_mut(i + 1);
+//         let mut node_i = &mut left[i];
+
+//         right.iter_mut().for_each(|node_j| {
+//             let dir = node_j.position - node_i.position;
+//             let l = dir.length();
+//             let mi = node_i.mass;
+//             let mj = node_j.mass;
+
+//             let c = (dx / l).powi(13);
+//             let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+
+//             node_i.current_acceleration -= v / mi;
+//             node_j.current_acceleration += v / mj;
+//         });
+//     });
+// }
+
+
+// fn repulsion_force_stack_overflow_par(object: &mut Vec<Node>) {
+//     let v0 = 500.0;
+//     let dx = 0.1;
+
+//     for i in 0..object.len() {
+//         let (left, right) = object.split_at_mut(i + 1);
+//         let mut node_i = &mut left[i];
+
+//         right.iter_mut().par_bridge().for_each(|node_j| {
+//             let dir = node_j.position - node_i.position;
+//             let l = dir.length();
+//             let mi = node_i.mass;
+//             let mj = node_j.mass;
+
+//             let c = (dx / l).powi(13);
+//             let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+
+//             node_i.current_acceleration -= v / mi;
+//             node_j.current_acceleration += v / mj;
+//         });
+//     }
+// }
+fn repulsion_force4(object: &mut Vec<Node>) {
+    let v0 = 500.0;
+    let dx = 0.1;
+
+    let length = object.len();
+    let obj2 = object.clone();
+
+    object.par_iter_mut()
+        .enumerate()
+        .for_each(|(i, n)| {
+            (0..length).for_each(|j| {
+                if j != i {
+                    let dir = obj2[j].position - n.position;
+                    let l = dir.length();
+                    let mi = n.mass;
+                    // let mj = obj2[j].mass;
+        
+                    let c = (dx / l).powi(13);
+                    let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+        
+                    n.current_acceleration -= v / mi;
+                }
+                // object[j].current_acceleration += v / mj;
+            });
+        });
+        // .zip(object.par_iter().enumerate())
+        // .for_each(|((i, a), (j, b))| {
+        // if j > i {
+        //     //
+        // } 
+}
+
+
+// fn repulsion_force(object: &mut [Node]) {
+//     for i in 0..object.len() {
+//         let (left, right) = object.split_at_mut(i + 1);
+//         let mut node_i = &mut left[i];
+//         right.iter_mut().par_bridge().for_each(|node_j| {
+            
+//             let dir = node_j.position - node_i.position;
+//             let l = dir.length();
+//             let mi = node_i.mass;
+//             let mj = node_j.mass;
+
+//             let c = (dx / l).powi(13);
+//             let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+
+//             // object[i].current_acceleration -= v / mi;
+//             // object[j].current_acceleration += v / mj;
+
+//             node_i.current_acceleration.fetch_sub(v / mi, Relaxed);
+//             node_j.current_acceleration.fetch_add(v / mj, Relaxed);
+//         });
+//     }
+// }
+
+// fn repulsion_force7(object: &mut Vec<Node>) {
+//     let v0 = 500.0;
+//     let dx = 0.1;
+
+//     let length = object.len();
+
+//     (0..length).par_bridge().for_each(|i| {
+//         (i+1..length).for_each(|j| {
+//             let dir = object[j].position - object[i].position;
+//             let l = dir.length();
+//             let mi = object[i].mass;
+//             let mj = object[j].mass;
+
+//             let c = (dx / l).powi(13);
+//             let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+
+//             object[i].current_acceleration -= v / mi;
+//             object[j].current_acceleration += v / mj;
+//         });
+//     });
+    
+// }
+
 fn wall_repulsion_force_y(object: &mut Vec<Node>) {
     let v0 = 200.0;
     let dx = 0.1;
 
-    for n in object.iter_mut() {
+    object.iter_mut().for_each(|n| {
         let dir = glam::vec2(n.position.x, -1.05) - n.position;
         let l = dir.length();
         let mi = n.mass;
 
         let c = (dx / l).powi(13);
         let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-
+        
         n.current_acceleration -= v / mi;
-    }
+    });
 }
 
 fn wall_repulsion_force_x0(object: &mut Vec<Node>) {
     let v0 = 100.0;
     let dx = 0.1;
 
-    for n in object.iter_mut() {
+    object.iter_mut().for_each(|n| {
         let dir = glam::vec2(-1.05, n.position.y) - n.position;
         let l = dir.length();
         let mi = n.mass;
@@ -129,14 +283,16 @@ fn wall_repulsion_force_x0(object: &mut Vec<Node>) {
         let v = dir.normalize() * 3.0 * (v0 / dx) * c;
 
         n.current_acceleration -= v / mi;
-    }
+    });
 }
+
+
 
 fn wall_repulsion_force_x1(object: &mut Vec<Node>) {
     let v0 = 100.0;
     let dx = 0.1;
 
-    for n in object.iter_mut() {
+    object.iter_mut().for_each(|n| {
         let dir = glam::vec2(1.05, n.position.y) - n.position;
         let l = dir.length();
         let mi = n.mass;
@@ -145,20 +301,19 @@ fn wall_repulsion_force_x1(object: &mut Vec<Node>) {
         let v = dir.normalize() * 3.0 * (v0 / dx) * c;
 
         n.current_acceleration -= v / mi;
-    }
+    });
 }
 
-
 fn gravity_force(object: &mut Vec<Node>) {
-    for n in object.iter_mut() {
-        n.current_acceleration +=  glam::vec2(0.0, -10.0);
-    }
+    object.iter_mut().for_each(|n| {
+        n.current_acceleration += glam::vec2(0.0, -10.0);
+    });
 }
 
 fn drag_force(object: &mut Vec<Node>) {
-    for n in object.iter_mut() {
+    object.iter_mut().for_each(|n| {
         n.current_acceleration -= n.velocity * 0.9;
-    }
+    });
 }
 
 pub fn simulate(dt: f32, object: &mut Vec<Node>, connections: &Vec<Vec<usize>>) {
@@ -168,7 +323,8 @@ pub fn simulate(dt: f32, object: &mut Vec<Node>, connections: &Vec<Vec<usize>>) 
 
     attraction_force(object, connections);
 
-    repulsion_force(object);
+    // repulsion_force_stack_overflow(object);
+    repulsion_force4(object);
 
     wall_repulsion_force_y(object);
     wall_repulsion_force_x0(object);

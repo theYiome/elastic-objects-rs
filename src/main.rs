@@ -2,13 +2,11 @@ mod elastic_node;
 mod graphics;
 mod build_scene;
 
-use std::ops::RangeInclusive;
-
 use glium::glutin::event_loop;
 use glutin::{event::{Event, WindowEvent}, event_loop::ControlFlow};
 use glium::{glutin, Surface};
 
-fn main() {
+fn main2() {
     let mut vert: Vec<graphics::Vertex> = Vec::new();
     let mut ind: Vec<u16> = Vec::new();
 
@@ -139,4 +137,127 @@ fn main() {
 
     // do execute main loop clousure
     event_loop.run(main_loop);
+}
+
+
+use core::sync::atomic::Ordering::Relaxed;
+use std::{ops::RangeInclusive, sync::atomic::AtomicI32};
+use rayon::prelude::*;
+
+#[derive(Debug)]
+pub struct Node {
+    value: i32,
+    other_value: AtomicI32,
+}
+
+#[derive(Default, Clone, Copy)]
+pub struct Node2 {
+    value: i32,
+    other_value: i32,
+}
+
+fn repulsion_force_atomic_par(object: &mut [Node]) {
+    for i in 0..object.len() {
+        let (left, right) = object.split_at_mut(i + 1);
+        let mut node_i = &mut left[i];
+        right.iter_mut().par_bridge().for_each(|node_j| {
+            let mi = 2 * node_i.value;
+            let mj = mi + node_j.value;
+            let c = (mi * mj + 1).pow(7);
+            node_i.other_value.fetch_sub(mi / c, Relaxed);
+            node_j.other_value.fetch_add(mj / c, Relaxed);
+        });
+    }
+}
+
+
+fn repulsion_force_loops(object: &mut Vec<Node2>) {
+    for i in 0..object.len() {
+        let mut node_i = object[i];
+
+        for j in i+1..object.len() {
+            let mut node_j = object[j];
+
+            let mi = 2 * node_i.value;
+            let mj = mi + node_j.value;
+            let c = (mi * mj + 1).pow(7);
+
+            node_i.other_value -= mi / c;
+            node_j.other_value += mj / c;
+        }
+    }
+}
+
+fn repulsion_force_foreach(object: &mut Vec<Node2>) {
+    for i in 0..object.len() {
+        let (left, right) = object.split_at_mut(i + 1);
+        let mut node_i = &mut left[i];
+
+        right.iter_mut().for_each(|node_j| {
+            let mi = 2 * node_i.value;
+            let mj = mi + node_j.value;
+            let c = (mi * mj + 1).pow(7);
+            node_i.other_value -= mi / c;
+            node_j.other_value += mj / c;
+        });
+    }
+}
+
+fn repulsion_force_naive_par(object: &mut Vec<Node2>) {
+
+    let length = object.len();
+    let obj2 = object.clone();
+
+    object.par_iter_mut()
+        .enumerate()
+        .for_each(|(i, node_i)| {
+            (0..length).for_each(|j| {
+                if j != i {
+                    let node_j = obj2[j];
+
+                    let mi = 2 * node_i.value;
+                    let mj = mi + node_j.value;
+                    let c = (mi * mj + 1).pow(7);
+                    node_i.other_value -= mi / c;
+                }
+            });
+        });
+}
+
+
+fn main() {
+    use std::time::Instant;
+    
+    let mut object: Vec<Node> = (0..10000).map(|k| Node { value: k, other_value: AtomicI32::new(k) }).collect();
+    let mut object2: Vec<Node2> = (0..10000).map(|k| Node2 { value: k, other_value: k }).collect();
+    
+    let now = Instant::now();
+    {
+        repulsion_force_atomic_par(&mut object);
+    }
+    let elapsed = now.elapsed();
+    println!("repulsion_force_atomic_par: {:.2?}", elapsed);
+
+
+    let now = Instant::now();
+    {
+        repulsion_force_loops(&mut object2);
+    }
+    let elapsed = now.elapsed();
+    println!("repulsion_force_loops: {:.2?}", elapsed);
+
+    let now = Instant::now();
+    {
+        repulsion_force_foreach(&mut object2);
+    }
+    let elapsed = now.elapsed();
+    println!("repulsion_force_foreach: {:.2?}", elapsed);
+
+
+    let now = Instant::now();
+    {
+        repulsion_force_naive_par(&mut object2);
+    }
+    let elapsed = now.elapsed();
+    println!("repulsion_force_naive_par: {:.2?}", elapsed);
 }
