@@ -217,7 +217,7 @@ fn run_performace_test(object_size: usize, dt: f32, simulation_time: f32) {
         }
     }
 
-    let connections_map = build_scene::build_connections_2(&nodes, 0.15);
+    let connections_map = build_scene::build_connections_2(&nodes, spacing * 1.1);
 
     // loging to csv file
     let log_path_energy = format!("data/{}x{}_energy.csv", object_size, object_size);
@@ -234,7 +234,7 @@ fn run_performace_test(object_size: usize, dt: f32, simulation_time: f32) {
     
     let mut steps_per_frame: u32 = 100;
     
-    while total_symulation_time < simulation_time {
+    while total_symulation_time < simulation_time / (object_size * object_size) as f32  {
         
         for _i in 0..steps_per_frame {
             build_scene::simulate_2(dt, &mut nodes, &mut objects, &connections_map);
@@ -263,7 +263,109 @@ fn run_performace_test(object_size: usize, dt: f32, simulation_time: f32) {
 
     }
 
-    let iterations_per_second =  (simulation_time / dt) / (now.elapsed().as_millis() as f32 / 1000.0);
+    let iterations_per_second =  (total_symulation_time / dt) / (now.elapsed().as_millis() as f32 / 1000.0);
+
+    csv_performance_writer.write_record(&[
+        object_size.to_string(),
+        iterations_per_second.to_string()
+    ]).unwrap();
+}
+
+
+fn count_neighbours(connections_map: HashMap<(usize, usize), f32>, node_count: usize) -> Vec<usize> {
+    let mut counts: Vec<usize> = Vec::new();
+    counts.resize_with(node_count, || {0});
+    connections_map.keys().for_each(|(i, j)| {
+        counts[*i] += 1;
+        counts[*j] += 1;
+    });
+
+    counts
+}
+
+fn get_boundary_nodes(nodes: &Vec<elastic_node::Node>, search_distance: f32, offset: usize) -> Vec<usize> {
+    let mut counts: Vec<usize> = Vec::new();
+    counts.resize_with(nodes.len(), || {0});
+
+    for i in 0..nodes.len() {
+
+        for j in 0..nodes.len() {
+            if i == j {
+                continue;
+            };
+
+            if elastic_node::Node::distance(&nodes[i], &nodes[j]) < search_distance {
+                counts[i] += 1;
+            }
+        }
+    }
+
+    let mut bonudary_nodes: Vec<usize> = Vec::new();
+
+    for i in 0..nodes.len() {
+        if counts[i] < 4 {
+            bonudary_nodes.push(i + offset)
+        }
+    }
+
+    bonudary_nodes
+}
+
+
+fn run_performace_test_optimized(object_size: usize, dt: f32, simulation_time: f32) {
+
+    let spacing = 0.6 / object_size as f32;
+
+    let mut objects: Vec<Vec<usize>> = Vec::new();
+
+    let mut nodes = build_scene::build_nodes(object_size, object_size, spacing, -0.5, -0.7);
+    objects.push(get_boundary_nodes(&nodes, spacing * 1.1, 0));
+    
+    
+    let end_of_first = object_size * object_size;
+    let end_of_second = object_size * object_size * 2;
+    println!("{} -> {}", object_size, get_boundary_nodes(&nodes, spacing * 1.1, 0).len());
+    
+    {
+        let mut nodes2 = build_scene::build_nodes(object_size, object_size, spacing, -0.4, 0.2);
+        objects.push(get_boundary_nodes(&nodes2, spacing * 1.1, end_of_first));
+        nodes.append(&mut nodes2);
+    }
+
+    let connections_map = build_scene::build_connections_2(&nodes, spacing * 1.1);
+
+    let mut performance_test_file = std::fs::OpenOptions::new().write(true).append(true).open("data/performance_test_optimized.csv").unwrap();
+    let mut csv_performance_writer = csv::Writer::from_writer(performance_test_file);
+
+
+    let mut total_symulation_time: f32 = 0.0;
+    let mut current_log_dt = 0.0;
+    
+    let mut now = std::time::Instant::now();
+    
+    let mut steps_per_frame: u32 = 100;
+    
+    while total_symulation_time < simulation_time / (object_size * object_size) as f32  {
+        
+        for _i in 0..steps_per_frame {
+            build_scene::simulate_2(dt, &mut nodes, &mut objects, &connections_map);
+        }
+
+        total_symulation_time += dt * steps_per_frame as f32;
+
+        current_log_dt += dt * steps_per_frame as f32;
+        {
+            let log_dt = 0.01;
+            if current_log_dt > log_dt {
+                let (kinetic, gravity, lennjon, wallrep, objrepu) = calculate_energy_2(&nodes, &connections_map, &objects);
+
+                current_log_dt = 0.0;
+            }
+        }
+
+    }
+
+    let iterations_per_second =  (total_symulation_time / dt) / (now.elapsed().as_millis() as f32 / 1000.0);
 
     csv_performance_writer.write_record(&[
         object_size.to_string(),
@@ -276,9 +378,10 @@ fn run_performace_test(object_size: usize, dt: f32, simulation_time: f32) {
 fn main() {
     // run_with_animation();
 
-    let object_sizes = [3, 5, 9, 13, 15, 19, 21, 23, 25, 27];
+    let object_sizes = [3, 5, 9, 13, 15, 19, 21, 25, 30, 35, 40, 45, 50, 55, 60];
     for size in object_sizes {
-        run_performace_test(size, 0.0001, 0.5);
+        run_performace_test(size, 0.0001, 100.0);
+        run_performace_test_optimized(size, 0.0001, 100.0);
     }
 }
 
