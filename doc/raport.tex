@@ -5,11 +5,22 @@
 \usepackage{fancyhdr}
 \usepackage{hyperref}
 
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
+\usepackage[margin=1.5cm]{geometry}
+
 \title{
-    Modelowanie elastycznych i nieelastycznych zderzeń obiektów 
-    metodą dynamiki molekularnej na potrzeby animacji komputerowych
+    Raport z postępów pracy \\
+    \large Modelowanie elastycznych i nieelastycznych
+    zderzeń obiektów\\
+    metodą dynamiki molekularnej na potrzeby animacji
+    komputerowych
 }
-\author{Kamil Pasterczyk}
+\author{
+    Kamil Pasterczyk \\
+    \small Promotor: dr hab. inż. Tomasz Chwiej
+}
 
 \begin{document}
 
@@ -24,6 +35,12 @@
 \chapter{Rozwinięcie}
     \section{Opis rozwinięcia}
 
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=16cm]{energy_test_0to4s}
+        \caption{Zmiana enegii w czasie dla układu złożonego z dwóch obiektów i podłoża}
+    \end{figure}
+
 \chapter{Zakończenie}
     \section{Dodatek}
 
@@ -31,7 +48,7 @@
 
     \subsubsection{Przekazanie energii między dwoma sztywnimi obiektami}
 
-    Mniejszy obiekt 33 po odbiciu od większego obiektu 88 znajdującego się pod nim wznosi się na
+    Mniejszy obiekt $3 \times 3$ po odbiciu od większego obiektu $8 \times  8$ znajdującego się pod nim wznosi się na
     wysokość o wiele większą, niż ta z której rozpoczął spadek swobodny.
     Występuje tutaj przekazanie części energii z obiektu większego do mniejszego - sama zasada energii jest zachowana.
 
@@ -41,7 +58,7 @@
 
     \subsubsection{Przekazanie energii między dwoma miękkimi obiektami}
     W tym przypadku obiekty są mniej sztywne,
-    obiekt 33 po odbiciu od obiektu 88 wznosi się na wyraźnie mniejszą wysokość niż w przypadku bardziej sztywnych obiektów
+    obiekt $3 \times 3$ po odbiciu od obiektu $8 \times  8$ wznosi się na wyraźnie mniejszą wysokość niż w przypadku bardziej sztywnych obiektów
     (jednak wciąż wyżej niż punkt z którego zaczął spadać). Można to wytłumaczyć tym,
     że znaczna część energii która w poprzednim przypadku była częścią ruchu postępowego,
     teraz stała się energią wewnętrzną obiektów (wibracje obiektów pochłaniają część energii).
