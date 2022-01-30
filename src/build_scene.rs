@@ -27,26 +27,6 @@ pub fn build_nodes(
     return nodes;
 }
 
-pub fn build_connections(nodes: &Vec<Node>, search_distance: f32) -> Vec<Vec<usize>> {
-    let mut connections: Vec<Vec<usize>> = Vec::new();
-    for i in 0..nodes.len() {
-        let mut row: Vec<usize> = Vec::new();
-
-        for j in 0..nodes.len() {
-            if i == j {
-                continue;
-            };
-
-            if Node::distance(&nodes[i], &nodes[j]) < search_distance {
-                row.push(j);
-            }
-        }
-
-        connections.push(row);
-    }
-    return connections;
-}
-
 use std::collections::HashMap;
 
 pub fn build_connections_2(

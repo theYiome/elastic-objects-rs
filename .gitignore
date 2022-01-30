@@ -1,5 +1,13 @@
 /target
 /.vscode
-/data/log.csv
-/data/*energy.csv
-/data/*test.csv
+/data/log\.csv
+/data/*energy\.csv
+/doc/*\.aux
+/doc/*\.fls
+/doc/*\.fdb_latexmk
+/doc/*\.log
+/doc/*\.pdf
+/doc/*\.gz
+/doc/*\.gz
+/doc/*\.out
+/doc/*\.toc
