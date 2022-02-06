@@ -154,54 +154,6 @@ fn wall_repulsion_force_y(nodes: &mut Vec<Node>) {
     });
 }
 
-fn wall_repulsion_force_y2(nodes: &mut Vec<Node>) {
-    let dx = 0.05;
-
-    nodes.iter_mut().for_each(|n| {
-        let dir = glam::vec2(n.position.x, -1.05) - n.position;
-        let l = dir.length();
-
-        let mi = n.mass;
-
-        let k = if l < dx { l / dx } else { 0.0 };
-        let v = dir.normalize() * k * 5000.0;
-
-        n.current_acceleration -= v / mi;
-    });
-}
-
-fn wall_repulsion_force_x0(nodes: &mut Vec<Node>) {
-    let v0 = 100.0;
-    let dx = 0.1;
-
-    nodes.iter_mut().for_each(|n| {
-        let dir = glam::vec2(-1.05, n.position.y) - n.position;
-        let l = dir.length();
-        let mi = n.mass;
-
-        let c = (dx / l).powi(13);
-        let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-
-        n.current_acceleration -= v / mi;
-    });
-}
-
-fn wall_repulsion_force_x1(nodes: &mut Vec<Node>) {
-    let v0 = 100.0;
-    let dx = 0.1;
-
-    nodes.iter_mut().for_each(|n| {
-        let dir = glam::vec2(1.05, n.position.y) - n.position;
-        let l = dir.length();
-        let mi = n.mass;
-
-        let c = (dx / l).powi(13);
-        let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-
-        n.current_acceleration -= v / mi;
-    });
-}
-
 fn gravity_force(nodes: &mut Vec<Node>) {
     nodes.iter_mut().for_each(|n| {
         n.current_acceleration += glam::vec2(0.0, -9.81);

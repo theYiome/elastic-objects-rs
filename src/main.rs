@@ -95,12 +95,17 @@ fn run_with_animation() {
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
 
+    let device = *Device::all().first().unwrap();
+
+    // Then we run it on OpenCL.
+    let opencl_program = opencl(&device);
+
     let mut redraw_clousure = move |display: &glium::Display, egui: &mut egui_glium::EguiGlium| {
         // let measured_dt = last_frame_time.elapsed().as_secs_f32();
         // last_frame_time = std::time::Instant::now();
         // let dt = if measured_dt > 0.01 {0.01} else {measured_dt};
         // let dt = 0.005;
-        nodes = simulate_opencl(&nodes);
+        nodes = simulate_opencl(&nodes, &opencl_program, steps_per_frame, dt);
         // for _i in 0..steps_per_frame {
         //     simulation_cpu::simulate_2(dt, &mut nodes, &mut objects, &connections_map);
         // }
@@ -162,12 +167,12 @@ fn run_with_animation() {
             ui.label("dt");
             ui.add(egui::Slider::new(
                 &mut dt,
-                RangeInclusive::new(0.0, 0.00001),
+                RangeInclusive::new(0.0, 0.000001),
             ));
             ui.label("Kroki symulacji na klatkę");
             ui.add(egui::Slider::new(
                 &mut steps_per_frame,
-                RangeInclusive::new(0, 1000),
+                RangeInclusive::new(0, 10000),
             ));
         });
         let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
@@ -536,17 +541,13 @@ fn opencl(device: &Device) -> Program {
     Program::Opencl(opencl_program)
 }
 
-pub fn simulate_opencl(nodes: &Vec<Node>) -> Vec<Node> {
-    // Define some data that should be operated on.
-    // let mut nodes = build_scene::build_nodes(8, 8, 0.1, -0.5, -0.7);
-    let iterations: u32 = 10;
-
-    // This is the core. Here we write the interaction with the GPU independent of whether it is
-    // CUDA or OpenCL.
+pub fn simulate_opencl(nodes: &Vec<Node>, program: &Program, iterations: u32, dt: f32) -> Vec<Node> {
     let closures = program_closures!(|program, _args| -> Result<Vec<Node>, GPUError> {
 
         // Make sure the input data has the same length.
         let length = nodes.len();
+        let dt_div = if dt != 0.0 { (1.0 / dt) as u32 } else { 0 };
+        // println!("{}", dt_div);
 
         // Copy the data to the GPU.
         let node_buffer = program.create_buffer_from_slice(&nodes)?;
@@ -555,13 +556,14 @@ pub fn simulate_opencl(nodes: &Vec<Node>) -> Vec<Node> {
         // let result_buffer = unsafe { program.create_buffer::<u32>(length)? };
 
         // Get the kernel.
-        let kernel = program.create_kernel("mainkernel", 1024, 1)?;
+        let kernel = program.create_kernel("mainkernel", 1, nodes.len())?;
 
         // Execute the kernel.
         kernel
             .arg(&(length as u32))
             .arg(&node_buffer)
             .arg(&iterations)
+            .arg(&dt_div)
             .run()?;
 
         // Get the resulting data.
@@ -578,11 +580,6 @@ pub fn simulate_opencl(nodes: &Vec<Node>) -> Vec<Node> {
         Ok(result)
     });
 
-    // Get the first available device.
-    let device = *Device::all().first().unwrap();
-
-    // Then we run it on OpenCL.
-    let opencl_program = opencl(&device);
-    let opencl_result = opencl_program.run(closures, ()).unwrap();
-    opencl_result
+    let result = program.run(closures, ()).unwrap();
+    result
 }
