@@ -1,12 +1,14 @@
 use crate::node::{Node, self};
 use glam::Vec2;
 
-pub fn build_nodes(
+pub fn build_rectangle(
     size_x: usize,
     size_y: usize,
     spacing: f32,
     offset_x: f32,
     offset_y: f32,
+    mass: f32,
+    damping: f32
 ) -> Vec<Node> {
     let mut nodes = Vec::with_capacity(size_x * size_y);
     for y in 0..size_y {
@@ -19,8 +21,8 @@ pub fn build_nodes(
                 velocity: Vec2::new(0.0, 0.0),
                 current_acceleration: Vec2::new(0.0, 0.0),
                 last_acceleration: Vec2::new(0.0, 0.0),
-                mass: 1.0,
-                damping: 0.0,
+                mass: mass,
+                damping: damping,
             });
         }
     }
@@ -29,10 +31,11 @@ pub fn build_nodes(
 
 use std::collections::HashMap;
 
-pub fn build_connections_2(
+pub fn build_connections_map(
     nodes: &Vec<Node>,
     search_distance: f32,
-    v0: f32
+    v0: f32,
+    offset: usize
 ) -> HashMap<(usize, usize), (f32, f32)> {
     let mut connections: Vec<Vec<(usize, f32)>> = Vec::new();
 
@@ -59,7 +62,7 @@ pub fn build_connections_2(
         arr.iter().for_each(|(j, dx)| {
             let a = if i > *j { *j } else { i };
             let b = if i > *j { i } else { *j };
-            connections_map.entry((a, b)).or_insert((*dx, v0));
+            connections_map.entry((a + offset, b + offset)).or_insert((*dx, v0));
         });
     });
 

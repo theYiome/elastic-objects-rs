@@ -1,6 +1,6 @@
-use std::{ops::RangeInclusive};
+use std::ops::RangeInclusive;
 
-use crate::{build_scene, graphics, simulation_cpu, energy};
+use crate::{build_scene, energy, graphics, simulation_cpu};
 
 use glium::glutin::event_loop;
 use glium::{glutin, Surface};
@@ -11,20 +11,20 @@ use glutin::{
 
 pub fn run_with_animation() {
     // scene objects
-    let mut vert: Vec<graphics::Vertex> = Vec::new();
-    let mut ind: Vec<u16> = Vec::new();
 
     let mut objects: Vec<Vec<usize>> = Vec::new();
 
-    let object1_sx = 10;
-    let object1_sy = 10;
+    let object1_sx = 20;
+    let object1_sy = 12;
     let object1_st = object1_sx * object1_sy;
 
-    let object2_sx = 2;
+    let object2_sx = 3;
     let object2_sy = 3;
     let object2_st = object2_sx * object2_sy;
-    let mut nodes = build_scene::build_nodes(object1_sx, object1_sy, 0.1, -0.5, -0.925);
 
+    let mut nodes =
+        build_scene::build_rectangle(object1_sx, object1_sy, 0.08, -0.9, -0.925, 1.0, 10.0);
+    let mut connections_map_1 = build_scene::build_connections_map(&nodes, 0.15, 50.0, 0);
     {
         let mut obj: Vec<usize> = Vec::new();
         for i in 0..object1_st {
@@ -33,39 +33,26 @@ pub fn run_with_animation() {
         objects.push(obj);
     }
 
+    let mut nodes2 =
+        build_scene::build_rectangle(object2_sx, object2_sy, 0.08, -0.12, 0.8, 30.0, 2.0);
+    let connections_map_2 = build_scene::build_connections_map(&nodes2, 0.15, 500.0, object1_st);
+    nodes.append(&mut nodes2);
     {
-        let mut nodes2 = build_scene::build_nodes(object2_sx, object2_sy, 0.1, -0.1, 0.8);
-        nodes.append(&mut nodes2);
-        {
-            let mut obj: Vec<usize> = Vec::new();
-            for i in object1_st..object1_st+object2_st {
-                obj.push(i);
-            }
-            objects.push(obj);
+        let mut obj: Vec<usize> = Vec::new();
+        for i in object1_st..object1_st + object2_st {
+            obj.push(i);
         }
-        // let mut nodes3 = build_scene::build_object(3, 3, 0.1, -0.3, 0.7);
-        // nodes.append(&mut nodes3);
+        objects.push(obj);
     }
 
-    let connections_map = build_scene::build_connections_2(&nodes, 0.15, 1.0);
+    connections_map_1.extend(connections_map_2);
+    let mut full_connections_map = connections_map_1;
+
     let mut connections_keys: Vec<(u32, u32)> = Vec::new();
     let mut connections_vals: Vec<(f32, f32)> = Vec::new();
-    for (k1, k2) in &connections_map {
+    for (k1, k2) in &full_connections_map {
         connections_keys.push((k1.0 as u32, k1.1 as u32));
         connections_vals.push(*k2);
-    }
-
-    // graphics and window creation
-    for n in &nodes {
-        graphics::add_circle(
-            &mut vert,
-            &mut ind,
-            n.position.x,
-            n.position.y,
-            0.1,
-            16,
-            [0.0, 0.0, 0.0],
-        );
     }
 
     let event_loop = glutin::event_loop::EventLoop::new();
@@ -75,6 +62,7 @@ pub fn run_with_animation() {
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
+    let (vert, ind) = graphics::draw_scene(&nodes, &full_connections_map);
     let vertex_buffer = glium::VertexBuffer::dynamic(&display, &vert).unwrap();
     let index_buffer =
         glium::IndexBuffer::dynamic(&display, glium::index::PrimitiveType::TrianglesList, &ind)
@@ -126,23 +114,16 @@ pub fn run_with_animation() {
         // println!("CPU: {}\n", mem::size_of::<Node>());
 
         for _i in 0..steps_per_frame {
-            simulation_cpu::simulate_single_thread_cpu(dt, &mut nodes, &mut objects, &connections_map);
+            simulation_cpu::simulate_single_thread_cpu(
+                dt,
+                &mut nodes,
+                &mut objects,
+                &mut full_connections_map,
+            );
         }
         total_symulation_time += dt * steps_per_frame as f32;
 
-        vert.clear();
-        ind.clear();
-        for n in &nodes {
-            graphics::add_circle(
-                &mut vert,
-                &mut ind,
-                n.position.x,
-                n.position.y,
-                0.04,
-                16,
-                [0.0, 0.0, 0.0],
-            );
-        }
+        let (vert, ind) = graphics::draw_scene(&nodes, &full_connections_map);
         vertex_buffer.write(&vert);
         index_buffer.write(&ind);
 
@@ -161,7 +142,7 @@ pub fn run_with_animation() {
             let log_dt = 0.01;
             if current_log_dt > log_dt {
                 let (kinetic, gravity, lennjon, wallrep, objrepu) =
-                    energy::calculate_total_energy(&nodes, &connections_map, &objects);
+                    energy::calculate_total_energy(&nodes, &full_connections_map, &objects);
 
                 csv_writer
                     .write_record(&[
@@ -186,7 +167,7 @@ pub fn run_with_animation() {
             ui.label("dt");
             ui.add(egui::Slider::new(
                 &mut dt,
-                RangeInclusive::new(0.0, 0.0001),
+                RangeInclusive::new(0.0, 0.00001),
             ));
             ui.label("Kroki symulacji na klatkę");
             ui.add(egui::Slider::new(

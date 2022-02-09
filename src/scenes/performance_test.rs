@@ -24,7 +24,7 @@ pub fn run_performace_test_optimized(object_size: usize, dt: f32, simulation_tim
         nodes.append(&mut nodes2);
     }
 
-    let connections_map = build_scene::build_connections_2(&nodes, spacing * 1.1, 100.0);
+    let connections_map = build_scene::build_connections_map(&nodes, spacing * 1.1, 100.0);
 
     let mut performance_test_file = std::fs::OpenOptions::new()
         .write(true)
@@ -97,7 +97,7 @@ pub fn run_performace_test(object_size: usize, dt: f32, simulation_time: f32) {
         }
     }
 
-    let connections_map = build_scene::build_connections_2(&nodes, spacing * 1.1, 100.0);
+    let connections_map = build_scene::build_connections_map(&nodes, spacing * 1.1, 100.0);
 
     // loging to csv file
     let log_path_energy = format!("data/{}x{}_energy.csv", object_size, object_size);
