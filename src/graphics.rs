@@ -2,6 +2,7 @@ use std::{collections::HashMap, f32::consts::PI};
 
 use crate::graphics;
 use crate::node::Node;
+use glam::Vec2;
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
@@ -35,7 +36,7 @@ pub fn add_circle(
     color: [f32; 3],
 ) {
     assert!(nr_of_triangles > 2);
-    assert!(radius > 0.0);
+    assert!(radius >= 0.0);
 
     let zero_index: u16 = match indices.iter().max() {
         Some(m) => m + 1,
@@ -77,6 +78,53 @@ pub fn add_circle(
     indices.push(zero_index + 1);
 }
 
+pub fn add_rectangle(
+    verticies: &mut Vec<Vertex>,
+    indices: &mut Vec<u16>,
+    point_a: Vec2,
+    point_b: Vec2,
+    height: f32,
+    color: [f32; 3],
+) {
+    assert!(height >= 0.0);
+
+    let zero_index: u16 = match indices.iter().max() {
+        Some(m) => m + 1,
+        None => 0,
+    };
+
+    let unit_vector = (point_b - point_a).normalize();
+    let perpendicular_unit_vector = Vec2::new(unit_vector.y, -unit_vector.x);
+
+    verticies.push(Vertex {
+        position: (point_a + perpendicular_unit_vector * (height / 2.0)).to_array(),
+        col: color,
+    });
+
+    verticies.push(Vertex {
+        position: (point_a - perpendicular_unit_vector * (height / 2.0)).to_array(),
+        col: color,
+    });
+
+    verticies.push(Vertex {
+        position: (point_b + perpendicular_unit_vector * (height / 2.0)).to_array(),
+        col: color,
+    });
+
+    verticies.push(Vertex {
+        position: (point_b - perpendicular_unit_vector * (height / 2.0)).to_array(),
+        col: color,
+    });
+
+    indices.push(zero_index);
+    indices.push(zero_index + 1);
+    indices.push(zero_index + 2);
+
+    indices.push(zero_index + 1);
+    indices.push(zero_index + 2);
+    indices.push(zero_index + 3);
+}
+
 pub fn radius_from_area(area: f32) -> f32 {
     (area / PI).sqrt()
 }
@@ -89,19 +137,32 @@ pub fn draw_scene(
     let mut indices: Vec<u16> = Vec::new();
     // graphics and window creation
 
+    for (k, v) in connections {
+        let (dx, v0) = *v;
+        let (a, b) = (nodes[k.0].position, nodes[k.1].position);
+        let color = ((a - b).length_squared() - dx * dx) * 300.0;
+        graphics::add_rectangle(
+            &mut verticies,
+            &mut indices,
+            a,
+            b,
+            0.007 + v0 * 0.00001,
+            [0.2 + color, 0.2 + color, 0.2 + color],
+        );
+    }
+
     for n in nodes {
+        let color = n.velocity.length_squared() * 0.5 * 0.5;
         graphics::add_circle(
             &mut verticies,
             &mut indices,
             n.position.x,
             n.position.y,
-            0.02 + radius_from_area(n.mass) * 0.005,
+            0.01 + radius_from_area(n.mass) * 0.01,
             32,
-            [0.0, 0.0, 0.0],
+            [color, 0.0, 0.0],
         );
     }
-
-    // radius_from_area(n.mass / 0.0001)
 
     (verticies, indices)
 }

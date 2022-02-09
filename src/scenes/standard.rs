@@ -18,8 +18,8 @@ pub fn run_with_animation() {
     let object1_sy = 12;
     let object1_st = object1_sx * object1_sy;
 
-    let object2_sx = 3;
-    let object2_sy = 3;
+    let object2_sx = 4;
+    let object2_sy = 4;
     let object2_st = object2_sx * object2_sy;
 
     let mut nodes =
@@ -34,7 +34,7 @@ pub fn run_with_animation() {
     }
 
     let mut nodes2 =
-        build_scene::build_rectangle(object2_sx, object2_sy, 0.08, -0.12, 0.8, 30.0, 2.0);
+        build_scene::build_rectangle(object2_sx, object2_sy, 0.08, -0.12, 0.8, 20.0, 2.0);
     let connections_map_2 = build_scene::build_connections_map(&nodes2, 0.15, 500.0, object1_st);
     nodes.append(&mut nodes2);
     {
@@ -61,12 +61,6 @@ pub fn run_with_animation() {
         .with_title("elastic-objects-rs");
     let cb = glutin::ContextBuilder::new();
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
-
-    let (vert, ind) = graphics::draw_scene(&nodes, &full_connections_map);
-    let vertex_buffer = glium::VertexBuffer::dynamic(&display, &vert).unwrap();
-    let index_buffer =
-        glium::IndexBuffer::dynamic(&display, glium::index::PrimitiveType::TrianglesList, &ind)
-            .unwrap();
 
     let vertex_shader_src = std::fs::read_to_string("glsl/vertex.vert").unwrap();
     let fragment_shader_src = std::fs::read_to_string("glsl/fragment.frag").unwrap();
@@ -124,8 +118,8 @@ pub fn run_with_animation() {
         total_symulation_time += dt * steps_per_frame as f32;
 
         let (vert, ind) = graphics::draw_scene(&nodes, &full_connections_map);
-        vertex_buffer.write(&vert);
-        index_buffer.write(&ind);
+        let vertex_buffer = glium::VertexBuffer::dynamic(display, &vert).unwrap();
+        let index_buffer = glium::IndexBuffer::dynamic(display, glium::index::PrimitiveType::TrianglesList, &ind).unwrap();
 
         fps_counter += 1;
         {

@@ -43,7 +43,7 @@ fn lennard_jones_connections(
 
 fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects: &Vec<Vec<usize>>) {
     let v0 = 20.0;
-    let dx = 0.1;
+    let dx = 0.07;
 
     let length = objects.len();
 
