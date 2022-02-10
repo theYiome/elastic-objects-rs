@@ -61,6 +61,8 @@ KERNEL void mainkernel(uint node_count, GLOBAL struct Node *nodes, uint connecti
             float dx = 0.05f;
 
             float2 dir = (0.0, -1.0f - nodes[index].position.y);
+            float4 dir4;
+            float3 dir3 = dir4.xxx;
 
             float l = fast_length(dir);
             float mi = nodes[index].mass;

@@ -14,17 +14,18 @@ pub fn run_with_animation() {
 
     let mut objects: Vec<Vec<usize>> = Vec::new();
 
-    let object1_sx = 20;
+    let object1_sx = 24;
     let object1_sy = 12;
     let object1_st = object1_sx * object1_sy;
 
-    let object2_sx = 4;
+    let object2_sx = 3;
     let object2_sy = 4;
     let object2_st = object2_sx * object2_sy;
 
+    let spacing1 = 0.08;
     let mut nodes =
-        build_scene::build_rectangle(object1_sx, object1_sy, 0.08, -0.9, -0.925, 1.0, 10.0);
-    let mut connections_map_1 = build_scene::build_connections_map(&nodes, 0.15, 50.0, 0);
+        build_scene::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 1.0, 10.0);
+    let mut connections_map_1 = build_scene::build_connections_map(&nodes, spacing1 * 1.5, 70.0, 0);
     {
         let mut obj: Vec<usize> = Vec::new();
         for i in 0..object1_st {
@@ -33,9 +34,10 @@ pub fn run_with_animation() {
         objects.push(obj);
     }
 
+    let spacing2 = 0.15;
     let mut nodes2 =
-        build_scene::build_rectangle(object2_sx, object2_sy, 0.08, -0.12, 0.8, 20.0, 2.0);
-    let connections_map_2 = build_scene::build_connections_map(&nodes2, 0.15, 500.0, object1_st);
+        build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, 35.0, 2.0);
+    let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 500.0, object1_st);
     nodes.append(&mut nodes2);
     {
         let mut obj: Vec<usize> = Vec::new();

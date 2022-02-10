@@ -140,7 +140,7 @@ pub fn draw_scene(
     for (k, v) in connections {
         let (dx, v0) = *v;
         let (a, b) = (nodes[k.0].position, nodes[k.1].position);
-        let color = ((a - b).length_squared() - dx * dx) * 300.0;
+        let color = ((a - b).length() - dx) * 50.0;
         graphics::add_rectangle(
             &mut verticies,
             &mut indices,
@@ -159,7 +159,7 @@ pub fn draw_scene(
             n.position.x,
             n.position.y,
             0.01 + radius_from_area(n.mass) * 0.01,
-            32,
+            20,
             [color, 0.0, 0.0],
         );
     }
