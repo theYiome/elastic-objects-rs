@@ -152,7 +152,7 @@ pub fn draw_scene(
     }
 
     for n in nodes {
-        let color = n.velocity.length_squared() * 0.5 * 0.5;
+        let color = n.velocity.length_squared() * 0.5 * 0.7;
         graphics::add_circle(
             &mut verticies,
             &mut indices,

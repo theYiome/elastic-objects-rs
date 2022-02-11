@@ -7,7 +7,7 @@
 \usepackage{wrapfig}
 \usepackage{subcaption}
 \usepackage{graphicx}
-\graphicspath{ {images/} }
+\graphicspath{ {images/} {images/collisions24x10_2x2} }
 
 \usepackage[margin=1.5cm]{geometry}
 
@@ -68,7 +68,7 @@
     \begin{figure}[h]
         \centering
         \includegraphics[width=13cm]{energy_test_0to2s}
-        \caption{Zmiana enegii w czasie dla układu w ciągu pierwszych 2 sekund}
+        \caption{Zmiana enegii w czasie dla układu w ciągu pierwszych 1.2 sekund}
     \end{figure}
 
     Przy zderzeniach pomiędzy obiektami oraz pomiędzy obiektem i podłożem energia potencjalna
@@ -122,39 +122,59 @@
     obiektów zagnieżdżonych w sobie. Przykładowa sytuacja, w której algorytm nie zadziała poprawnie
     to symulacja penetracji obiektu przy kuli/naboju.
 
+    \newpage
+    \subsection{Wyniki}
+    Rozpatrujemy scenariusz z dwoma obiektami, sprawdzamy liczbę iteracji symulacji na sekundę stopniowo
+    zwiększając liczbę węzłów w obydwóch obiektach. Test został wykonany na pojedynczym rdzeniu procesora AMD Ryzen 5 5600X, 
+    ilość węzłów w bokach obiektów ustawiana jest kolejno na: 3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=15cm]{performance_side_size}
+        \caption{
+            Liczba iteracji na sekundę w zależności od 
+            ilości węzłów w bokach obiektów dla dwóch metod obsługi zderzeń
+        }
+    \end{figure}
+
+
+    Porównanie wydajności przypadku niezoptymalizowanego (a) i zoptymalizowanego (b):
     \begin{center}
         \begin{tabular}{||c c c c||} 
          \hline
          węzły w boku obiektu & $iteracje / [s]$ dla (a) & $iteracje / [s]$ dla (b) & krotność przyśpieszenia \\ [0.5ex] 
          \hline\hline
-         3 & 6 & 87837 & 787 \\ 
+         3 & 777633 & 848867 & 1.09 \\ 
          \hline
-         5 & 7 & 78 & 5415 \\
+         5 & 155426 & 243030 & 1.56 \\
          \hline
-         9 & 545 & 778 & 7507 \\
+         9 & 19496 & 65263 & 3.34 \\
          \hline
-         15 & 88 & 788 & 6344 \\
+         15 & 2899 & 21951 & 7.57 \\
          \hline
-         21 & 88 & 788 & 6344 \\
+         21 & 782 & 10798 & 13.79 \\
          \hline
-         25 & 88 & 788 & 6344 \\
+         25 & 393 & 7511 & 19.06 \\
          \hline
-         30 & 88 & 788 & 6344 \\
+         30 & 191 & 5128 & 26.76 \\
          \hline
-         35 & 88 & 788 & 6344 \\
+         35 & 104 & 3749 & 36.00 \\
          \hline
-         40 & 88 & 788 & 6344 \\ 
+         40 & 61 & 2777 & 45.33 \\ 
          \hline
-         45 & 88 & 788 & 6344 \\ 
+         45 & 38 & 2232 & 58.43 \\ 
          \hline
-         50 & 88 & 788 & 6344 \\
+         50 & 25 & 1801 & 71.63 \\
          \hline
-         55 & 88 & 788 & 6344 \\ 
+         55 & 17 & 1481 & 86.11 \\ 
          \hline
-         60 & 88 & 788 & 6344 \\ [1ex] 
+         60 & 12 & 1229 & 100.88 \\ [1ex] 
          \hline
         \end{tabular}
     \end{center}
+    
+    Dla większych obiektów zyski z zastosowanej optymalizacji są bardzo duże. Dla dwóch obiektów
+    $60 \times 60$ ilość iteracji dla przypadku zoptymalizowanego jest ponad $100$ razy większa.
 
 \chapter{Zakończenie}
     \section{Dodatek}
@@ -163,13 +183,13 @@
 
     \subsubsection{Przekazanie energii między dwoma sztywnimi obiektami}
 
-    Mniejszy obiekt $3 \times 3$ po odbiciu od większego obiektu $8 \times  8$ znajdującego się pod nim wznosi się na
+    Mniejszy obiekt $3 \times 3$ po odbiciu od większego obiektu $8 \times  8$ znajdującego się 
+    pod nim wznosi się na
     wysokość o wiele większą, niż ta z której rozpoczął spadek swobodny.
     Występuje tutaj przekazanie części energii z obiektu większego do mniejszego - sama zasada energii jest zachowana.
-
-    \paragraph{
-        \url{https://youtu.be/nolLh6CSa-8}
-    }
+    \\
+    \\
+    \url{https://youtu.be/nolLh6CSa-8}
 
     \subsubsection{Przekazanie energii między dwoma miękkimi obiektami}
     W tym przypadku obiekty są mniej sztywne,
@@ -177,20 +197,17 @@
     (jednak wciąż wyżej niż punkt z którego zaczął spadać). Można to wytłumaczyć tym,
     że znaczna część energii która w poprzednim przypadku była częścią ruchu postępowego,
     teraz stała się energią wewnętrzną obiektów (wibracje obiektów pochłaniają część energii).
-
-    \paragraph{
-        \url{https://youtu.be/q2uYx8uLl3w}
-    }
+    \\
+    \\
+    \url{https://youtu.be/q2uYx8uLl3w}
 
     \subsubsection{Proste zderzenie dwóch obiektów}
-    \paragraph{
-        \url{https://www.youtube.com/watch?v=4cGcL_5yUt4}
-    }
+    \url{https://www.youtube.com/watch?v=4cGcL_5yUt4}
 
     \subsection{Repozytorium}
     Repozytorium z kodem projektu znajduje się pod adresem:
-    \paragraph{
-        \url{https://github.com/theYiome/elastic-objects-rs}
-}
+    \\
+    \\
+    \url{https://github.com/theYiome/elastic-objects-rs}
 
 \end{document}

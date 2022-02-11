@@ -4,8 +4,9 @@ use crate::{build_scene, energy, graphics, simulation_cpu};
 
 use glium::glutin::event_loop;
 use glium::{glutin, Surface};
+use glutin::event::{KeyboardInput, ElementState};
 use glutin::{
-    event::{Event, WindowEvent},
+    event::{Event, WindowEvent, VirtualKeyCode},
     event_loop::ControlFlow,
 };
 
@@ -18,13 +19,13 @@ pub fn run_with_animation() {
     let object1_sy = 12;
     let object1_st = object1_sx * object1_sy;
 
-    let object2_sx = 3;
-    let object2_sy = 4;
+    let object2_sx = 2;
+    let object2_sy = 2;
     let object2_st = object2_sx * object2_sy;
 
     let spacing1 = 0.08;
     let mut nodes =
-        build_scene::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 1.0, 10.0);
+        build_scene::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 1.0, 5.0);
     let mut connections_map_1 = build_scene::build_connections_map(&nodes, spacing1 * 1.5, 70.0, 0);
     {
         let mut obj: Vec<usize> = Vec::new();
@@ -36,7 +37,7 @@ pub fn run_with_animation() {
 
     let spacing2 = 0.15;
     let mut nodes2 =
-        build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, 35.0, 2.0);
+        build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, 80.0, 1.0);
     let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 500.0, object1_st);
     nodes.append(&mut nodes2);
     {
@@ -82,6 +83,7 @@ pub fn run_with_animation() {
     let mut current_log_dt = 0.0;
 
     let mut egui = egui_glium::EguiGlium::new(&display);
+    let mut egui_active = true;
 
     let mut now = std::time::Instant::now();
     // let mut last_frame_time = std::time::Instant::now();
@@ -94,7 +96,7 @@ pub fn run_with_animation() {
     // let device = *Device::all().first().unwrap();
     // let opencl_program = opencl(&device);
 
-    let mut redraw_clousure = move |display: &glium::Display, egui: &mut egui_glium::EguiGlium| {
+    let mut redraw_clousure = move |display: &glium::Display, egui: &mut egui_glium::EguiGlium, egui_active: bool| {
         // let measured_dt = last_frame_time.elapsed().as_secs_f32();
         // last_frame_time = std::time::Instant::now();
         // let dt = if measured_dt > 0.01 {0.01} else {measured_dt};
@@ -187,7 +189,9 @@ pub fn run_with_animation() {
             .unwrap();
 
         // draw egui
-        egui.paint(&display, &mut target, egui_shapes);
+        if egui_active {
+            egui.paint(&display, &mut target, egui_shapes);
+        }
 
         // draw things on top of egui here
         target.finish().unwrap();
@@ -198,10 +202,10 @@ pub fn run_with_animation() {
                           control_flow: &mut ControlFlow| {
         match event {
             glutin::event::Event::RedrawEventsCleared if cfg!(windows) => {
-                redraw_clousure(&display, &mut egui)
+                redraw_clousure(&display, &mut egui, egui_active)
             }
             glutin::event::Event::RedrawRequested(_) if !cfg!(windows) => {
-                redraw_clousure(&display, &mut egui)
+                redraw_clousure(&display, &mut egui, egui_active)
             }
 
             glutin::event::Event::WindowEvent { event, .. } => {
@@ -209,17 +213,22 @@ pub fn run_with_animation() {
                 match event {
                     WindowEvent::CloseRequested {} => {
                         *control_flow = glutin::event_loop::ControlFlow::Exit;
-                    }
+                    },
+                    WindowEvent::KeyboardInput {device_id: _, input, is_synthetic: _} => {
+                        if input.virtual_keycode == Some(VirtualKeyCode::F1) && input.state == ElementState::Pressed {
+                            egui_active = !egui_active;
+                        }
+                    },
                     _ => (),
                 }
                 display.gl_window().window().request_redraw();
             }
             glutin::event::Event::RedrawRequested { .. } => {
-                redraw_clousure(&display, &mut egui);
+                redraw_clousure(&display, &mut egui, egui_active);
                 display.gl_window().window().request_redraw();
             }
             Event::MainEventsCleared => {
-                redraw_clousure(&display, &mut egui);
+                redraw_clousure(&display, &mut egui, egui_active);
                 display.gl_window().window().request_redraw();
             }
             _ => (),
