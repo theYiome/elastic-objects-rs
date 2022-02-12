@@ -29,9 +29,15 @@
 \tableofcontents
 
 \chapter{Wstęp}
-    \section{Opis}
-    First document. This is a simple example, with no
-    extra parameters or packages included. Hello world, nice to meet you
+    \section{Cele projektu}
+    Jedną z popularnych metod wykorzystywanych w modelowaniu zderzeń obiektów w mikro- i makroskali jest metoda dynamiki molekularnej. 
+    Mimo iż w pierwotnej postaci stosowana była do opisu własności gazów i cieczy, to dzięki swej wszechstronności pozwala modelować 
+    obiekty makroskopowe zachowujących kształt przy braku sił zewnętrznych oraz 
+    modelować ich rozrywanie w trakcie zderzeń z innymi obiektami. 
+    W pracy należy zaadoptować odpowiednio sparametryzowany model dynamiki molekularnej i na jego 
+    podstawie opracować algorytmy numeryczne do symulacji zderzeń obiektów z możliwością penetracji lub rozrywania jednego z nich. 
+    Algorytmy powinny być zaimplementowany na tyle wydajne aby możliwa była wizualizacja 
+    zderzeń w czasie rzeczywistym jako animacje komputerowe.
 
 \chapter{Rozwinięcie}
     \section{Test poprawność działania algorytmów}
@@ -40,7 +46,6 @@
     \begin{wrapfigure}{r}{0.5\textwidth}
         \includegraphics[width=0.9\linewidth]{objects_raw} 
         \caption{Widok aplikacji w fazie testów z widocznymi dwoma obiektami $8 \times 8$ oraz $6 \times 4$}
-        \label{fig:wrapfig}
     \end{wrapfigure}
     Jeżeli wszystkie algorytmy symulujące odziaływania fizyczne zostały zimplementowane poprawnie 
     to w przypadku gdy nie występują żadne siły oporu energia całkowita układu powinna 
@@ -97,16 +102,13 @@
         \begin{subfigure}{0.5\textwidth}
         \includegraphics[width=0.9\linewidth, height=6cm]{objects_unoptimized} 
         \caption{Metoda "każdy z każdym"}
-        \label{fig:subim1}
         \end{subfigure}
         \begin{subfigure}{0.5\textwidth}
         \includegraphics[width=0.9\linewidth, height=6cm]{objects_optimized}
         \caption{Metoda węzłów granicznych}
-        \label{fig:subim2}
         \end{subfigure}
         
         \caption{Reprezentacja dwóch metod obsługi zderzeń}
-        \label{fig:image2}
     \end{figure}
 
     Dla metody (a) oddziaływanie liczone jest pomiędzy każdym węzłem o kolorze 
@@ -176,7 +178,120 @@
     Dla większych obiektów zyski z zastosowanej optymalizacji są bardzo duże. Dla dwóch obiektów
     $60 \times 60$ ilość iteracji dla przypadku zoptymalizowanego jest ponad $100$ razy większa.
 
+    \section{Test rozrywania obiektu}
+    \subsection{Opis testu}
+    Obiekt 01: damping 5.0, mass 1.0, spacing 0.08, v0 70.0, offset (-0.92, -0.925) \\
+    Obiekt 02: damping 1.0, mass (30.0, 50.0, 80.0), spacing 0.15, v0 500.0, offset (-0.12, 0.8) \\
+    Odpychanie międzyobiektowe:
+    let v0 = 20.0;
+    let dx = 0.07;
+    Jeżeli ogległość między dwoma położonymi węzłami  oddali się 
+
+    \subsection{Wyniki dla 120 kg}
+    \begin{figure}[h]
+
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass30_1} 
+            \caption{Stan początkowy}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass30_2}
+            \caption{Zderzenie}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass30_3}
+            \caption{Chwila po zderzeniu}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass30_4}
+            \caption{Stan stabilny}
+        \end{subfigure}
+        
+        \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 120 kg na obiekt $12 \times 24$ o masie 288 kg}
+    \end{figure}
+    Masa pojednczczego węzła w wolno spadającym obiekcie wynosi 30 kg co daje łączną masę równą 120 kg.
+    Węzły o kolorze czarnym mają zerową energię kinetyczną, 
+    zmienieją kolor na czerwony proporcjonalnie do ilości posiadanej energii kinetczynej. 
+    Przy zderzeniu widoczny jest transfer energii kinetcznej z obiektu $2 \times 2$ do obiektu $12 \times 24$, 
+    w którym po chwili zaczyna rozchodzić się fala. Ze względu na zastosowanie siły oporu proporcjonalnej do prękości
+    po kilku sekundach układ stabilizuje się, obiekt $2 \times 2$ leży nieruchomo na obiekcie $12 \times 24$. 
+    Żadne z połączeń międzywęzłowych nie zostało przerwane ze względu na zbyt niską energię zderzenia.
+
+    \newpage
+    \subsection{Wyniki dla 200 kg}
+    \begin{figure}[h]
+
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass50_1} 
+            \caption{Stan początkowy}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass50_2}
+            \caption{Zderzenie}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass50_3}
+            \caption{Chwila po zderzeniu}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass50_4}
+            \caption{Stan stabilny}
+        \end{subfigure}
+        
+        \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 200 kg na obiekt $12 \times 24$ o masie 288 kg}
+    \end{figure}
+
+    Zwiększamy masę węzłów w obiekcie $2 \times 2$ z 30 kg do 50 kg. Ponieważ w reprezentacja wizualnej węzła jego pole 
+    jest proporjonalne do jego masy, tym razem obiekt $2 \times 2$ jest większy.
+    Większa energia kinetyczna przy zderzeniu powoduje przerwanie kilku połączeń międzywęzłowych, a obiekt $2 \times 2$ 
+    utyka w wytworzonej dziurze. Część pierwotnego obiektu $12 \times 24$ oderwała się i utkneła w obiekcie $2 \times 2$.
+
+    \newpage
+    \subsection{Wyniki dla 320 kg}
+    \begin{figure}[h]
+
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass80_1} 
+            \caption{Stan początkowy}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass80_2}
+            \caption{Zderzenie}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass80_3}
+            \caption{Chwila po zderzeniu}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass80_4}
+            \caption{Stan stabilny}
+        \end{subfigure}
+        
+        \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 320 kg na obiekt $12 \times 24$ o masie 288 kg}
+    \end{figure}
+
+    Ponowne zwiększona została masa węzłów obiektu $2 \times 2$, tym razem z 50 kg do 80 kg, dając łączną masę 320 kg.
+    W chwili zderzenia po obiekcie $12 \times 24$ rozchodzi się gwałtownie fala energii kinetycznej a on sam zostaje 
+    rozerwany. Częściowemu zniszczeniu ulega również obiekt $2 \times 2$, ze względu duży stosunek masy do wytrzymałości
+    połączeń międzywęzłowych niektóre z nich zostały przerwane.
+
 \chapter{Zakończenie}
+    \section{Wnioski}
+    Zastosowanie metoda dynamiki molekularnej daje bardzo interesujące 
+    wyniki podczas symulacji zderzeń obiektów.
+
     \section{Dodatek}
 
     \subsection{Filmik prezentujące działanie aplikacji}
