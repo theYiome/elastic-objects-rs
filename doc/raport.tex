@@ -7,6 +7,8 @@
 \usepackage{wrapfig}
 \usepackage{subcaption}
 \usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{blindtext}
 \graphicspath{ {images/} {images/collisions24x10_2x2} }
 
 \usepackage[margin=1.5cm]{geometry}
@@ -111,8 +113,7 @@
         \caption{Reprezentacja dwóch metod obsługi zderzeń}
     \end{figure}
 
-    Dla metody (a) oddziaływanie liczone jest pomiędzy każdym węzłem o kolorze 
-    niebieskim z każdym węzłem o
+    Dla metody (a) oddziaływanie liczone jest pomiędzy każdym węzłem o kolorze niebieskim z każdym węzłem o
     kolorze pomarańczowym. Metoda o złożoności $O(n^2)$ gdzie $n$ to liczba węzłów.
     Jest to metoda bardzo wolna, lecz dająca poprawne rezultaty w każdym symulowanym przypadku.\\
 
@@ -180,13 +181,51 @@
 
     \section{Test rozrywania obiektu}
     \subsection{Opis testu}
-    Obiekt 01: damping 5.0, mass 1.0, spacing 0.08, v0 70.0, offset (-0.92, -0.925) \\
-    Obiekt 02: damping 1.0, mass (30.0, 50.0, 80.0), spacing 0.15, v0 500.0, offset (-0.12, 0.8) \\
-    Odpychanie międzyobiektowe:
-    let v0 = 20.0;
-    let dx = 0.07;
-    Jeżeli ogległość między dwoma położonymi węzłami  oddali się 
+    Jeżeli odległość między dwoma połączonymi węzłami zwiększy się powyżej 1.5 odległości równowagi dla 
+    tego połączenia, zostaje ono zerwane. W ten sposób symulujemy rozrywanie obiektów przy dużym obciążeniu.
 
+    \subsection{Parametry symulacji}
+    Parametry ogólne:
+    \begin{itemize}
+        \item $g = 9.81 [\frac{m}{s^2}]$
+        \item $dt = 10^{-5}[s]$
+    \end{itemize}
+    Odpychanie międzyobiektowe:
+    \begin{itemize}
+        \item $V_{0} = 20$
+        \item $dx_{0} = 0.07$
+    \end{itemize}
+    Parametry obiektu $12 \times 24$:
+    \begin{itemize}
+        \item $d_{1} = 5.0$
+        \item $m_{1} = 1.0$
+        \item $dx_{1} = 0.08$
+        \item $V_{1} = 70.0$
+        \item $p_{1} = [-0.92, -0.925]$
+    \end{itemize}
+    Parametry obiektu $2 \times 2$:
+    \begin{itemize}
+        \item $d_{2} = 1.0$
+        \item $m_{2} = 30.0, 50.0, 80.0$
+        \item $dx_{2} = 0.15$
+        \item $V_{2} = 500.0$
+        \item $p_{2} = [-0.12, 0.8]$
+    \end{itemize}
+    Parametry $p_x$ oznaczają pozycję początkową obiektu, $m_x$ masę węzłow w obiekcie, 
+    $dx_x$ pozycję równowagi pomiędzy dwoma połączonymi węzłami,
+    $V_x$ współczynnik odziaływania międzywęzłowego, $g$ przyśpieszenie grawitacyjne, 
+    $d$ współcznnik oporu dla węzłów w obiekcie. 
+    % \begin{multicols}{2}
+    %     \columnbreak
+    %     hi
+    % \end{multicols}
+
+    % \begin{equation}
+    %     g = 9.81 [\frac{m}{s^2}] \\
+    %     dt = 10^{-5}
+    % \end{equation}
+
+    \newpage
     \subsection{Wyniki dla 120 kg}
     \begin{figure}[h]
 
@@ -318,6 +357,15 @@
 
     \subsubsection{Proste zderzenie dwóch obiektów}
     \url{https://www.youtube.com/watch?v=4cGcL_5yUt4}
+
+    \subsubsection{Zderzenie obiektów 120 kg z 288 kg}
+    \url{https://youtu.be/3dV6EpRacyA}
+
+    \subsubsection{Zderzenie obiektów 200 kg z 288 kg}
+    \url{https://youtu.be/lRGl7CJiqFU}
+
+    \subsubsection{Zderzenie obiektów 320 kg z 288 kg}
+    \url{https://youtu.be/VYeCsaqNxAY}
 
     \subsection{Repozytorium}
     Repozytorium z kodem projektu znajduje się pod adresem:

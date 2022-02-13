@@ -37,7 +37,7 @@ pub fn run_with_animation() {
 
     let spacing2 = 0.15;
     let mut nodes2 =
-        build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, 80.0, 1.0);
+        build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, 30.0, 1.0);
     let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 500.0, object1_st);
     nodes.append(&mut nodes2);
     {
