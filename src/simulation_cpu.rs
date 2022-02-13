@@ -163,7 +163,7 @@ fn gravity_force(nodes: &mut Vec<Node>) {
 
 fn drag_force(nodes: &mut Vec<Node>) {
     nodes.iter_mut().for_each(|n| {
-        n.current_acceleration -= n.velocity * n.damping;
+        n.current_acceleration -= n.velocity * n.drag;
     });
 }
 

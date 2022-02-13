@@ -9,6 +9,8 @@
 \usepackage{graphicx}
 \usepackage{multicol}
 \usepackage{blindtext}
+\usepackage{amsmath}
+\usepackage{float}
 \graphicspath{ {images/} {images/collisions24x10_2x2} }
 
 \usepackage[margin=1.5cm]{geometry}
@@ -32,28 +34,62 @@
 
 \chapter{Wstęp}
     \section{Cele projektu}
-    Jedną z popularnych metod wykorzystywanych w modelowaniu zderzeń obiektów w mikro- i makroskali jest metoda dynamiki molekularnej. 
-    Mimo iż w pierwotnej postaci stosowana była do opisu własności gazów i cieczy, to dzięki swej wszechstronności pozwala modelować 
-    obiekty makroskopowe zachowujących kształt przy braku sił zewnętrznych oraz 
-    modelować ich rozrywanie w trakcie zderzeń z innymi obiektami. 
-    W pracy należy zaadoptować odpowiednio sparametryzowany model dynamiki molekularnej i na jego 
-    podstawie opracować algorytmy numeryczne do symulacji zderzeń obiektów z możliwością penetracji lub rozrywania jednego z nich. 
-    Algorytmy powinny być zaimplementowany na tyle wydajne aby możliwa była wizualizacja 
-    zderzeń w czasie rzeczywistym jako animacje komputerowe.
+    Jedną z popularnych metod wykorzystywanych w modelowaniu zderzeń obiektów w mikro- i makroskali jest 
+    metoda dynamiki molekularnej. Mimo iż w pierwotnej postaci stosowana była do opisu własności gazów i 
+    cieczy, to dzięki swej wszechstronności pozwala modelować obiekty makroskopowe zachowujących kształt 
+    przy braku sił zewnętrznych oraz modelować ich rozrywanie w trakcie zderzeń z innymi obiektami. W pracy 
+    należy zaadoptować odpowiednio sparametryzowany model dynamiki molekularnej i na jego podstawie opracować 
+    algorytmy numeryczne do symulacji zderzeń obiektów z możliwością penetracji lub rozrywania jednego z nich. 
+    Algorytmy powinny być zaimplementowany na tyle wydajne aby możliwa była wizualizacja zderzeń w czasie 
+    rzeczywistym jako animacje komputerowe.
 
-\chapter{Rozwinięcie}
+    \section{Model oddziaływań}
+    Potencjał Lennarda-Jonesa został wykorzystany do symulacji przyciągania/odpychania 
+    węzłów w jednym obiekcie, symulacji kolizji węzłów ze ścianami oraz symulacji
+    kolizji węzłów z węzłami należącymi do innych obiektów. 
+    Potencjał ten opisany jest za pomocą poniższego równania:
+    \begin{equation}
+        E_{LJ} = V_0 \left[ \left( \frac{\sigma}{l} \right)^{12} - \left( \frac{\sigma}{l} \right)^{6} \right]
+    \end{equation}
+    \begin{equation}
+        \sigma = \frac{d_0}{\sqrt[6]{2}}
+    \end{equation}
+    Gdzie $l$ to odległość między dwiema oddziałującymi cząstkami, $V_0$ to współczynnik określający wielkość potencjału 
+    a $\sigma$ to odległość, przy której energia potencjalna odziaływania pomiedzy cząsteczkami wynosi zero. 
+    Potencjał Lennarda-Jonesa ma swoje minimum w odległości $d_0 = \sqrt[6]{2} \sigma$. \\ \\
+    Siła zdefiniowana jest jako pochodna energii:
+    \begin{equation}
+        F_{LJ} = 
+        \frac{d}{dl} E_{LJ} = 
+        \frac{d}{dl} V_0 \left[ \left( \frac{\sigma}{l} \right)^{12} - \left( \frac{\sigma}{l} \right)^{6} \right]
+    \end{equation}
+    \begin{align*}
+        F_{LJ} &= \frac{d}{dl} V_0 \left[ \sigma^{12}l^{-12} - \sigma^{6}l^{-6} \right] =\\
+        &= V_0 \left[ \sigma^{12}(-12)l^{-13} - \sigma^{6}(-6)l^{-7} \right] =\\
+        &= V_0 \left[ 6\sigma^{6}l^{-7} - 12\sigma^{12}l^{-13} \right] =\\
+        &= V_0 \left[ 6 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{6} l^{-7} - 12 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{12} l^{-13} \right] =\\
+        &= 3 V_0 \left[ 6 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{6} l^{-7} - 12 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{12} l^{-13} \right] =\\
+        &= 3 V_0 \left[ (d_{0})^{6} l^{-7} - (d_{0})^{12} l^{-13} \right] =\\
+        &= 3 \frac{V_0}{d_0} \left[ (d_{0})^{7} l^{-7} - (d_{0})^{13} l^{-13} \right] =\\
+        &= 3\frac{V_0}{d_0} \left[ \left(\frac{d_0}{l}\right)^{7} - \left(\frac{d_0}{l}\right)^{13} \right]
+    \end{align*}
+    W ten sposób otrzymaliśmy wzór opisujący siłę wynikającą z potencjału Lennarda-Jonesa:
+    \begin{equation}
+        F_{LJ} = 3\frac{V_0}{d_0} \left[ \left(\frac{d_0}{l}\right)^{7} - \left(\frac{d_0}{l}\right)^{13} \right]
+    \end{equation}
+
+\chapter{Testy}
     \section{Test poprawność działania algorytmów}
     \subsection{Opis testu}
     
-    \begin{wrapfigure}{r}{0.5\textwidth}
+    \begin{wrapfigure}{r}{0.45\textwidth}
         \includegraphics[width=0.9\linewidth]{objects_raw} 
         \caption{Widok aplikacji w fazie testów z widocznymi dwoma obiektami $8 \times 8$ oraz $6 \times 4$}
     \end{wrapfigure}
     Jeżeli wszystkie algorytmy symulujące odziaływania fizyczne zostały zimplementowane poprawnie 
     to w przypadku gdy nie występują żadne siły oporu energia całkowita układu powinna 
-    być stała przez cały czas trwania symulacji. 
-    Aby uzyskać poprawny obraz sytuacji należy uwzględnić
-    wszystkie rodzaje energii w układzie: 
+    być stała przez cały czas trwania symulacji. Aby uzyskać poprawny obraz sytuacji należy 
+    uwzględnić wszystkie rodzaje energii w układzie: 
     \begin{enumerate}
         \item Energia potencjalna grawitacji
         \item Energia kinetyczna
@@ -66,10 +102,11 @@
     znajdują się w polu grawitacyjnym, nie ma żadnych sił oporu/tarcia.
 
     \subsubsection{Parametry symulacji}
-    $g = 9.81 [\frac{m}{s^2}]$\\
-    $dt = 10^{-5} [s]$\\
-    $t_{max} = 8 [s]$\\ \\ \\ \\
-
+    \begin{align*}
+        g &= 9.81 [\frac{m}{s^2}] \\
+        dt &= 10^{-5} [s] \\
+        t_{max} &= 8 [s]
+    \end{align*}
     \pagebreak
     \subsection{Wyniki}
     \begin{figure}[h]
@@ -125,13 +162,15 @@
     obiektów zagnieżdżonych w sobie. Przykładowa sytuacja, w której algorytm nie zadziała poprawnie
     to symulacja penetracji obiektu przy kuli/naboju.
 
-    \newpage
-    \subsection{Wyniki}
+    \subsection{Opis testu}
     Rozpatrujemy scenariusz z dwoma obiektami, sprawdzamy liczbę iteracji symulacji na sekundę stopniowo
     zwiększając liczbę węzłów w obydwóch obiektach. Test został wykonany na pojedynczym rdzeniu procesora AMD Ryzen 5 5600X, 
     ilość węzłów w bokach obiektów ustawiana jest kolejno na: 3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60.
-
-    \begin{figure}[h]
+    
+    \newpage
+    \subsection{Wyniki}
+    Wyniki z przeprowadzonego testu prezentują się następująco:
+    \begin{figure}[H]
         \centering
         \includegraphics[width=15cm]{performance_side_size}
         \caption{
@@ -140,50 +179,52 @@
         }
     \end{figure}
 
+    Wersja algorytmu biorąca pod uwagę jedynie węzły brzegowe danych obiektów podczas obliczania kolizji cechuje 
+    się wyraźnie zwiększoną wydajnością.
 
-    Porównanie wydajności przypadku niezoptymalizowanego (a) i zoptymalizowanego (b):
-    \begin{center}
+    \begin{table}[H]
+        \centering
         \begin{tabular}{||c c c c||} 
-         \hline
-         węzły w boku obiektu & $iteracje / [s]$ dla (a) & $iteracje / [s]$ dla (b) & krotność przyśpieszenia \\ [0.5ex] 
-         \hline\hline
-         3 & 777633 & 848867 & 1.09 \\ 
-         \hline
-         5 & 155426 & 243030 & 1.56 \\
-         \hline
-         9 & 19496 & 65263 & 3.34 \\
-         \hline
-         15 & 2899 & 21951 & 7.57 \\
-         \hline
-         21 & 782 & 10798 & 13.79 \\
-         \hline
-         25 & 393 & 7511 & 19.06 \\
-         \hline
-         30 & 191 & 5128 & 26.76 \\
-         \hline
-         35 & 104 & 3749 & 36.00 \\
-         \hline
-         40 & 61 & 2777 & 45.33 \\ 
-         \hline
-         45 & 38 & 2232 & 58.43 \\ 
-         \hline
-         50 & 25 & 1801 & 71.63 \\
-         \hline
-         55 & 17 & 1481 & 86.11 \\ 
-         \hline
-         60 & 12 & 1229 & 100.88 \\ [1ex] 
-         \hline
+            \hline
+            węzły w boku obiektu & $iteracje / [s]$ dla (a) & $iteracje / [s]$ dla (b) & krotność przyśpieszenia \\ [0.5ex] 
+            \hline\hline
+            3 & 777633 & 848867 & 1.09 \\ 
+            \hline
+            5 & 155426 & 243030 & 1.56 \\
+            \hline
+            9 & 19496 & 65263 & 3.34 \\
+            \hline
+            15 & 2899 & 21951 & 7.57 \\
+            \hline
+            21 & 782 & 10798 & 13.79 \\
+            \hline
+            25 & 393 & 7511 & 19.06 \\
+            \hline
+            30 & 191 & 5128 & 26.76 \\
+            \hline
+            35 & 104 & 3749 & 36.00 \\
+            \hline
+            40 & 61 & 2777 & 45.33 \\ 
+            \hline
+            45 & 38 & 2232 & 58.43 \\ 
+            \hline
+            50 & 25 & 1801 & 71.63 \\
+            \hline
+            55 & 17 & 1481 & 86.11 \\ 
+            \hline
+            60 & 12 & 1229 & 100.88 \\ [1ex] 
+            \hline
         \end{tabular}
-    \end{center}
-    
-    Dla większych obiektów zyski z zastosowanej optymalizacji są bardzo duże. Dla dwóch obiektów
-    $60 \times 60$ ilość iteracji dla przypadku zoptymalizowanego jest ponad $100$ razy większa.
-
+        \caption{ Porównanie wydajności przypadku niezoptymalizowanego (a) i zoptymalizowanego (b) }
+    \end{table}
+    Dla większych obiektów zyski z zastosowanej optymalizacji są bardzo duże. W przypadku dwóch obiektów
+    $60 \times 60$ ilość iteracji dla algorytmu zoptymalizowanego jest ponad $100$ razy większa.
+        
     \section{Test rozrywania obiektu}
     \subsection{Opis testu}
     Jeżeli odległość między dwoma połączonymi węzłami zwiększy się powyżej 1.5 odległości równowagi dla 
     tego połączenia, zostaje ono zerwane. W ten sposób symulujemy rozrywanie obiektów przy dużym obciążeniu.
-
+        
     \subsection{Parametry symulacji}
     Parametry ogólne:
     \begin{itemize}
@@ -193,37 +234,29 @@
     Odpychanie międzyobiektowe:
     \begin{itemize}
         \item $V_{0} = 20$
-        \item $dx_{0} = 0.07$
+        \item $d_{0} = 0.07$
     \end{itemize}
     Parametry obiektu $12 \times 24$:
     \begin{itemize}
-        \item $d_{1} = 5.0$
+        \item $c_{1} = 5.0$
         \item $m_{1} = 1.0$
-        \item $dx_{1} = 0.08$
+        \item $d_{1} = 0.08$
         \item $V_{1} = 70.0$
         \item $p_{1} = [-0.92, -0.925]$
     \end{itemize}
     Parametry obiektu $2 \times 2$:
     \begin{itemize}
-        \item $d_{2} = 1.0$
+        \item $c_{2} = 1.0$
         \item $m_{2} = 30.0, 50.0, 80.0$
-        \item $dx_{2} = 0.15$
+        \item $d_{2} = 0.15$
         \item $V_{2} = 500.0$
         \item $p_{2} = [-0.12, 0.8]$
     \end{itemize}
     Parametry $p_x$ oznaczają pozycję początkową obiektu, $m_x$ masę węzłow w obiekcie, 
-    $dx_x$ pozycję równowagi pomiędzy dwoma połączonymi węzłami,
+    $d_x$ pozycję równowagi przyciągania/odpychania pomiędzy dwoma węzłami dla tego
+    samego obiektu lub jedynie odpychania dla odziaływań międzywęzłowych,
     $V_x$ współczynnik odziaływania międzywęzłowego, $g$ przyśpieszenie grawitacyjne, 
-    $d$ współcznnik oporu dla węzłów w obiekcie. 
-    % \begin{multicols}{2}
-    %     \columnbreak
-    %     hi
-    % \end{multicols}
-
-    % \begin{equation}
-    %     g = 9.81 [\frac{m}{s^2}] \\
-    %     dt = 10^{-5}
-    % \end{equation}
+    $c_x$ współcznnik oporu powietrza dla węzłów w obiekcie.
 
     \newpage
     \subsection{Wyniki dla 120 kg}
@@ -324,9 +357,9 @@
     Ponowne zwiększona została masa węzłów obiektu $2 \times 2$, tym razem z 50 kg do 80 kg, dając łączną masę 320 kg.
     W chwili zderzenia po obiekcie $12 \times 24$ rozchodzi się gwałtownie fala energii kinetycznej a on sam zostaje 
     rozerwany. Częściowemu zniszczeniu ulega również obiekt $2 \times 2$, ze względu duży stosunek masy do wytrzymałości
-    połączeń międzywęzłowych niektóre z nich zostały przerwane.
+    połączeń międzywęzłowych niektóre z tych połączeń zostały przerwane.
 
-\chapter{Zakończenie}
+\chapter{Podsumowanie}
     \section{Wnioski}
     Zastosowanie metoda dynamiki molekularnej daje bardzo interesujące 
     wyniki podczas symulacji zderzeń obiektów.
@@ -368,9 +401,7 @@
     \url{https://youtu.be/VYeCsaqNxAY}
 
     \subsection{Repozytorium}
-    Repozytorium z kodem projektu znajduje się pod adresem:
-    \\
-    \\
+    \subsubsection{Link do repozytorium z kodem}
     \url{https://github.com/theYiome/elastic-objects-rs}
 
 \end{document}

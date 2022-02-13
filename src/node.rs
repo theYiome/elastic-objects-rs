@@ -8,7 +8,7 @@ pub struct Node {
     pub last_acceleration: Vec2,
     pub current_acceleration: Vec2,
     pub mass: f32,
-    pub damping: f32
+    pub drag: f32
 }
 
 impl Node {

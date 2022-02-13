@@ -22,7 +22,7 @@ pub fn build_rectangle(
                 current_acceleration: Vec2::new(0.0, 0.0),
                 last_acceleration: Vec2::new(0.0, 0.0),
                 mass: mass,
-                damping: damping,
+                drag: damping,
             });
         }
     }
