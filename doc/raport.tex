@@ -68,7 +68,7 @@
         &= V_0 \left[ \sigma^{12}(-12)l^{-13} - \sigma^{6}(-6)l^{-7} \right] =\\
         &= V_0 \left[ 6\sigma^{6}l^{-7} - 12\sigma^{12}l^{-13} \right] =\\
         &= V_0 \left[ 6 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{6} l^{-7} - 12 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{12} l^{-13} \right] =\\
-        &= 3 V_0 \left[ 6 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{6} l^{-7} - 12 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{12} l^{-13} \right] =\\
+        &= 3 V_0 \left[ 2 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{6} l^{-7} - 4 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{12} l^{-13} \right] =\\
         &= 3 V_0 \left[ (d_{0})^{6} l^{-7} - (d_{0})^{12} l^{-13} \right] =\\
         &= 3 \frac{V_0}{d_0} \left[ (d_{0})^{7} l^{-7} - (d_{0})^{13} l^{-13} \right] =\\
         &= 3\frac{V_0}{d_0} \left[ \left(\frac{d_0}{l}\right)^{7} - \left(\frac{d_0}{l}\right)^{13} \right]
@@ -222,8 +222,14 @@
         
     \section{Test rozrywania obiektu}
     \subsection{Opis testu}
-    Jeżeli odległość między dwoma połączonymi węzłami zwiększy się powyżej 1.5 odległości równowagi dla 
-    tego połączenia, zostaje ono zerwane. W ten sposób symulujemy rozrywanie obiektów przy dużym obciążeniu.
+    Jeden obiekt zostaje umieszczony nieruchomo przy podłożu, drugi znajduje się nad nim. Siła grawitacji
+    jest aktywna, z tego powodu wolno spadający obiekt zderza się z obiektem stacjonarnym.
+    Jeżeli odległość między dwoma połączonymi węzłami zwiększy się powyżej $1.5$ odległości równowagi dla 
+    tego połączenia ($d_x$), połączenie to zostaje zerwane, w ten sposób symulujemy rozrywanie obiektów pod dużym 
+    obciążeniem. Do obsługi kolizji została użyta wersja algorytmu każdy węzeł z każdym węzłem, ponieważ
+    działa on poprawnie dla przenikających się obiektów a przy relatywnie niewielkiej liczbie 
+    węzłów ($4$ i $288$) wciąż zapewnia bardzo dobrą płynność działania animacji.
+
         
     \subsection{Parametry symulacji}
     Parametry ogólne:

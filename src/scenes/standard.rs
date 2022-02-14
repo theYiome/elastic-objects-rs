@@ -18,12 +18,14 @@ pub fn run_with_animation() {
     let object1_sx = 24;
     let object1_sy = 12;
     let object1_st = object1_sx * object1_sy;
-
-    let object2_sx = 2;
-    let object2_sy = 2;
-    let object2_st = object2_sx * object2_sy;
-
     let spacing1 = 0.08;
+
+    let object2_sx = 4;
+    let object2_sy = 4;
+    let object2_st = object2_sx * object2_sy;
+    let object2_m = 15.0;
+    let spacing2 = 0.075;
+
     let mut nodes =
         build_scene::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 1.0, 5.0);
     let mut connections_map_1 = build_scene::build_connections_map(&nodes, spacing1 * 1.5, 70.0, 0);
@@ -35,9 +37,8 @@ pub fn run_with_animation() {
         objects.push(obj);
     }
 
-    let spacing2 = 0.15;
     let mut nodes2 =
-        build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, 30.0, 1.0);
+        build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, object2_m, 1.0);
     let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 500.0, object1_st);
     nodes.append(&mut nodes2);
     {
