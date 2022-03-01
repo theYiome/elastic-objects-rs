@@ -11,9 +11,37 @@
 \usepackage{blindtext}
 \usepackage{amsmath}
 \usepackage{float}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[margin=1.5cm]{geometry}
+
 \graphicspath{ {images/} {images/collisions24x10_2x2} }
 
-\usepackage[margin=1.5cm]{geometry}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{codelistingstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=codelistingstyle}
 
 \title{
     Raport z postępów pracy \\
@@ -77,6 +105,189 @@
     \begin{equation}
         F_{LJ} = 3\frac{V_0}{d_0} \left[ \left(\frac{d_0}{l}\right)^{7} - \left(\frac{d_0}{l}\right)^{13} \right]
     \end{equation}
+
+    \section{Wizualizacja temperatury}
+    \subsection{Temperatura z teorii gazów}
+    Punktem wyjścia moe być zasada ekwipartycji energii: średnia energia kintetyczna na jeden stopień swobody jest równa 
+    $\frac{k_{B}T}{2}$ gdzie $k_{B}$ to stała Boltzmana a $T$ to temperatura.
+
+    \begin{equation}
+        \left< E_{k} \right> = s \frac{k_{B}T}{2}
+    \end{equation}
+
+    W naszym przypadku liczba stopni swobody $s = 2$ (ruch translacyjny w dwóch osiach $x$ i $y$).
+
+    \begin{align*}
+        \left< E_{k} \right> = \left< \frac{m v^{2}}{2} \right> = \frac{m}{2} \left< v^{2} \right> = T \frac{k_{B}}{2}
+    \end{align*}
+
+    \begin{equation}
+        T = \frac{m}{k_{B}} \left< v^{2} \right>
+    \end{equation}
+
+    Wzór wzięty z teorii kinetyczno-molekularnej gazów.
+
+    \subsection{Weryfikacja poprawności wzoru}
+    Rozważmy przypadek gdy obiekt porusza się w przestrzeni jako całość: swobodny spadek w polu grawitacyjnym.
+    Węzły nie drgają i przepieszczają się z tą samą prędkością 
+    $\vec{V_k} = \vec{V_0} + \vec{g}t$ dla $t > 0  \Rightarrow  |\vec{V_k}|^2  \Rightarrow  T > 0$ a 
+    przecież swobodny spadek nie rozgrzewa ciał. 
+    Wniosek: ten wzór jest nieodpowiedni dla naszego modelu, należy go zmodyfikować.
+    
+    \subsection{Modyfikacja wzoru}
+    Należy przeskalować prędkość, to znaczy odjąć średnią prędkość z jaką porusa się obiekt jako całość, wówczas nie będzie
+    to prowadziło dodadkowego wzrosu temperatury. Def: $\left< v^{2} \right>  =  \frac{1}{T} \int_{0}^{T} v^2(t) dt$
+    uśredniony po krótkich odcinkach czasu. Estymator $\left< v^{2} \right>$ to średnia arytmetyczna: 
+    $t = t_i = i \cdot \Delta t$ dla $i = 0, 1, ..., n-1$.
+
+    \begin{equation}
+        \left< v^{2} \right>  \approx  \overline{v^2} = \frac{1}{n \cdot \Delta t} \sum_{i = 0}^{n} {v_i}^2 \Delta t
+        = \frac{1}{n} \sum_{i = 0}^n {v_i}^2
+    \end{equation}
+
+    Modyfikujemy wzór odejmująć wartość średnią:
+    \begin{align*}
+        \left< \left( v - \left< v \right> \right)^2 \right>  &=  
+        \frac{1}{T} \int_{0}^{T} \left( v(t) - \left< v \right> \right)^2 dt  \\
+        &= \frac{1}{T} \int_{0}^{T} \left( v^2(t) - 2v \left< v \right> + \left< v \right>^2 \right) dt  \\
+        &= \frac{1}{T} \int_{0}^{T} v^2 \, dt - 2 \left< v \right> \frac{1}{T} \int_{0}^{T} v \, dt + \left< v \right>^2 
+        + \left< v \right>^2 \frac{1}{T} \int_{0}^{T} dt \\
+        &= \left< v^2 \right> - 2 \left< v \right> \cdot \left< v \right> + \left< v \right>^2 \\
+        &= \left< v^2 \right> - \left< v \right>^2
+    \end{align*}
+
+    Uzyskany wynik to wariancja prędkości:
+    \begin{equation}
+        {\delta_v}^2  =  \left< \left( v - \left< v \right> \right)^2 \right>  =  \left< v^2 \right> - \left< v \right>^2
+    \end{equation}
+
+    Estymator wariancji:
+    \begin{equation}
+        {\delta_v}^2  \approx  \frac{1}{n} \sum_{i = 0}^{n - 1} {v_i}^2 - \left( \frac{1}{n} \sum_{i = 0}^{n - 1} {v_i} \right)^2
+    \end{equation}
+
+    \subsection{Weryfikacja zmodyfikowanego wzoru}
+    Ponownie rozparzymy spadek swobodny dla jednego wymiaru: $v_k = v_0 + gt$ gdzie $v_0 = 0 = v_k = gt$
+
+    \begin{align*}
+        {\delta_v}^2  &=
+        \left< v^2 \right> - \left< v \right>^2 \\ 
+        &=  \frac{1}{T} \int_{0}^{T} g^2 t^2 \, dt  -  \left( \frac{1}{T} \int_{0}^{T} g \cdot t \, dt \right)^2  \\
+        &=  g^2 \frac{1}{T} \frac{T^3}{3}  -  \left( g \frac{1}{T} \frac{T^2}{2} \right)^2  = \frac{g^2 T^2}{3}  -  \frac{g^2 T^2}{4} \\
+        &=  \frac{g^2 T^2}{12}
+    \end{align*}
+
+    \begin{equation}
+        {\delta_v}^2  =  \frac{g^2 T^2}{12}
+    \end{equation}
+
+    Temperatura wciąż wzrasta. Jeżeli jednak $a >> g$ to wpływ jest niewielki a dla $T << 1$ oraz $a >> g$ 
+    np. $a = 5 \cdot g \Rightarrow {\delta_{v_a}}^2 = 25 \cdot {\delta_{v_g}}^2$
+
+    \lstinputlisting[language=C]{code/temperature.c}
+
+    \subsection{Temperatura z twierdzenia o wiriale}
+    Prędkości węzłów zmieniają się w czasie, więc będzie też zmieniać się średnia energia kinetyczna układu.
+
+    \begin{equation}
+        \left< E_{kinetyczna} \right>  =  \left< \sum_{k = 1}^{N_p} \frac{m_k}{2} {v_k}^2 \right>
+        = \sum_{k = 1}^{N_p} \frac{m_k}{2} \left< {v_k}^2 \right>
+    \end{equation}
+
+    Twierdzenie o wirale mówi że energia kinetyczna zamijnia się wskutek oddiaływań wewnętcznych i można go 
+    liczyć ze wzoru:
+
+    \begin{equation}
+        \left< E_{kinetyczna} \right>  = 
+         - \frac{1}{2} \sum_{k = 1}^{N_p} \left< \vec{F_k} \cdot \vec{r_k} \right>
+    \end{equation}
+
+    \begin{equation}
+        \vec{F_k} = \sum_{j = 1}^{M} \vec{{F_k}_j}
+    \end{equation}
+    Gdzie $M$ to liczba sąsiadów a $\vec{{F_k}_j}$ to siła oddziaływania z sąsiadem $j$-tym.
+
+    \begin{equation}
+        \left< E_{kinetyczna} \right> = 
+        \sum_{k = 1}^{N_p} -\frac{1}{2} \left< \vec{F_k} \cdot \vec{r_k} \right> =
+        \sum_{k = 1}^{N_p} \left< E_{kinetyczna} , k \right>
+    \end{equation}
+    $\left< E_{kinetyczna} , k \right>$ to suma średnich energii kinetycznych węzłów. Dla każdego węzła $k$ możemy policzyć:
+
+    \begin{equation}
+        \left< E_{kinetyczna} , k \right> = 
+        -\frac{1}{2} \frac{1}{\tau} \int_{0}^{\tau} \vec{F_k}(t) \cdot \vec{r_k}(t) \, dt
+    \end{equation}
+    Gdzie $\tau = \Delta t \cdot n$.
+
+    \begin{equation}
+        \left< E_{kinetyczna} , k \right> = 
+        -\frac{1}{2} \frac{1}{n} \sum_{j = 0}^{n} \left[  F_{kx}(t_j) \cdot x_n(t_j) + F_{ky}(t_j) \cdot y_k(t_j) \right]
+    \end{equation}
+    Elementy sumy zapisywane są tak samo jak poprzednio w tablicy. Przyjmujemy $n > 100$ lub więcej. 
+
+    \begin{equation}
+        \left< E_{kinetyczna, k} \right> = k_B T_k \Rightarrow T_k = \frac{\left< E_{kinetyczna, k} \right>}{k_B}
+    \end{equation}
+    Gdzie $k_B$ tostała Boltzmanna.
+
+    \begin{enumerate}
+        \item Jeśli $\vec{F_n} = 0 \Rightarrow T_k = 0$ czyli temperatura taka jak otoczenie.
+        \item Jeśli $\left< E_{kinetyczna, k} \right> < 0 \Rightarrow T_k < 0$ oznacza że lokalna temperatura stało się mniejsze niż w otoczeniu obiektu.
+    \end{enumerate}
+
+    \section{Wizualizacja ciśnienia}
+    Węzeł otaczamy w komorze o boku $\Delta$. Zgodnie z definicją ciśnienie na ściankach można opisać wzorem:
+    \begin{equation}
+        P_x (x \pm \frac{\Delta}{2}) = \frac{F_x (x \pm \frac{\Delta}{2})}{\Delta}
+    \end{equation}
+    Siła:
+    \begin{equation}
+        F_x (x + \frac{\Delta}{2}) = F_x (x) + \frac{\partial F_x}{\partial x} 
+        \left| _{x + \frac{x}{2}}  \frac{x}{2} + \frac{\partial^2 F_x}{\partial x^2 }  \right| \frac{\Delta^2}{4} + O(\Delta^3)
+    \end{equation}
+    \begin{equation}
+        F_x (x - \frac{\Delta}{2}) = F_x (x) - \frac{\partial F_x}{\partial x} 
+        \left| _{x - \frac{x}{2}}  \frac{x}{2} + \frac{\partial^2 F_x}{\partial x^2 }  \right| \frac{\Delta^2}{4} + O(\Delta^3)
+    \end{equation} 
+    \begin{equation}
+        \Delta F_x = 
+        F_x (x - \frac{\Delta}{2}) - F_x (x - \frac{\Delta}{2}) = 
+        \frac{\Delta}{2} \left[ \frac{\Delta F_x}{\partial x} |_{x + \frac{\Delta}{2}}  -
+          \frac{\Delta F_x}{\partial x}|_{x - \frac{\Delta}{2}} \right] + O(\Delta^2)
+    \end{equation}
+    Dzielimy równanie przez $\Delta$
+    \begin{equation}
+        p_x = \frac{\Delta F_x}{\Delta} = \frac{1}{2} 
+        \left[ \frac{\partial F_x}{\partial x} |_{x + \frac{\Delta}{2}} - \frac{\partial F_x}{\partial x} |_{x - \frac{\Delta}{2}} \right] + O(\Delta)
+    \end{equation}
+    Podobnie liczymy dla kierunku $y$
+    \begin{equation}
+        p_y = \frac{\Delta F_y}{\Delta} = \frac{1}{2} 
+        \left[ \frac{\partial F_y}{\partial y} |_{y + \frac{\Delta}{2}} - \frac{\partial F_y}{\partial y} |_{y - \frac{\Delta}{2}} \right] + O(\Delta)
+    \end{equation}
+    A następnie uśredniamy:
+    \begin{equation}
+        p_{srednie} = \frac{1}{2} \left( -p_x - p_y \right)
+    \end{equation}
+    Dodajemy minus ponieważ siła jest skierowana do środka komory a ciśnienie powinno być większe od zera.
+    \begin{enumerate}
+        \item $\Delta$ powinno być małe np. $\Delta = \frac{\delta_{LJ}}{20}$ gdzie $\delta_{LJ}$ to parametr potencjału Lennarda-Jonesa
+        \item dla położenia $k$-tego węzła $\vec{r_k}$ trzeba policzyć 4 pochodną siły.
+        \item pochodne eliminuje wpływ pola grawitacjnego, poniewać jest to wartość stała.
+    \end{enumerate}
+
+    \subsection{Testy poprawność wzoru}
+    \begin{enumerate}
+        \item Przypadek statyczny z jednym obiektem: Obiekt stojący na podłożu w polu grawitacyjnym.
+        Większy nacisk będzie znajdować się przy podstawie obiektów.
+        
+        \item Przypadek dynamiczny: Uderzenie kulki w obiekt prostokątny. Największe ciśnienie 
+        znajdzie się w miejscu zderzenia dwóch obiektów.
+
+        \item Przypadek statyczny z dwoma obiektami: Dwa obiekty położone na sobie bez pola grawitacyjnego.
+        Ciśnienie w środku powinno być jednorodne i takie sam jak u góry obiektu. Brzegi powinny się deformować.
+    \end{enumerate}
 
 \chapter{Testy}
     \section{Test poprawność działania algorytmów}
