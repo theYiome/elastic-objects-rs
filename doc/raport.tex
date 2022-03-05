@@ -106,6 +106,7 @@
         F_{LJ} = 3\frac{V_0}{d_0} \left[ \left(\frac{d_0}{l}\right)^{7} - \left(\frac{d_0}{l}\right)^{13} \right]
     \end{equation}
 
+    \newpage
     \section{Wizualizacja temperatury}
     \subsection{Temperatura z teorii gazów}
     Punktem wyjścia moe być zasada ekwipartycji energii: średnia energia kintetyczna na jeden stopień swobody jest równa 
@@ -184,6 +185,27 @@
     Temperatura wciąż wzrasta. Jeżeli jednak $a >> g$ to wpływ jest niewielki a dla $T << 1$ oraz $a >> g$ 
     np. $a = 5 \cdot g \Rightarrow {\delta_{v_a}}^2 = 25 \cdot {\delta_{v_g}}^2$
 
+    \subsection{Algorytm obliczania}
+    $\tau = \Delta t \cdot j$ dla $j = 0, 1, ..., n-1$ gdzie $\tau$ to okres czas w którym uśredniamy wyniki. \\ 
+    $t = \Delta t \cdot i$ dla $i = 0, 1, ..., N_{time}$ i $t >> \tau$\\ 
+    $t_{max} = \Delta t \cdot N_{time}$ gdzie $t_{max}$ to czas wykonwania symulacji.
+
+    \begin{equation}
+        {\delta_v}^2 = \left( \frac{1}{n} \sum_{i=0}^{n-1} {v_i}^2 \right)  -  \left( \frac{1}{n} \sum_{i=0}^{n-1} v_i \right)^2
+    \end{equation}
+
+    Należy liczyć na bierząco $v_{k,j}$ oraz $v_{k,j}^2$ gdzie $k$ to numer cząsteczki a $j = 0, 1, ..., n-1$ to numer chwili czasowej. \\ \\
+    Tworzymy rejestr w postaci tablicy dla każdej cząsteczki.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=19cm]{tmp_reg}
+        \caption{Rejestry z tymczasowymi wartościami $v_{k,j}$ i $v_{k,j}^2$}
+    \end{figure}
+
+    Do rejestru dostajemy się za pomocą dzielienia modulo $j = i \, \%  \, n$, które gwarantuje, że nie wyjdziemy poza tablicę 
+    oraz stare wartości będą nadpisywana na bierząco.
+
     \lstinputlisting[language=C]{code/temperature.c}
 
     \subsection{Temperatura z twierdzenia o wiriale}
@@ -194,7 +216,7 @@
         = \sum_{k = 1}^{N_p} \frac{m_k}{2} \left< {v_k}^2 \right>
     \end{equation}
 
-    Twierdzenie o wirale mówi że energia kinetyczna zamijnia się wskutek oddiaływań wewnętcznych i można go 
+    Twierdzenie o wiriale mówi że energia kinetyczna zmienia się wskutek oddziaływań wewnętcznych i można ją 
     liczyć ze wzoru:
 
     \begin{equation}
@@ -237,6 +259,12 @@
     \end{enumerate}
 
     \section{Wizualizacja ciśnienia}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=8cm]{pressure_px}
+    \end{figure}
+
     Węzeł otaczamy w komorze o boku $\Delta$. Zgodnie z definicją ciśnienie na ściankach można opisać wzorem:
     \begin{equation}
         P_x (x \pm \frac{\Delta}{2}) = \frac{F_x (x \pm \frac{\Delta}{2})}{\Delta}

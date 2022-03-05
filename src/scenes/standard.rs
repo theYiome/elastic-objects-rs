@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
 use crate::{build_scene, energy, graphics, simulation_cpu};
@@ -26,9 +27,8 @@ pub fn run_with_animation() {
     let object2_m = 15.0;
     let spacing2 = 0.075;
 
-    let mut nodes =
-        build_scene::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 1.0, 5.0);
-    let mut connections_map_1 = build_scene::build_connections_map(&nodes, spacing1 * 1.5, 70.0, 0);
+    let mut nodes1 = build_scene::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 1.0, 5.0);
+    let mut connections_map_1 = build_scene::build_connections_map(&nodes1, spacing1 * 1.5, 70.0, 0);
     {
         let mut obj: Vec<usize> = Vec::new();
         for i in 0..object1_st {
@@ -37,20 +37,21 @@ pub fn run_with_animation() {
         objects.push(obj);
     }
 
-    let mut nodes2 =
-        build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, object2_m, 1.0);
+    let mut nodes2 = build_scene::build_circle(4, spacing2, -0.12, 0.8, 5.0, 0.0);
+        // build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, object2_m, 1.0);
+    
     let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 500.0, object1_st);
-    nodes.append(&mut nodes2);
     {
         let mut obj: Vec<usize> = Vec::new();
-        for i in object1_st..object1_st + object2_st {
+        for i in object1_st..object1_st + nodes2.len() {
             obj.push(i);
         }
         objects.push(obj);
     }
 
-    connections_map_1.extend(connections_map_2);
-    let mut full_connections_map = connections_map_1;
+    let mut full_connections_map: HashMap<(usize, usize), (f32, f32)> = HashMap::new();
+    full_connections_map.extend(connections_map_1);
+    full_connections_map.extend(connections_map_2);
 
     let mut connections_keys: Vec<(u32, u32)> = Vec::new();
     let mut connections_vals: Vec<(f32, f32)> = Vec::new();
@@ -58,6 +59,10 @@ pub fn run_with_animation() {
         connections_keys.push((k1.0 as u32, k1.1 as u32));
         connections_vals.push(*k2);
     }
+
+    let mut nodes = Vec::new();
+    nodes.append(&mut nodes1);
+    nodes.append(&mut nodes2);
 
     let event_loop = glutin::event_loop::EventLoop::new();
     let wb = glutin::window::WindowBuilder::new()

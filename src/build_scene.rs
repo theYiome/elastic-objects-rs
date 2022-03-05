@@ -1,4 +1,4 @@
-use crate::node::{Node, self};
+use crate::node::{self, Node};
 use glam::Vec2;
 
 pub fn build_rectangle(
@@ -8,7 +8,7 @@ pub fn build_rectangle(
     offset_x: f32,
     offset_y: f32,
     mass: f32,
-    damping: f32
+    damping: f32,
 ) -> Vec<Node> {
     let mut nodes = Vec::with_capacity(size_x * size_y);
     for y in 0..size_y {
@@ -29,13 +29,42 @@ pub fn build_rectangle(
     return nodes;
 }
 
-use std::collections::HashMap;
+pub fn build_circle(
+    layers: usize,
+    spacing: f32,
+    offset_x: f32,
+    offset_y: f32,
+    mass: f32,
+    damping: f32,
+) -> Vec<Node> {
+    let mut nodes = Vec::new();
+    for layer in 0..layers {
+        let r = spacing * layer as f32;
+        let even_node_count = (2.0 * PI * r / spacing) as usize;
+        let nodes_in_layer = if even_node_count > 0 {even_node_count} else {1};
+
+        for n in 0..nodes_in_layer {
+            let angle = ((2.0 * PI) / nodes_in_layer as f32) * n as f32;
+            nodes.push(Node {
+                position: Vec2::new(offset_x + angle.cos() * r, offset_y + angle.sin() * r),
+                velocity: Vec2::new(0.0, 0.0),
+                current_acceleration: Vec2::new(0.0, 0.0),
+                last_acceleration: Vec2::new(0.0, 0.0),
+                mass: mass,
+                drag: damping,
+            });
+        }
+    }
+    return nodes;
+}
+
+use std::{collections::HashMap, f32::consts::PI};
 
 pub fn build_connections_map(
     nodes: &Vec<Node>,
     search_distance: f32,
     v0: f32,
-    offset: usize
+    offset: usize,
 ) -> HashMap<(usize, usize), (f32, f32)> {
     let mut connections: Vec<Vec<(usize, f32)>> = Vec::new();
 
@@ -62,7 +91,9 @@ pub fn build_connections_map(
         arr.iter().for_each(|(j, dx)| {
             let a = if i > *j { *j } else { i };
             let b = if i > *j { i } else { *j };
-            connections_map.entry((a + offset, b + offset)).or_insert((*dx, v0));
+            connections_map
+                .entry((a + offset, b + offset))
+                .or_insert((*dx, v0));
         });
     });
 
