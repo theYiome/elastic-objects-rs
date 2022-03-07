@@ -72,73 +72,6 @@ fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects: &Vec<Vec<usize>>) {
     }
 }
 
-// fn repulsion_force_simple(nodes: &mut Vec<Node>) {
-//     let v0 = 500.0;
-//     let dx = 0.1;
-
-//     for i in 0..nodes.len() {
-//         for j in i + 1..nodes.len() {
-//             let dir = nodes[j].position - nodes[i].position;
-//             let l = dir.length();
-//             let mi = nodes[i].mass;
-//             let mj = nodes[j].mass;
-
-//             let c = (dx / l).powi(13);
-//             let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-
-//             nodes[i].current_acceleration -= v / mi;
-//             nodes[j].current_acceleration += v / mj;
-//         }
-//     }
-// }
-
-// fn repulsion_force_iter(nodes: &mut Vec<Node>) {
-//     let v0 = 500.0;
-//     let dx = 0.1;
-
-//     for i in 0..nodes.len() {
-//         let (left, right) = nodes.split_at_mut(i + 1);
-//         let mut node_i = &mut left[i];
-
-//         right.iter_mut().for_each(|node_j| {
-//             let dir = node_j.position - node_i.position;
-//             let l = dir.length();
-//             let mi = node_i.mass;
-//             let mj = node_j.mass;
-
-//             let c = (dx / l).powi(13);
-//             let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-
-//             node_i.current_acceleration -= v / mi;
-//             node_j.current_acceleration += v / mj;
-//         });
-//     }
-// }
-
-// fn repulsion_force_par_iter(nodes: &mut Vec<Node>) {
-//     let v0 = 500.0;
-//     let dx = 0.1;
-
-//     let length = nodes.len();
-//     let obj2 = nodes.clone();
-
-//     nodes.par_iter_mut().enumerate().for_each(|(i, n)| {
-//         (0..length).for_each(|j| {
-//             if j != i {
-//                 let dir = obj2[j].position - n.position;
-//                 let l = dir.length();
-//                 let mi = n.mass;
-//                 // let mj = obj2[j].mass;
-
-//                 let c = (dx / l).powi(13);
-//                 let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-
-//                 n.current_acceleration -= v / mi;
-//             }
-//         });
-//     });
-// }
-
 fn wall_repulsion_force_y(nodes: &mut Vec<Node>) {
     let v0 = 200.0;
     let dx = 0.05;
@@ -167,25 +100,6 @@ fn drag_force(nodes: &mut Vec<Node>) {
     });
 }
 
-fn bond_break(nodes: &mut Vec<Node>, connections: &mut HashMap<(usize, usize), (f32, f32)>) -> Vec<(usize, usize)> {
-
-    let mut to_remove: Vec<(usize, usize)> = Vec::new();
-
-    for (k, v) in connections.iter() {
-
-        let (i, j) = *k;
-        let (dx, v0) = *v;
-
-        let dir = nodes[j].position - nodes[i].position;
-        let l = dir.length();
-        if l > dx * 1.5 {
-            to_remove.push(*k);
-        }
-    }
-
-    to_remove
-}
-
 pub fn simulate_single_thread_cpu(
     dt: f32,
     nodes: &mut Vec<Node>,
@@ -204,8 +118,4 @@ pub fn simulate_single_thread_cpu(
     drag_force(nodes);
     
     end_integrate_velocity_verlet(dt, nodes);
-
-    for k in bond_break(nodes, connections) {
-        connections.remove(&k);
-    }
 }

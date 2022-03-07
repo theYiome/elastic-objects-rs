@@ -135,8 +135,8 @@ pub fn draw_scene(
 ) -> (Vec<graphics::Vertex>, Vec<u16>) {
     let mut verticies: Vec<graphics::Vertex> = Vec::new();
     let mut indices: Vec<u16> = Vec::new();
+    
     // graphics and window creation
-
     for (k, v) in connections {
         let (dx, v0) = *v;
         let (a, b) = (nodes[k.0].position, nodes[k.1].position);
@@ -159,7 +159,7 @@ pub fn draw_scene(
             n.position.x,
             n.position.y,
             0.01 + radius_from_area(n.mass) * 0.01,
-            20,
+            16,
             [color, 0.0, 0.0],
         );
     }

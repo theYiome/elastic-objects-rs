@@ -1,74 +1,34 @@
-use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
-use crate::{build_scene, energy, graphics, simulation_cpu};
+use crate::{energy, graphics, simulation_cpu, simulation_general, simulation_gpu};
 
 use glium::glutin::event_loop;
 use glium::{glutin, Surface};
-use glutin::event::{KeyboardInput, ElementState};
+use glutin::event::{ElementState};
 use glutin::{
     event::{Event, WindowEvent, VirtualKeyCode},
     event_loop::ControlFlow,
 };
 
+use super::generate_scene::standard_scene;
+
+#[derive(PartialEq)]
+enum SimulationEngine {
+    CPU,
+    OPENCL,
+    CUDA
+}
+
 pub fn run_with_animation() {
     // scene objects
 
-    let mut objects: Vec<Vec<usize>> = Vec::new();
-
-    let object1_sx = 24;
-    let object1_sy = 12;
-    let object1_st = object1_sx * object1_sy;
-    let spacing1 = 0.08;
-
-    let object2_sx = 4;
-    let object2_sy = 4;
-    let object2_st = object2_sx * object2_sy;
-    let object2_m = 15.0;
-    let spacing2 = 0.075;
-
-    let mut nodes1 = build_scene::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 1.0, 5.0);
-    let mut connections_map_1 = build_scene::build_connections_map(&nodes1, spacing1 * 1.5, 70.0, 0);
-    {
-        let mut obj: Vec<usize> = Vec::new();
-        for i in 0..object1_st {
-            obj.push(i);
-        }
-        objects.push(obj);
-    }
-
-    let mut nodes2 = build_scene::build_circle(4, spacing2, -0.12, 0.8, 5.0, 0.0);
-        // build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, object2_m, 1.0);
-    
-    let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 500.0, object1_st);
-    {
-        let mut obj: Vec<usize> = Vec::new();
-        for i in object1_st..object1_st + nodes2.len() {
-            obj.push(i);
-        }
-        objects.push(obj);
-    }
-
-    let mut full_connections_map: HashMap<(usize, usize), (f32, f32)> = HashMap::new();
-    full_connections_map.extend(connections_map_1);
-    full_connections_map.extend(connections_map_2);
-
-    let mut connections_keys: Vec<(u32, u32)> = Vec::new();
-    let mut connections_vals: Vec<(f32, f32)> = Vec::new();
-    for (k1, k2) in &full_connections_map {
-        connections_keys.push((k1.0 as u32, k1.1 as u32));
-        connections_vals.push(*k2);
-    }
-
-    let mut nodes = Vec::new();
-    nodes.append(&mut nodes1);
-    nodes.append(&mut nodes2);
+    let (mut nodes, mut connections_map, mut objects) = standard_scene();
 
     let event_loop = glutin::event_loop::EventLoop::new();
     let wb = glutin::window::WindowBuilder::new()
         .with_inner_size(glutin::dpi::LogicalSize::new(800, 800))
         .with_title("elastic-objects-rs");
-    let cb = glutin::ContextBuilder::new();
+    let cb = glutin::ContextBuilder::new().with_depth_buffer(24);
     let display = glium::Display::new(wb, cb, &event_loop).unwrap();
 
     let vertex_shader_src = std::fs::read_to_string("glsl/vertex.vert").unwrap();
@@ -98,38 +58,49 @@ pub fn run_with_animation() {
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
 
-    // Then we run it on OpenCL.
-    // let device = *Device::all().first().unwrap();
-    // let opencl_program = opencl(&device);
+    let mut current_simulation_engine = SimulationEngine::CUDA;
+
+    // prepare opencl and cuda programs
+    let device = *rust_gpu_tools::Device::all().first().unwrap();
+    let opencl_program = simulation_gpu::create_opencl_program(&device);
 
     let mut redraw_clousure = move |display: &glium::Display, egui: &mut egui_glium::EguiGlium, egui_active: bool| {
-        // let measured_dt = last_frame_time.elapsed().as_secs_f32();
-        // last_frame_time = std::time::Instant::now();
-        // let dt = if measured_dt > 0.01 {0.01} else {measured_dt};
-        // let dt = 0.005;
-        // nodes = simulate_opencl(
-        //     &nodes,
-        //     &opencl_program,
-        //     &connections_keys,
-        //     &connections_vals,
-        //     steps_per_frame,
-        //     dt,
-        // );
-        // println!("CPU: {}\n", mem::size_of::<Node>());
-
-        for _i in 0..steps_per_frame {
-            simulation_cpu::simulate_single_thread_cpu(
-                dt,
-                &mut nodes,
-                &mut objects,
-                &mut full_connections_map,
-            );
+        
+        // real time dependent dt
+        {
+            // let measured_dt = last_frame_time.elapsed().as_secs_f32();
+            // last_frame_time = std::time::Instant::now();
+            // dt = if measured_dt > 0.01 {0.01} else {measured_dt};
+            // dt = 0.005;
         }
-        total_symulation_time += dt * steps_per_frame as f32;
 
-        let (vert, ind) = graphics::draw_scene(&nodes, &full_connections_map);
-        let vertex_buffer = glium::VertexBuffer::dynamic(display, &vert).unwrap();
-        let index_buffer = glium::IndexBuffer::dynamic(display, glium::index::PrimitiveType::TrianglesList, &ind).unwrap();
+        match current_simulation_engine {
+            SimulationEngine::CPU => {
+                for _i in 0..steps_per_frame {
+                    simulation_cpu::simulate_single_thread_cpu(
+                        dt,
+                        &mut nodes,
+                        &mut objects,
+                        &mut connections_map
+                    );
+                }
+            },
+            SimulationEngine::OPENCL => {
+                // nodes = simulation_gpu::simulate_opencl(
+                //     &nodes,
+                //     &opencl_program,
+                //     &connections_map,
+                //     steps_per_frame,
+                //     dt,
+                // );
+            },
+            SimulationEngine::CUDA => {
+
+            }
+        }
+
+        total_symulation_time += dt * steps_per_frame as f32;
+        simulation_general::handle_connection_break(&mut nodes, &mut objects, &mut connections_map);
 
         fps_counter += 1;
         {
@@ -146,7 +117,7 @@ pub fn run_with_animation() {
             let log_dt = 0.01;
             if current_log_dt > log_dt {
                 let (kinetic, gravity, lennjon, wallrep, objrepu) =
-                    energy::calculate_total_energy(&nodes, &full_connections_map, &objects);
+                    energy::calculate_total_energy(&nodes, &connections_map, &objects);
 
                 csv_writer
                     .write_record(&[
@@ -178,12 +149,23 @@ pub fn run_with_animation() {
                 &mut steps_per_frame,
                 RangeInclusive::new(0, 500),
             ));
+            ui.separator();
+            ui.horizontal(|ui| {
+                ui.selectable_value(&mut current_simulation_engine, SimulationEngine::CPU, "Use CPU");
+                ui.selectable_value(&mut current_simulation_engine, SimulationEngine::OPENCL, "Use OpenCL");
+                ui.selectable_value(&mut current_simulation_engine, SimulationEngine::CUDA, "Use CUDA");
+            });
         });
         let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
 
         let mut target = display.draw();
         // draw things behind egui here
-        target.clear_color(1.0, 1.0, 1.0, 1.0);
+        target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
+                
+        let (vert, ind) = graphics::draw_scene(&nodes, &connections_map);
+        let vertex_buffer = glium::VertexBuffer::dynamic(display, &vert).unwrap();
+        let index_buffer = glium::IndexBuffer::dynamic(display, glium::index::PrimitiveType::TrianglesList, &ind).unwrap();
+        
         target
             .draw(
                 &vertex_buffer,
@@ -203,9 +185,7 @@ pub fn run_with_animation() {
         target.finish().unwrap();
     };
 
-    let main_loop = move |event: Event<()>,
-                          _: &event_loop::EventLoopWindowTarget<()>,
-                          control_flow: &mut ControlFlow| {
+    let main_loop = move |event: Event<()>, _: &event_loop::EventLoopWindowTarget<()>, control_flow: &mut ControlFlow| {
         match event {
             glutin::event::Event::RedrawEventsCleared if cfg!(windows) => {
                 redraw_clousure(&display, &mut egui, egui_active)

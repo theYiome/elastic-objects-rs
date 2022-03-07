@@ -16,5 +16,5 @@ for(i = 0; i < ntime; ++i) {
 
     // dla k = 0, 1, ..., Np
     // n > 100
-    T_k = m/2(delta2_k_Vx + delta2_k_Vy)
+    T_k = (m/2)*(delta2_k_Vx + delta2_k_Vy)
 }

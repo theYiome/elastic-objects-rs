@@ -1,22 +1,14 @@
 mod build_scene;
 mod node;
 mod graphics;
+mod simulation_general;
 mod simulation_cpu;
+mod simulation_gpu;
 mod energy;
 
 // use scenes::performance_test;
 // use scenes::standard;
 mod scenes;
-
-use std::{ops::RangeInclusive};
-
-use energy::calculate_total_energy;
-use glium::glutin::event_loop;
-use glium::{glutin, Surface};
-use glutin::{
-    event::{Event, WindowEvent},
-    event_loop::ControlFlow,
-};
 
 fn main() {
     scenes::standard::run_with_animation();
