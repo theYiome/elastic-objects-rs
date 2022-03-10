@@ -129,9 +129,59 @@ pub fn radius_from_area(area: f32) -> f32 {
     (area / PI).sqrt()
 }
 
+fn calculate_temperatue(nodes: &Vec<Node>, connections: &HashMap<(usize, usize), (f32, f32)>, objects: &Vec<Vec<usize>>) -> Vec<f32> {
+    let mut forces: Vec<Vec2> = Vec::new();
+    forces.resize_with(nodes.len(), || Vec2::new(0.0, 0.0));
+
+    connections.keys().for_each(|(a, b)| {
+        let i = *a;
+        let j = *b;
+        let (dx, v0) = *connections.get(&(i, j)).unwrap();
+
+        let dir = nodes[j].position - nodes[i].position;
+        let l = dir.length();
+
+        let c = (dx / l).powi(7) - (dx / l).powi(13);
+        let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+
+        forces[i] += v;
+        forces[j] -= v;
+    });
+
+    let v0 = 20.0;
+    let dx = 0.07;
+
+    let length = objects.len();
+
+    for i in 0..length {
+        for j in i + 1..length {
+            // calculate forces between each node in object "i" and object "j"
+            for n_i in &objects[i] {
+                for n_j in &objects[j] {
+                    let a = *n_i;
+                    let b = *n_j;
+
+                    let dir = nodes[b].position - nodes[a].position;
+
+                    let l = dir.length();
+
+                    let c = (dx / l).powi(13);
+                    let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+
+                    forces[a] -= v;
+                    forces[b] += v;
+                }
+            }
+        }
+    }
+
+    return forces.iter().enumerate().map(|(i, f)| f.dot(nodes[i].position)).collect();
+}
+
 pub fn draw_scene(
     nodes: &Vec<Node>,
     connections: &HashMap<(usize, usize), (f32, f32)>,
+    objects: &Vec<Vec<usize>>
 ) -> (Vec<graphics::Vertex>, Vec<u16>) {
     let mut verticies: Vec<graphics::Vertex> = Vec::new();
     let mut indices: Vec<u16> = Vec::new();
@@ -151,8 +201,11 @@ pub fn draw_scene(
         );
     }
 
-    for n in nodes {
-        let color = n.velocity.length_squared() * 0.5 * 0.7;
+    let temperatures = calculate_temperatue(nodes, connections, objects);
+
+    for (i, n) in nodes.iter().enumerate() {
+        let color = temperatures[i] * -0.5 * 0.01;
+        // let color = n.velocity.length_squared() * 0.5 * 0.7;
         graphics::add_circle(
             &mut verticies,
             &mut indices,

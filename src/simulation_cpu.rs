@@ -31,13 +31,14 @@ fn lennard_jones_connections(
 
         let dir = nodes[j].position - nodes[i].position;
         let l = dir.length();
-        let m = nodes[i].mass;
+        let m_i = nodes[i].mass;
+        let m_j = nodes[j].mass;
 
         let c = (dx / l).powi(7) - (dx / l).powi(13);
         let v = dir.normalize() * 3.0 * (v0 / dx) * c;
 
-        nodes[i].current_acceleration += v / m;
-        nodes[j].current_acceleration -= v / m;
+        nodes[i].current_acceleration += v / m_i;
+        nodes[j].current_acceleration -= v / m_j;
     });
 }
 
@@ -58,14 +59,14 @@ fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects: &Vec<Vec<usize>>) {
                     let dir = nodes[b].position - nodes[a].position;
 
                     let l = dir.length();
-                    let mi = nodes[a].mass;
-                    let mj = nodes[b].mass;
+                    let m_a = nodes[a].mass;
+                    let m_b = nodes[b].mass;
 
                     let c = (dx / l).powi(13);
                     let v = dir.normalize() * 3.0 * (v0 / dx) * c;
 
-                    nodes[a].current_acceleration -= v / mi;
-                    nodes[b].current_acceleration += v / mj;
+                    nodes[a].current_acceleration -= v / m_a;
+                    nodes[b].current_acceleration += v / m_b;
                 }
             }
         }
@@ -103,8 +104,8 @@ fn drag_force(nodes: &mut Vec<Node>) {
 pub fn simulate_single_thread_cpu(
     dt: f32,
     nodes: &mut Vec<Node>,
-    objects: &mut Vec<Vec<usize>>,
-    connections: &mut HashMap<(usize, usize), (f32, f32)>,
+    objects: &Vec<Vec<usize>>,
+    connections: &HashMap<(usize, usize), (f32, f32)>,
 ) {
     start_integrate_velocity_verlet(dt, nodes);
 

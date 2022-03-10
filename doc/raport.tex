@@ -71,6 +71,18 @@
     Algorytmy powinny być zaimplementowany na tyle wydajne aby możliwa była wizualizacja zderzeń w czasie 
     rzeczywistym jako animacje komputerowe.
 
+    \section{Generowanie grafiki}
+    Do generowania grafiki i animacji zostało wykorzystane API OpenGL w profilu rdzennym (core profile), pozwalającym
+    samodzielnie programować shadery \cite{grafika3d} (strona 13). \\
+
+    W nowoczesnym OpenGL potok renderowania składa się z: storzenia buforów na werteksy i indexy, w shaderze werteksów
+    przekształcenia położeń werteksów za pomocą macierzy rzutowania i ustalenia koloru dla każdego werteksa,
+    przycinanie i rasteryzacja, shader fragmentów wykonuje operacje na pikselach mających na celu 
+    ustalenie ostatecznego koloru dla każdego piksela, test głębi, blending \cite{grafika3d} (strona 72). \\
+
+    Macierz rzutowania odpowiada za transformację z układu współrzędnych kamery do układu przycinania 
+    (clip coordinate system) \cite{grafika3d} (strona 139) \\
+
     \section{Model oddziaływań}
     Potencjał Lennarda-Jonesa został wykorzystany do symulacji przyciągania/odpychania 
     węzłów w jednym obiekcie, symulacji kolizji węzłów ze ścianami oraz symulacji
@@ -648,5 +660,13 @@
     \subsection{Repozytorium}
     \subsubsection{Link do repozytorium z kodem}
     \url{https://github.com/theYiome/elastic-objects-rs}
+
+    \begin{thebibliography}{9}
+        \bibitem{grafika3d}
+        Jacek Matulewski (2014) 
+        \emph{Grafika 3D czasu rzeczywistego. Nowoczesny OpenGL}, 
+        Wydawnictwo Naukowe PWN SA, Wydanie I.
+
+    \end{thebibliography}
 
 \end{document}

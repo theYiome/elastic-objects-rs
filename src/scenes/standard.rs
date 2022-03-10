@@ -162,7 +162,7 @@ pub fn run_with_animation() {
         // draw things behind egui here
         target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
                 
-        let (vert, ind) = graphics::draw_scene(&nodes, &connections_map);
+        let (vert, ind) = graphics::draw_scene(&nodes, &connections_map, &objects);
         let vertex_buffer = glium::VertexBuffer::dynamic(display, &vert).unwrap();
         let index_buffer = glium::IndexBuffer::dynamic(display, glium::index::PrimitiveType::TrianglesList, &ind).unwrap();
         
