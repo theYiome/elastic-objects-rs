@@ -3,6 +3,7 @@ use std::{collections::HashMap, f32::consts::PI};
 use crate::graphics;
 use crate::node::Node;
 use glam::Vec2;
+use rayon::iter::{self, IntoParallelRefMutIterator, IndexedParallelIterator, ParallelIterator, IntoParallelRefIterator};
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
@@ -130,8 +131,7 @@ pub fn radius_from_area(area: f32) -> f32 {
 }
 
 fn calculate_temperatue(nodes: &Vec<Node>, connections: &HashMap<(usize, usize), (f32, f32)>, objects: &Vec<Vec<usize>>) -> Vec<f32> {
-    let mut forces: Vec<Vec2> = Vec::new();
-    forces.resize_with(nodes.len(), || Vec2::new(0.0, 0.0));
+    let mut forces: Vec<Vec2> = vec![Vec2::new(0.0, 0.0); nodes.len()];
 
     connections.keys().for_each(|(a, b)| {
         let i = *a;
@@ -175,17 +175,36 @@ fn calculate_temperatue(nodes: &Vec<Node>, connections: &HashMap<(usize, usize),
         }
     }
 
-    return forces.iter().enumerate().map(|(i, f)| f.dot(nodes[i].position)).collect();
+    let v0 = 200.0;
+    let dx = 0.05;
+
+    nodes.iter().enumerate().for_each(|(index, n)| {
+        let dir = glam::vec2(n.position.x, -1.0) - n.position;
+        let l = dir.length();
+
+        let c = (dx / l).powi(13);
+        let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+
+        forces[index] -= v;
+    });
+
+    // nodes.iter().enumerate().for_each(|(index, n)| {
+    //     forces[index] -= n.velocity * n.drag;
+    //     forces[index].y += -9.81;
+    // });
+
+    return forces.iter().enumerate().map(|(i, f)| f.dot(nodes[i].position).abs()).collect();
 }
 
 pub fn draw_scene(
     nodes: &Vec<Node>,
     connections: &HashMap<(usize, usize), (f32, f32)>,
-    objects: &Vec<Vec<usize>>
+    objects: &Vec<Vec<usize>>,
+    dt: f32
 ) -> (Vec<graphics::Vertex>, Vec<u16>) {
     let mut verticies: Vec<graphics::Vertex> = Vec::new();
     let mut indices: Vec<u16> = Vec::new();
-    
+
     // graphics and window creation
     for (k, v) in connections {
         let (dx, v0) = *v;
@@ -200,11 +219,39 @@ pub fn draw_scene(
             [0.2 + color, 0.2 + color, 0.2 + color],
         );
     }
+    
+    const TEMPERATURE_CACHE_SIZE: usize = 200;
+    static mut TEMPERATURE_CACHE: Vec<Vec<f32>> = Vec::new();
+    static mut DT_CACHE: Vec<f32> = Vec::new();
+    static mut CURRENT_RECORD: usize = 0;
+    unsafe {
+        TEMPERATURE_CACHE.resize(nodes.len(), vec![0.0; TEMPERATURE_CACHE_SIZE]);
+        TEMPERATURE_CACHE.iter_mut().for_each(|cache| cache.resize(TEMPERATURE_CACHE_SIZE, 0.0));
+        DT_CACHE.resize(TEMPERATURE_CACHE_SIZE, 0.0);
 
-    let temperatures = calculate_temperatue(nodes, connections, objects);
+        if dt > 0.0 {
+            CURRENT_RECORD = (CURRENT_RECORD + 1) % TEMPERATURE_CACHE_SIZE;
+            // println!("{CURRENT_RECORD} ");
+            let current_temperature = calculate_temperatue(nodes, connections, objects);
+            TEMPERATURE_CACHE.iter_mut().enumerate().for_each(|(node_index, cache)| {
+                cache[CURRENT_RECORD] = current_temperature[node_index];
+            });
+            DT_CACHE[CURRENT_RECORD] = dt;
+        }
+    }
 
-    for (i, n) in nodes.iter().enumerate() {
-        let color = temperatures[i] * -0.5 * 0.01;
+    let total_dt = unsafe{ 
+        let dt_sum = DT_CACHE.iter().copied().sum::<f32>();
+        if dt_sum > 0.0 { dt_sum } else { f32::INFINITY }
+    };
+    
+    nodes.iter().enumerate().for_each(|(i, n)|  {
+        let color: f32 = unsafe { 0.5 * TEMPERATURE_CACHE[i].iter().copied().sum::<f32>() / total_dt };
+
+        // if (color > 10.0 || color < -10.0) {
+        //     println!("{i}: {color}");
+        // }
+        
         // let color = n.velocity.length_squared() * 0.5 * 0.7;
         graphics::add_circle(
             &mut verticies,
@@ -213,9 +260,29 @@ pub fn draw_scene(
             n.position.y,
             0.01 + radius_from_area(n.mass) * 0.01,
             16,
-            [color, 0.0, 0.0],
+            number_to_rgb(color, -3000.0, 200000.0),
         );
-    }
+    });
 
     (verticies, indices)
+}
+
+fn number_to_rgb(mut t: f32, min: f32, max: f32) -> [f32; 3] {
+    assert!(max > min);
+  
+    t = if t < min { min } else { if t > max { max } else { t } };
+    let n_t: f32 = (t - min) / (max - min);
+    let regions: [f32; 3] = [1.0 / 4.0, (1.0 / 4.0) * 2.0, (1.0 / 4.0) * 3.0];
+
+    return  {
+        if n_t <= regions[0] {
+            [0.0, 4.0 * n_t, 1.0]
+        } else if n_t > regions[0] && n_t <= regions[1] {
+            [0.0, 1.0, 2.0 - 4.0 * n_t]
+        } else if n_t > regions[1] && n_t <= regions[2] {
+            [2.0 - 4.0 * (1.0 - n_t), 1.0, 0.0]
+        } else {
+            [1.0, 4.0 * (1.0 - n_t), 0.0]
+        }
+    };
 }

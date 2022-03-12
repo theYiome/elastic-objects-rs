@@ -58,7 +58,7 @@ pub fn run_with_animation() {
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
 
-    let mut current_simulation_engine = SimulationEngine::CUDA;
+    let mut current_simulation_engine = SimulationEngine::CPU;
 
     // prepare opencl and cuda programs
     let device = *rust_gpu_tools::Device::all().first().unwrap();
@@ -99,7 +99,8 @@ pub fn run_with_animation() {
             }
         }
 
-        total_symulation_time += dt * steps_per_frame as f32;
+        let last_frame_symulation_time = dt * steps_per_frame as f32;
+        total_symulation_time += last_frame_symulation_time;
         simulation_general::handle_connection_break(&mut nodes, &mut objects, &mut connections_map);
 
         fps_counter += 1;
@@ -112,7 +113,7 @@ pub fn run_with_animation() {
             }
         }
 
-        current_log_dt += dt * steps_per_frame as f32;
+        current_log_dt += last_frame_symulation_time;
         {
             let log_dt = 0.01;
             if current_log_dt > log_dt {
@@ -162,7 +163,7 @@ pub fn run_with_animation() {
         // draw things behind egui here
         target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
                 
-        let (vert, ind) = graphics::draw_scene(&nodes, &connections_map, &objects);
+        let (vert, ind) = graphics::draw_scene(&nodes, &connections_map, &objects, last_frame_symulation_time);
         let vertex_buffer = glium::VertexBuffer::dynamic(display, &vert).unwrap();
         let index_buffer = glium::IndexBuffer::dynamic(display, glium::index::PrimitiveType::TrianglesList, &ind).unwrap();
         
