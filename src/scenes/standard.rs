@@ -3,7 +3,7 @@ use std::ops::RangeInclusive;
 use crate::{energy, graphics, simulation_cpu, simulation_general, simulation_gpu};
 
 use glium::glutin::event_loop;
-use glium::{glutin, Surface};
+use glium::{glutin, Surface, PolygonMode};
 use glutin::event::{ElementState};
 use glutin::{
     event::{Event, WindowEvent, VirtualKeyCode},
@@ -54,7 +54,7 @@ pub fn run_with_animation() {
     let mut now = std::time::Instant::now();
     // let mut last_frame_time = std::time::Instant::now();
 
-    let mut steps_per_frame: u32 = 100;
+    let mut steps_per_frame: u32 = 5;
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
 
@@ -63,6 +63,11 @@ pub fn run_with_animation() {
     // prepare opencl and cuda programs
     let device = *rust_gpu_tools::Device::all().first().unwrap();
     let opencl_program = simulation_gpu::create_opencl_program(&device);
+
+    let (disk_verticies, disk_indices) = graphics::disk_mesh(16);
+    // let (disk_verticies, disk_indices) = graphics::square_mesh();
+    let disk_vertex_buffer = glium::VertexBuffer::dynamic(&display, &disk_verticies).unwrap();
+    let disk_index_buffer = glium::IndexBuffer::dynamic(&display, glium::index::PrimitiveType::TrianglesList, &disk_indices).unwrap();
 
     let mut redraw_clousure = move |display: &glium::Display, egui: &mut egui_glium::EguiGlium, egui_active: bool| {
         
@@ -143,12 +148,12 @@ pub fn run_with_animation() {
             ui.label("dt");
             ui.add(egui::Slider::new(
                 &mut dt,
-                RangeInclusive::new(0.0, 0.00001),
+                RangeInclusive::new(0.0, 0.0001),
             ));
             ui.label("Kroki symulacji na klatkę");
             ui.add(egui::Slider::new(
                 &mut steps_per_frame,
-                RangeInclusive::new(0, 500),
+                RangeInclusive::new(0, 100),
             ));
             ui.separator();
             ui.horizontal(|ui| {
@@ -162,18 +167,27 @@ pub fn run_with_animation() {
         let mut target = display.draw();
         // draw things behind egui here
         target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
-                
-        let (vert, ind) = graphics::draw_scene(&nodes, &connections_map, &objects, last_frame_symulation_time);
-        let vertex_buffer = glium::VertexBuffer::dynamic(display, &vert).unwrap();
-        let index_buffer = glium::IndexBuffer::dynamic(display, glium::index::PrimitiveType::TrianglesList, &ind).unwrap();
+
+        let instance_buffer = glium::VertexBuffer::dynamic(display, &graphics::draw_disks(&nodes, &connections_map, &objects, last_frame_symulation_time)).unwrap();
         
+        let params = glium::DrawParameters {
+            depth: glium::Depth {
+                test: glium::DepthTest::IfLess,
+                write: true,
+                ..Default::default()
+            },
+            // polygon_mode: PolygonMode::Point,
+            // point_size: Some(40.0),
+            ..Default::default()
+        };
+
         target
             .draw(
-                &vertex_buffer,
-                &index_buffer,
+                (&disk_vertex_buffer, instance_buffer.per_instance().unwrap()),
+                &disk_index_buffer,
                 &program,
                 &glium::uniform! {tim: dt},
-                &Default::default(),
+                &params,
             )
             .unwrap();
 

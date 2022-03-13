@@ -1,7 +1,12 @@
 use std::collections::HashMap;
 
 use crate::node::Node;
-use rayon::prelude::*;
+
+pub const object_repulsion_v0: f32 = 20.0;
+pub const object_repulsion_dx: f32 = 0.07;
+
+pub const wall_repulsion_v0: f32 = 200.0;
+pub const wall_repulsion_dx: f32 = 0.05;
 
 fn nodes_too_far(nodes: &mut Vec<Node>, connections: &mut HashMap<(usize, usize), (f32, f32)>) -> Vec<(usize, usize)> {
 

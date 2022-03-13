@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::node::Node;
+use crate::{node::Node, simulation_general};
 use rayon::prelude::*;
 
 // https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
@@ -43,8 +43,8 @@ fn lennard_jones_connections(
 }
 
 fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects: &Vec<Vec<usize>>) {
-    let v0 = 20.0;
-    let dx = 0.07;
+    let v0 = simulation_general::object_repulsion_v0;
+    let dx = simulation_general::object_repulsion_dx;
 
     let length = objects.len();
 
@@ -74,8 +74,8 @@ fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects: &Vec<Vec<usize>>) {
 }
 
 fn wall_repulsion_force_y(nodes: &mut Vec<Node>) {
-    let v0 = 200.0;
-    let dx = 0.05;
+    let v0 = simulation_general::wall_repulsion_v0;
+    let dx = simulation_general::wall_repulsion_dx;
 
     nodes.iter_mut().for_each(|n| {
         let dir = glam::vec2(n.position.x, -1.0) - n.position;
