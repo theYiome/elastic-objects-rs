@@ -58,7 +58,7 @@ pub fn run_with_animation() {
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
 
-    let mut current_simulation_engine = SimulationEngine::CPU;
+    let mut current_simulation_engine = SimulationEngine::CUDA;
 
     // prepare opencl and cuda programs
     let device = *rust_gpu_tools::Device::all().first().unwrap();
@@ -66,8 +66,8 @@ pub fn run_with_animation() {
 
     let (disk_verticies, disk_indices) = graphics::disk_mesh(16);
     // let (disk_verticies, disk_indices) = graphics::square_mesh();
-    let disk_vertex_buffer = glium::VertexBuffer::dynamic(&display, &disk_verticies).unwrap();
-    let disk_index_buffer = glium::IndexBuffer::dynamic(&display, glium::index::PrimitiveType::TrianglesList, &disk_indices).unwrap();
+    let disk_vertex_buffer = glium::VertexBuffer::immutable(&display, &disk_verticies).unwrap();
+    let disk_index_buffer = glium::IndexBuffer::immutable(&display, glium::index::PrimitiveType::TrianglesList, &disk_indices).unwrap();
 
     let mut redraw_clousure = move |display: &glium::Display, egui: &mut egui_glium::EguiGlium, egui_active: bool| {
         

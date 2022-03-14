@@ -188,8 +188,8 @@ pub fn draw_disks(
     dt: f32,
 ) -> Vec<InstanceAttribute> {
 
-    let colors = color_from_kinetic_energy(nodes);
-    // let colors = color_from_temperature(nodes, connections, objects, dt);
+    // let colors = color_from_kinetic_energy(nodes);
+    let colors = color_from_temperature(nodes, connections, objects, dt);
 
     nodes
         .iter()

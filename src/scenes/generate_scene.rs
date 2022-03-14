@@ -6,7 +6,7 @@ pub fn standard_scene() -> (Vec<Node>, HashMap<(usize, usize), (f32, f32)>, Vec<
     let mut objects: Vec<Vec<usize>> = Vec::new();
 
     let object1_sx = 185;
-    let object1_sy = 100;
+    let object1_sy = 120;
     let object1_st = object1_sx * object1_sy;
     let spacing1 = 0.01;
 
