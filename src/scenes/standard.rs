@@ -74,8 +74,8 @@ pub fn run_with_animation() {
 
     let mut zoom: f32 = 0.55;
 
-    let (disk_verticies, disk_indices) = graphics::disk_mesh(16);
-    // let (disk_verticies, disk_indices) = graphics::square_mesh();
+    // let (disk_verticies, disk_indices) = graphics::disk_mesh(16);
+    let (disk_verticies, disk_indices) = graphics::square_mesh();
     let disk_vertex_buffer = glium::VertexBuffer::immutable(&display, &disk_verticies).unwrap();
     let disk_index_buffer = glium::IndexBuffer::immutable(
         &display,

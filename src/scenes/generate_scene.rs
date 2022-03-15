@@ -3,25 +3,24 @@ use std::collections::HashMap;
 use std::vec::Vec;
 
 pub fn standard_scene() -> (Vec<Node>, HashMap<(usize, usize), (f32, f32)>) {
-    let object1_sx = 185;
-    let object1_sy = 120;
+    let object1_sx = 370;
+    let object1_sy = 240;
     let object1_st = object1_sx * object1_sy;
-    let spacing1 = 0.01;
+    let spacing1 = 0.005;
 
     let object2_sx = 4;
     let object2_sy = 4;
     let object2_st = object2_sx * object2_sy;
     let object2_m = 15.0;
-    let spacing2 = 0.1;
+    let spacing2 = 0.01;
 
     // let mut nodes1 = build_scene::build_circle(8, spacing2, -0.12, -0.4, 30.0, 0.5, 1);
     let mut nodes1 = build_scene::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 0.35, 4.0, 1);
     let connections_map_1 = build_scene::build_connections_map(&nodes1, spacing1 * 1.5, 3.0, 0);
 
     // let mut nodes2 = build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.12, 0.8, object2_m, 1.0, 2);
-    let mut nodes2 = build_scene::build_circle(4, spacing2, -0.12, 0.8, 100.0, 0.5, 2);
-    
-    let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 3000.0, nodes1.len());
+    let mut nodes2 = build_scene::build_circle(25, spacing2, -0.12, 0.8, 1.0, 0.2, 2);
+    let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 100.0, nodes1.len());
 
     let mut connections_map: HashMap<(usize, usize), (f32, f32)> = HashMap::new();
     connections_map.extend(connections_map_1);
