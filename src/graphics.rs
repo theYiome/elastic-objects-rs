@@ -109,7 +109,8 @@ pub fn radius_from_area(area: f32) -> f32 {
 
 fn calculate_temperatue(
     nodes: &Vec<Node>,
-    connections: &HashMap<(usize, usize), (f32, f32)>
+    connections: &HashMap<(usize, usize), (f32, f32)>,
+    objects_interactions: &HashMap<u32, Vec<usize>>
 ) -> Vec<f32> {
     let mut forces: Vec<Vec2> = vec![Vec2::new(0.0, 0.0); nodes.len()];
 
@@ -131,32 +132,27 @@ fn calculate_temperatue(
     let v0 = simulation_general::object_repulsion_v0;
     let dx = simulation_general::object_repulsion_dx;
 
-    let boundary_nodes: Vec<usize> = nodes
-        .iter()
-        .enumerate()
-        .filter_map(|(index, n)| if n.is_boundary { Some(index) } else { None })
-        .collect();
+    let objects: Vec<u32> = objects_interactions.keys().copied().collect();
 
-    let length = boundary_nodes.len();
+    for obj_i in 0..objects.len() {
+        for obj_j in obj_i+1..objects.len() {
+            objects_interactions[&objects[obj_i]].iter().for_each(|i| {
+                let a = *i;
+                objects_interactions[&objects[obj_j]].iter().for_each(|j| {
+                    let b = *j;
+                    let dir = nodes[b].position - nodes[a].position;
 
-    for i in 0..length {
-        for j in i + 1..length {
-            let a = boundary_nodes[i];
-            let b =  boundary_nodes[j];
-
-            if nodes[i].object_id != nodes[j].object_id {
-                // calculate forces between each node in object "i" and object "j"
-
-                let dir = nodes[b].position - nodes[a].position;
-
-                let l = dir.length();
-
-                let c = (dx / l).powi(13);
-                let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-
-                forces[i] += v;
-                forces[j] -= v;
-            }
+                    let l = dir.length();
+                    let m_a = nodes[a].mass;
+                    let m_b = nodes[b].mass;
+    
+                    let c = (dx / l).powi(13);
+                    let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+    
+                    forces[a] += v;
+                    forces[b] -= v;
+                });
+            });
         }
     }
 
@@ -188,11 +184,12 @@ fn calculate_temperatue(
 pub fn draw_disks(
     nodes: &Vec<Node>,
     connections: &HashMap<(usize, usize), (f32, f32)>,
+    objects_interactions: &HashMap<u32, Vec<usize>>,
     dt: f32
 ) -> Vec<InstanceAttribute> {
 
     // let colors = color_from_kinetic_energy(nodes);
-    let colors = color_from_temperature(nodes, connections, dt);
+    let colors = color_from_temperature(nodes, connections, objects_interactions, dt);
 
 
     nodes
@@ -208,7 +205,7 @@ pub fn draw_disks(
                 scale_x: radius,
                 scale_y: radius,
                 rotation: 0.0,
-                color: color,
+                color: colors[i],
             }
         })
         .collect()
@@ -217,6 +214,7 @@ pub fn draw_disks(
 fn color_from_temperature(
     nodes: &Vec<Node>,
     connections: &HashMap<(usize, usize), (f32, f32)>,
+    objects_interactions: &HashMap<u32, Vec<usize>>,
     dt: f32,
 ) -> Vec<[f32; 3]> {
     const TEMPERATURE_CACHE_SIZE: usize = 200;
@@ -232,7 +230,7 @@ fn color_from_temperature(
 
         if dt > 0.0 {
             CURRENT_RECORD = (CURRENT_RECORD + 1) % TEMPERATURE_CACHE_SIZE;
-            let current_temperature = calculate_temperatue(nodes, connections);
+            let current_temperature = calculate_temperatue(nodes, connections, objects_interactions);
             TEMPERATURE_CACHE
                 .iter_mut()
                 .enumerate()

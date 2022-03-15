@@ -205,7 +205,7 @@ pub fn run_with_animation() {
 
             let instance_buffer = glium::VertexBuffer::dynamic(
                 display,
-                &graphics::draw_disks(&nodes, &connections_map, last_frame_symulation_time),
+                &graphics::draw_disks(&nodes, &connections_map, &objects_interactions, last_frame_symulation_time),
             )
             .unwrap();
 
@@ -215,8 +215,6 @@ pub fn run_with_animation() {
                     write: true,
                     ..Default::default()
                 },
-                // polygon_mode: PolygonMode::Point,
-                // point_size: Some(40.0),
                 ..Default::default()
             };
 
