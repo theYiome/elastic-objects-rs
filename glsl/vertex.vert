@@ -1,4 +1,4 @@
-#version 300 es
+#version 460
 precision mediump float;
 
 in vec2 local_position;
@@ -8,9 +8,15 @@ in float scale_y;
 in float rotation;
 in vec3 color;
 
+uniform float screen_ratio = 1.0;
+uniform float zoom = 1.0;
+
 out vec3 outcolor;
 
 void main() {
     outcolor = color;
-    gl_Position = vec4(local_position * vec2(scale_x, scale_y) + position, 0.0, 1.0);
+    vec2 new_position = local_position * vec2(scale_x, scale_y) + position;
+    new_position.y *= screen_ratio;
+    new_position *= zoom;
+    gl_Position = vec4(new_position, 0.0, 1.0);
 }

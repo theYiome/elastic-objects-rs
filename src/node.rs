@@ -8,7 +8,9 @@ pub struct Node {
     pub last_acceleration: Vec2,
     pub current_acceleration: Vec2,
     pub mass: f32,
-    pub drag: f32
+    pub drag: f32,
+    pub object_id: u32,
+    pub is_boundary: bool
 }
 
 impl Node {

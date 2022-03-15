@@ -76,7 +76,9 @@ pub fn simulate_opencl(
                 current_acceleration: Vec2::new(0.0, 0.0),
                 last_acceleration: Vec2::new(0.0, 0.0),
                 mass: 1.0,
-                drag: 0.0
+                drag: 0.0,
+                object_id: 1,
+                is_boundary: false
             },
         );
         program.read_into_buffer(&node_buffer, &mut result)?;

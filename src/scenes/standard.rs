@@ -1,12 +1,13 @@
+use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
 use crate::{energy, graphics, simulation_cpu, simulation_general, simulation_gpu};
 
 use glium::glutin::event_loop;
-use glium::{glutin, Surface, PolygonMode};
-use glutin::event::{ElementState};
+use glium::{glutin, PolygonMode, Surface};
+use glutin::event::ElementState;
 use glutin::{
-    event::{Event, WindowEvent, VirtualKeyCode},
+    event::{Event, VirtualKeyCode, WindowEvent},
     event_loop::ControlFlow,
 };
 
@@ -16,20 +17,27 @@ use super::generate_scene::standard_scene;
 enum SimulationEngine {
     CPU,
     OPENCL,
-    CUDA
+    CUDA,
 }
 
 pub fn run_with_animation() {
     // scene objects
 
-    let (mut nodes, mut connections_map, mut objects) = standard_scene();
+    let (mut nodes, mut connections_map) = standard_scene();
 
     let event_loop = glutin::event_loop::EventLoop::new();
-    let wb = glutin::window::WindowBuilder::new()
-        .with_inner_size(glutin::dpi::LogicalSize::new(800, 800))
-        .with_title("elastic-objects-rs");
-    let cb = glutin::ContextBuilder::new().with_depth_buffer(24);
-    let display = glium::Display::new(wb, cb, &event_loop).unwrap();
+    let display = {
+        let wb = glutin::window::WindowBuilder::new()
+            .with_inner_size(glutin::dpi::LogicalSize {
+                width: 1280 as u32,
+                height: 720 as u32,
+            })
+            .with_title("rover-controller-app-rs");
+
+        let cb = glutin::ContextBuilder::new().with_depth_buffer(24);
+
+        glium::Display::new(wb, cb, &event_loop).unwrap()
+    };
 
     let vertex_shader_src = std::fs::read_to_string("glsl/vertex.vert").unwrap();
     let fragment_shader_src = std::fs::read_to_string("glsl/fragment.frag").unwrap();
@@ -64,143 +72,181 @@ pub fn run_with_animation() {
     let device = *rust_gpu_tools::Device::all().first().unwrap();
     let opencl_program = simulation_gpu::create_opencl_program(&device);
 
+    let mut zoom: f32 = 0.55;
+
     let (disk_verticies, disk_indices) = graphics::disk_mesh(16);
     // let (disk_verticies, disk_indices) = graphics::square_mesh();
     let disk_vertex_buffer = glium::VertexBuffer::immutable(&display, &disk_verticies).unwrap();
-    let disk_index_buffer = glium::IndexBuffer::immutable(&display, glium::index::PrimitiveType::TrianglesList, &disk_indices).unwrap();
+    let disk_index_buffer = glium::IndexBuffer::immutable(
+        &display,
+        glium::index::PrimitiveType::TrianglesList,
+        &disk_indices,
+    )
+    .unwrap();
+    
+    let mut objects_interactions: HashMap<u32, Vec<usize>> = simulation_general::calculate_objects_interactions_structure(&mut nodes);
 
-    let mut redraw_clousure = move |display: &glium::Display, egui: &mut egui_glium::EguiGlium, egui_active: bool| {
-        
-        // real time dependent dt
-        {
-            // let measured_dt = last_frame_time.elapsed().as_secs_f32();
-            // last_frame_time = std::time::Instant::now();
-            // dt = if measured_dt > 0.01 {0.01} else {measured_dt};
-            // dt = 0.005;
-        }
+    let mut redraw_clousure =
+        move |display: &glium::Display, egui: &mut egui_glium::EguiGlium, egui_active: bool| {
+            // real time dependent dt
+            {
+                // let measured_dt = last_frame_time.elapsed().as_secs_f32();
+                // last_frame_time = std::time::Instant::now();
+                // dt = if measured_dt > 0.01 {0.01} else {measured_dt};
+                // dt = 0.005;
+            }
 
-        match current_simulation_engine {
-            SimulationEngine::CPU => {
-                for _i in 0..steps_per_frame {
-                    simulation_cpu::simulate_single_thread_cpu(
-                        dt,
-                        &mut nodes,
-                        &mut objects,
-                        &mut connections_map
-                    );
+            match simulation_general::handle_connection_break(&mut nodes, &mut connections_map) {
+                Some(x) => {
+                    objects_interactions = x;
+                },
+                None => {}
+            }
+
+            match current_simulation_engine {
+                SimulationEngine::CPU => {
+                    for _i in 0..steps_per_frame {
+                        simulation_cpu::simulate_single_thread_cpu(
+                            dt,
+                            &mut nodes,
+                            &connections_map,
+                            &objects_interactions
+                        );
+                    }
                 }
-            },
-            SimulationEngine::OPENCL => {
-                // nodes = simulation_gpu::simulate_opencl(
-                //     &nodes,
-                //     &opencl_program,
-                //     &connections_map,
-                //     steps_per_frame,
-                //     dt,
-                // );
-            },
-            SimulationEngine::CUDA => {
-
+                SimulationEngine::OPENCL => {
+                    // nodes = simulation_gpu::simulate_opencl(
+                    //     &nodes,
+                    //     &opencl_program,
+                    //     &connections_map,
+                    //     steps_per_frame,
+                    //     dt,
+                    // );
+                }
+                SimulationEngine::CUDA => {}
             }
-        }
 
-        let last_frame_symulation_time = dt * steps_per_frame as f32;
-        total_symulation_time += last_frame_symulation_time;
-        simulation_general::handle_connection_break(&mut nodes, &mut objects, &mut connections_map);
+            let last_frame_symulation_time = dt * steps_per_frame as f32;
+            total_symulation_time += last_frame_symulation_time;
 
-        fps_counter += 1;
-        {
-            let update_every_ms: u32 = 500;
-            if now.elapsed().as_millis() > update_every_ms as u128 {
-                now = std::time::Instant::now();
-                current_fps = fps_counter * (1000 / update_every_ms);
-                fps_counter = 0;
+            fps_counter += 1;
+            {
+                let update_every_ms: u32 = 500;
+                if now.elapsed().as_millis() > update_every_ms as u128 {
+                    now = std::time::Instant::now();
+                    current_fps = fps_counter * (1000 / update_every_ms);
+                    fps_counter = 0;
+                }
             }
-        }
 
-        current_log_dt += last_frame_symulation_time;
-        {
-            let log_dt = 0.01;
-            if current_log_dt > log_dt {
-                let (kinetic, gravity, lennjon, wallrep, objrepu) =
-                    energy::calculate_total_energy(&nodes, &connections_map, &objects);
+            current_log_dt += last_frame_symulation_time;
+            // {
+            //     let log_dt = 0.01;
+            //     if current_log_dt > log_dt {
+            //         let (kinetic, gravity, lennjon, wallrep, objrepu) =
+            //             energy::calculate_total_energy(&nodes, &connections_map);
 
-                csv_writer
-                    .write_record(&[
-                        total_symulation_time.to_string(),
-                        (current_fps * steps_per_frame).to_string(),
-                        kinetic.to_string(),
-                        gravity.to_string(),
-                        lennjon.to_string(),
-                        wallrep.to_string(),
-                        objrepu.to_string(),
-                    ])
-                    .unwrap();
+            //         csv_writer
+            //             .write_record(&[
+            //                 total_symulation_time.to_string(),
+            //                 (current_fps * steps_per_frame).to_string(),
+            //                 kinetic.to_string(),
+            //                 gravity.to_string(),
+            //                 lennjon.to_string(),
+            //                 wallrep.to_string(),
+            //                 objrepu.to_string(),
+            //             ])
+            //             .unwrap();
 
-                current_log_dt = 0.0;
-            }
-        }
+            //         current_log_dt = 0.0;
+            //     }
+            // }
 
-        // create egui interface
-        egui.begin_frame(&display);
-        egui::Window::new("Parametry symulacji").show(egui.ctx(), |ui| {
-            ui.label(format!("FPS: {}", current_fps));
-            ui.label("dt");
-            ui.add(egui::Slider::new(
-                &mut dt,
-                RangeInclusive::new(0.0, 0.0001),
-            ));
-            ui.label("Kroki symulacji na klatkę");
-            ui.add(egui::Slider::new(
-                &mut steps_per_frame,
-                RangeInclusive::new(0, 100),
-            ));
-            ui.separator();
-            ui.horizontal(|ui| {
-                ui.selectable_value(&mut current_simulation_engine, SimulationEngine::CPU, "Use CPU");
-                ui.selectable_value(&mut current_simulation_engine, SimulationEngine::OPENCL, "Use OpenCL");
-                ui.selectable_value(&mut current_simulation_engine, SimulationEngine::CUDA, "Use CUDA");
+            // create egui interface
+            egui.begin_frame(&display);
+            egui::Window::new("Parametry symulacji").show(egui.ctx(), |ui| {
+                ui.label(format!("FPS: {}", current_fps));
+                ui.label("Zoom");
+                ui.add(egui::Slider::new(
+                    &mut zoom,
+                    RangeInclusive::new(0.1, 1.5),
+                ));
+                ui.label("dt");
+                ui.add(egui::Slider::new(&mut dt, RangeInclusive::new(0.0, 0.0001)));
+                ui.label("Kroki symulacji na klatkę");
+                ui.add(egui::Slider::new(
+                    &mut steps_per_frame,
+                    RangeInclusive::new(0, 100),
+                ));
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.selectable_value(
+                        &mut current_simulation_engine,
+                        SimulationEngine::CPU,
+                        "Use CPU",
+                    );
+                    ui.selectable_value(
+                        &mut current_simulation_engine,
+                        SimulationEngine::OPENCL,
+                        "Use OpenCL",
+                    );
+                    ui.selectable_value(
+                        &mut current_simulation_engine,
+                        SimulationEngine::CUDA,
+                        "Use CUDA",
+                    );
+                });
             });
-        });
-        let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
+            let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
 
-        let mut target = display.draw();
-        // draw things behind egui here
-        target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
+            let mut target = display.draw();
+            // draw things behind egui here
+            target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
 
-        let instance_buffer = glium::VertexBuffer::dynamic(display, &graphics::draw_disks(&nodes, &connections_map, &objects, last_frame_symulation_time)).unwrap();
-        
-        let params = glium::DrawParameters {
-            depth: glium::Depth {
-                test: glium::DepthTest::IfLess,
-                write: true,
-                ..Default::default()
-            },
-            // polygon_mode: PolygonMode::Point,
-            // point_size: Some(40.0),
-            ..Default::default()
-        };
-
-        target
-            .draw(
-                (&disk_vertex_buffer, instance_buffer.per_instance().unwrap()),
-                &disk_index_buffer,
-                &program,
-                &glium::uniform! {tim: dt},
-                &params,
+            let instance_buffer = glium::VertexBuffer::dynamic(
+                display,
+                &graphics::draw_disks(&nodes, &connections_map, last_frame_symulation_time),
             )
             .unwrap();
 
-        // draw egui
-        if egui_active {
-            egui.paint(&display, &mut target, egui_shapes);
-        }
+            let params = glium::DrawParameters {
+                depth: glium::Depth {
+                    test: glium::DepthTest::IfLess,
+                    write: true,
+                    ..Default::default()
+                },
+                // polygon_mode: PolygonMode::Point,
+                // point_size: Some(40.0),
+                ..Default::default()
+            };
 
-        // draw things on top of egui here
-        target.finish().unwrap();
-    };
+            let window_size = display.gl_window().window().inner_size();
 
-    let main_loop = move |event: Event<()>, _: &event_loop::EventLoopWindowTarget<()>, control_flow: &mut ControlFlow| {
+            target
+                .draw(
+                    (&disk_vertex_buffer, instance_buffer.per_instance().unwrap()),
+                    &disk_index_buffer,
+                    &program,
+                    &glium::uniform! {
+                        screen_ratio: window_size.width as f32 / window_size.height as f32,
+                        zoom: zoom
+                    },
+                    &params,
+                )
+                .unwrap();
+
+            // draw egui
+            if egui_active {
+                egui.paint(&display, &mut target, egui_shapes);
+            }
+
+            // draw things on top of egui here
+            target.finish().unwrap();
+        };
+
+    let main_loop = move |event: Event<()>,
+                          _: &event_loop::EventLoopWindowTarget<()>,
+                          control_flow: &mut ControlFlow| {
         match event {
             glutin::event::Event::RedrawEventsCleared if cfg!(windows) => {
                 redraw_clousure(&display, &mut egui, egui_active)
@@ -214,12 +260,18 @@ pub fn run_with_animation() {
                 match event {
                     WindowEvent::CloseRequested {} => {
                         *control_flow = glutin::event_loop::ControlFlow::Exit;
-                    },
-                    WindowEvent::KeyboardInput {device_id: _, input, is_synthetic: _} => {
-                        if input.virtual_keycode == Some(VirtualKeyCode::F1) && input.state == ElementState::Pressed {
+                    }
+                    WindowEvent::KeyboardInput {
+                        device_id: _,
+                        input,
+                        is_synthetic: _,
+                    } => {
+                        if input.virtual_keycode == Some(VirtualKeyCode::F1)
+                            && input.state == ElementState::Pressed
+                        {
                             egui_active = !egui_active;
                         }
-                    },
+                    }
                     _ => (),
                 }
                 display.gl_window().window().request_redraw();

@@ -34,7 +34,7 @@ pub fn run_performace_test(object_size: usize, dt: f32, simulation_time: f32, op
     while total_symulation_time < simulation_time / (object_size * object_size) as f32 {
         
         for _i in 0..steps_per_frame {
-            simulation_cpu::simulate_single_thread_cpu(dt, &mut nodes, &mut objects, &mut connections_map);
+            // simulation_cpu::simulate_single_thread_cpu(dt, &mut nodes, &mut connections_map);
         }
 
         total_symulation_time += dt * steps_per_frame as f32;

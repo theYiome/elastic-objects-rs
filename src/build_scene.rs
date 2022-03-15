@@ -9,10 +9,14 @@ pub fn build_rectangle(
     offset_y: f32,
     mass: f32,
     damping: f32,
+    object_id: u32
 ) -> Vec<Node> {
     let mut nodes = Vec::with_capacity(size_x * size_y);
     for y in 0..size_y {
         for x in 0..size_x {
+
+            let is_boundary = if y == size_y - 1 || y == 0 || x == size_x - 1 || x == 0 { true } else { false };
+
             nodes.push(Node {
                 position: Vec2::new(
                     offset_x + (x as f32) * spacing,
@@ -23,6 +27,8 @@ pub fn build_rectangle(
                 last_acceleration: Vec2::new(0.0, 0.0),
                 mass: mass,
                 drag: damping,
+                object_id: object_id,
+                is_boundary: is_boundary
             });
         }
     }
@@ -36,12 +42,15 @@ pub fn build_circle(
     offset_y: f32,
     mass: f32,
     damping: f32,
+    object_id: u32
 ) -> Vec<Node> {
     let mut nodes = Vec::new();
     for layer in 0..layers {
         let r = spacing * layer as f32;
         let even_node_count = (2.0 * PI * r / spacing) as usize;
         let nodes_in_layer = if even_node_count > 0 {even_node_count} else {1};
+
+        let is_boundary = if layer == layers - 1 { true } else { false };
 
         for n in 0..nodes_in_layer {
             let angle = ((2.0 * PI) / nodes_in_layer as f32) * n as f32;
@@ -52,6 +61,8 @@ pub fn build_circle(
                 last_acceleration: Vec2::new(0.0, 0.0),
                 mass: mass,
                 drag: damping,
+                object_id: object_id,
+                is_boundary: is_boundary
             });
         }
     }

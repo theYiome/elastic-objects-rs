@@ -42,33 +42,37 @@ fn lennard_jones_connections(
     });
 }
 
-fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects: &Vec<Vec<usize>>) {
+fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects_interactions: &HashMap<u32, Vec<usize>>) {
     let v0 = simulation_general::object_repulsion_v0;
     let dx = simulation_general::object_repulsion_dx;
 
-    let length = objects.len();
+    // let boundary_nodes: Vec<usize> = nodes
+    //     .iter()
+    //     .enumerate()
+    //     .filter_map(|(index, n)| if n.is_boundary { Some(index) } else { None })
+    //     .collect();
 
-    for i in 0..length {
-        for j in i + 1..length {
-            // calculate forces between each node in object "i" and object "j"
-            for n_i in &objects[i] {
-                for n_j in &objects[j] {
-                    let a = *n_i;
-                    let b = *n_j;
+    let objects: Vec<u32> = objects_interactions.keys().copied().collect();
 
+    for obj_i in 0..objects.len() {
+        for obj_j in obj_i+1..objects.len() {
+            objects_interactions[&objects[obj_i]].iter().for_each(|i| {
+                let a = *i;
+                objects_interactions[&objects[obj_j]].iter().for_each(|j| {
+                    let b = *j;
                     let dir = nodes[b].position - nodes[a].position;
 
                     let l = dir.length();
                     let m_a = nodes[a].mass;
                     let m_b = nodes[b].mass;
-
+    
                     let c = (dx / l).powi(13);
                     let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-
+    
                     nodes[a].current_acceleration -= v / m_a;
                     nodes[b].current_acceleration += v / m_b;
-                }
-            }
+                });
+            });
         }
     }
 }
@@ -104,19 +108,18 @@ fn drag_force(nodes: &mut Vec<Node>) {
 pub fn simulate_single_thread_cpu(
     dt: f32,
     nodes: &mut Vec<Node>,
-    objects: &Vec<Vec<usize>>,
     connections: &HashMap<(usize, usize), (f32, f32)>,
+    objects_interactions: &HashMap<u32, Vec<usize>>
 ) {
     start_integrate_velocity_verlet(dt, nodes);
 
     gravity_force(nodes);
 
     lennard_jones_connections(nodes, connections);
-    lennard_jones_repulsion(nodes, objects);
+    lennard_jones_repulsion(nodes, objects_interactions);
 
-    
     wall_repulsion_force_y(nodes);
     drag_force(nodes);
-    
+
     end_integrate_velocity_verlet(dt, nodes);
 }
