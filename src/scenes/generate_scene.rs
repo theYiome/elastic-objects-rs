@@ -17,7 +17,7 @@ pub fn standard_scene() -> (Vec<Node>, HashMap<(usize, usize), (f32, f32)>, Vec<
     let spacing2 = 0.075;
 
     let mut nodes1 = build_scene::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 0.35, 4.0);
-    let mut connections_map_1 = build_scene::build_connections_map(&nodes1, spacing1 * 1.5, 20.0, 0);
+    let mut connections_map_1 = build_scene::build_connections_map(&nodes1, spacing1 * 1.5, 4.0, 0);
     {
         let mut obj: Vec<usize> = Vec::new();
         for i in 0..object1_st {

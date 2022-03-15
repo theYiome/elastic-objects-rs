@@ -252,9 +252,7 @@ fn color_from_temperature(
         .enumerate()
         .map(|(i, n)| {
             let color: f32 = unsafe { -0.5 * TEMPERATURE_CACHE[i].iter().copied().sum::<f32>() / total_dt };
-            if dt > 0.0 && i == 9250 {
-                println!("{color}");
-            }
+            // if dt > 0.0 && i == 9250 { println!("{color}"); }
             number_to_rgb(color, -1000.0, 8000.0)
         })
         .collect()
