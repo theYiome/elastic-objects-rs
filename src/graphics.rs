@@ -143,9 +143,6 @@ fn calculate_temperatue(
                     let dir = nodes[b].position - nodes[a].position;
 
                     let l = dir.length();
-                    let m_a = nodes[a].mass;
-                    let m_b = nodes[b].mass;
-    
                     let c = (dx / l).powi(13);
                     let v = dir.normalize() * 3.0 * (v0 / dx) * c;
     
@@ -181,24 +178,33 @@ fn calculate_temperatue(
         .collect()
 }
 
+#[derive(PartialEq)]
+pub enum ColoringMode {
+    KineticEnergy,
+    Temperature,
+    Boundary
+}
+
 pub fn draw_disks(
     nodes: &Vec<Node>,
     connections: &HashMap<(usize, usize), (f32, f32)>,
     objects_interactions: &HashMap<u32, Vec<usize>>,
+    coloring_mode: &ColoringMode,
     dt: f32
 ) -> Vec<InstanceAttribute> {
 
     // let colors = color_from_kinetic_energy(nodes);
-    let colors = color_from_temperature(nodes, connections, objects_interactions, dt);
-
+    let colors = match coloring_mode {
+        ColoringMode::KineticEnergy => color_from_kinetic_energy(nodes),
+        ColoringMode::Temperature => color_from_temperature(nodes, connections, objects_interactions, dt),
+        ColoringMode::Boundary => nodes.iter().map(|n| if n.is_boundary { [0.0, 0.0, 0.0] } else { [0.3, 0.3, 0.3] } ).collect()
+    };
 
     nodes
         .iter()
         .enumerate()
         .map(|(i, n)| {
-            let radius = 0.01 + radius_from_area(n.mass) * 0.007;
-
-            let color = if n.is_boundary { [0.1, 0.1, 0.1] } else { [0.0, 0.0, 0.0] };
+            let radius = 0.0045 + radius_from_area(n.mass) * 0.000;
 
             InstanceAttribute {
                 position: n.position.to_array(),

@@ -67,6 +67,7 @@ pub fn run_with_animation() {
     let mut fps_counter: u32 = 0;
 
     let mut current_simulation_engine = SimulationEngine::CUDA;
+    let mut current_coloring_mode = graphics::ColoringMode::KineticEnergy;
 
     // prepare opencl and cuda programs
     let device = *rust_gpu_tools::Device::all().first().unwrap();
@@ -74,8 +75,8 @@ pub fn run_with_animation() {
 
     let mut zoom: f32 = 0.55;
 
-    // let (disk_verticies, disk_indices) = graphics::disk_mesh(16);
-    let (disk_verticies, disk_indices) = graphics::square_mesh();
+    let (disk_verticies, disk_indices) = graphics::disk_mesh(12);
+    // let (disk_verticies, disk_indices) = graphics::square_mesh();
     let disk_vertex_buffer = glium::VertexBuffer::immutable(&display, &disk_verticies).unwrap();
     let disk_index_buffer = glium::IndexBuffer::immutable(
         &display,
@@ -164,7 +165,7 @@ pub fn run_with_animation() {
 
             // create egui interface
             egui.begin_frame(&display);
-            egui::Window::new("Parametry symulacji").show(egui.ctx(), |ui| {
+            egui::Window::new("General settings").show(egui.ctx(), |ui| {
                 ui.label(format!("FPS: {}", current_fps));
                 ui.label("Zoom");
                 ui.add(egui::Slider::new(
@@ -173,7 +174,7 @@ pub fn run_with_animation() {
                 ));
                 ui.label("dt");
                 ui.add(egui::Slider::new(&mut dt, RangeInclusive::new(0.0, 0.0001)));
-                ui.label("Kroki symulacji na klatkę");
+                ui.label("Symulation steps per frame");
                 ui.add(egui::Slider::new(
                     &mut steps_per_frame,
                     RangeInclusive::new(0, 100),
@@ -196,6 +197,25 @@ pub fn run_with_animation() {
                         "Use CUDA",
                     );
                 });
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.selectable_value(
+                        &mut current_coloring_mode,
+                        graphics::ColoringMode::KineticEnergy,
+                        "Kinetic Energy",
+                    );
+                    ui.selectable_value(
+                        &mut current_coloring_mode,
+                        graphics::ColoringMode::Boundary,
+                        "Boundary nodes",
+                    );
+                    ui.selectable_value(
+                        &mut current_coloring_mode,
+                        graphics::ColoringMode::Temperature,
+                        "Temperature",
+                    );
+                });
+
             });
             let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
 
@@ -205,7 +225,7 @@ pub fn run_with_animation() {
 
             let instance_buffer = glium::VertexBuffer::dynamic(
                 display,
-                &graphics::draw_disks(&nodes, &connections_map, &objects_interactions, last_frame_symulation_time),
+                &graphics::draw_disks(&nodes, &connections_map, &objects_interactions, &current_coloring_mode, last_frame_symulation_time),
             )
             .unwrap();
 
