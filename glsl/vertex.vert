@@ -10,6 +10,7 @@ in vec3 color;
 
 uniform float screen_ratio = 1.0;
 uniform float zoom = 1.0;
+uniform vec2 camera_position = vec2(0.0, 0.0);
 
 out vec3 outcolor;
 
@@ -18,5 +19,5 @@ void main() {
     vec2 new_position = local_position * vec2(scale_x, scale_y) + position;
     new_position.y *= screen_ratio;
     new_position *= zoom;
-    gl_Position = vec4(new_position, 0.0, 1.0);
+    gl_Position = vec4(new_position + camera_position, 0.0, 1.0);
 }

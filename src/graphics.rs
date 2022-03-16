@@ -273,7 +273,7 @@ fn color_from_kinetic_energy(
     nodes
         .iter()
         .map(|n| {
-            [n.velocity.length_squared() * 0.5 * 0.7, 0.0, 0.0]
+            [n.velocity.length_squared() * 0.5, 0.0, 0.0]
         })
         .collect()
 }
