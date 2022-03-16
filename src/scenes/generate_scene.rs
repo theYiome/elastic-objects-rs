@@ -19,8 +19,8 @@ pub fn standard_scene() -> (Vec<Node>, HashMap<(usize, usize), (f32, f32)>) {
     let connections_map_1 = build_scene::build_connections_map(&nodes1, spacing1 * 1.5, 100.0, 0);
 
     // let mut nodes2 = build_scene::build_rectangle(object2_sx, object2_sy, spacing2, -0.3, 0.4, object2_m, 0.2, 2);
-    let mut nodes2 = build_scene::build_circle(20, spacing2, -0.12, 0.8, 2.0, 0.2, 2);
-    let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 100.0, nodes1.len());
+    let mut nodes2 = build_scene::build_circle(20, spacing2, -0.12, 0.8, 20.0, 0.2, 2);
+    let connections_map_2 = build_scene::build_connections_map(&nodes2, spacing2 * 1.5, 500.0, nodes1.len());
 
     let mut connections_map: HashMap<(usize, usize), (f32, f32)> = HashMap::new();
     connections_map.extend(connections_map_1);

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
+use crate::simulation_general::calculate_connections_structure;
 use crate::{energy, graphics, simulation_cpu, simulation_general, simulation_gpu};
 
 use glam::Vec2;
@@ -25,6 +26,7 @@ pub fn run_with_animation() {
     // scene objects
 
     let (mut nodes, mut connections_map) = standard_scene();
+    let mut connections_structure = simulation_general::calculate_connections_structure(&connections_map, &nodes);
 
     let initial_window_width: u32 = 1280;
     let initial_window_height: u32 = 720;
@@ -105,6 +107,7 @@ pub fn run_with_animation() {
         match simulation_general::handle_connection_break(&mut nodes, &mut connections_map) {
             Some(x) => {
                 objects_interactions = x;
+                connections_structure = calculate_connections_structure(&connections_map, &nodes);
             }
             None => {}
         }
@@ -112,10 +115,10 @@ pub fn run_with_animation() {
         match current_simulation_engine {
             SimulationEngine::CPU => {
                 for _i in 0..steps_per_frame {
-                    simulation_cpu::simulate_single_thread_cpu(
+                    simulation_cpu::simulate_multi_thread_cpu(
                         dt,
                         &mut nodes,
-                        &connections_map,
+                        &connections_structure,
                         &objects_interactions,
                     );
                 }

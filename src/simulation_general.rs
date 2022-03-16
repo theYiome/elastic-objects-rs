@@ -70,3 +70,12 @@ pub fn calculate_objects_interactions_structure(nodes: &mut Vec<Node>) -> HashMa
 
     objects_interactions_structure
 }
+
+pub fn calculate_connections_structure(connections_map: &HashMap<(usize, usize), (f32, f32)>, nodes: &Vec<Node>) -> Vec<Vec<(usize, f32, f32)>> {
+    let mut connections_structure: Vec<Vec<(usize, f32, f32)>> = vec![Vec::new(); nodes.len()];
+    connections_map.iter().for_each(|(k, v)| {
+        connections_structure[k.0].push((k.1, v.0, v.1));
+        connections_structure[k.1].push((k.0, v.0, v.1));
+    });
+    connections_structure
+}

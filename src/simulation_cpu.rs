@@ -42,15 +42,29 @@ fn lennard_jones_connections(
     });
 }
 
+fn lennard_jones_connections_multithreaded(
+    nodes: &mut Vec<Node>,
+    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
+) {
+    
+    let nodes_copy = nodes.clone();
+    
+    nodes.par_iter_mut().enumerate().for_each(|(i, n)| {
+        connections_structure[i].iter().for_each(|(j, dx, v0)| {
+            let dir = nodes_copy[*j].position - n.position;
+            let l = dir.length();
+    
+            let c = (dx / l).powi(7) - (dx / l).powi(13);
+            let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+    
+            n.current_acceleration += v / n.mass;
+        });
+    });
+}
+
 fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects_interactions: &HashMap<u32, Vec<usize>>) {
     let v0 = simulation_general::object_repulsion_v0;
     let dx = simulation_general::object_repulsion_dx;
-
-    // let boundary_nodes: Vec<usize> = nodes
-    //     .iter()
-    //     .enumerate()
-    //     .filter_map(|(index, n)| if n.is_boundary { Some(index) } else { None })
-    //     .collect();
 
     let objects: Vec<u32> = objects_interactions.keys().copied().collect();
 
@@ -116,6 +130,25 @@ pub fn simulate_single_thread_cpu(
     gravity_force(nodes);
 
     lennard_jones_connections(nodes, connections);
+    lennard_jones_repulsion(nodes, objects_interactions);
+
+    wall_repulsion_force_y(nodes);
+    drag_force(nodes);
+
+    end_integrate_velocity_verlet(dt, nodes);
+}
+
+pub fn simulate_multi_thread_cpu(
+    dt: f32,
+    nodes: &mut Vec<Node>,
+    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
+    objects_interactions: &HashMap<u32, Vec<usize>>
+) {
+    start_integrate_velocity_verlet(dt, nodes);
+
+    gravity_force(nodes);
+
+    lennard_jones_connections_multithreaded(nodes, connections_structure);
     lennard_jones_repulsion(nodes, objects_interactions);
 
     wall_repulsion_force_y(nodes);
