@@ -4,7 +4,7 @@ use crate::{node::Node, simulation_general};
 use rayon::prelude::*;
 
 // https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
-fn start_integrate_velocity_verlet(dt: f32, nodes: &mut Vec<Node>) {
+fn start_integrate_velocity_verlet(dt: f32, nodes: &mut [Node]) {
     nodes.iter_mut().for_each(|n| {
         n.position += (n.velocity * dt) + (0.5 * n.current_acceleration * dt * dt);
 
@@ -13,7 +13,7 @@ fn start_integrate_velocity_verlet(dt: f32, nodes: &mut Vec<Node>) {
     });
 }
 
-fn end_integrate_velocity_verlet(dt: f32, nodes: &mut Vec<Node>) {
+fn end_integrate_velocity_verlet(dt: f32, nodes: &mut [Node]) {
     nodes.iter_mut().for_each(|n| {
         n.velocity += 0.5 * (n.last_acceleration + n.current_acceleration) * dt;
     });
@@ -21,7 +21,7 @@ fn end_integrate_velocity_verlet(dt: f32, nodes: &mut Vec<Node>) {
 
 // https://users.rust-lang.org/t/help-with-parallelizing-a-nested-loop/22568/2
 fn lennard_jones_connections(
-    nodes: &mut Vec<Node>,
+    nodes: &mut [Node],
     connections: &HashMap<(usize, usize), (f32, f32)>,
 ) {
     connections.keys().for_each(|(a, b)| {
@@ -62,7 +62,7 @@ fn lennard_jones_connections_multithreaded(
     });
 }
 
-fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects_interactions: &HashMap<u32, Vec<usize>>) {
+fn lennard_jones_repulsion(nodes: &mut [Node], objects_interactions: &HashMap<u32, Vec<usize>>) {
     let v0 = simulation_general::object_repulsion_v0;
     let dx = simulation_general::object_repulsion_dx;
 
@@ -91,7 +91,31 @@ fn lennard_jones_repulsion(nodes: &mut Vec<Node>, objects_interactions: &HashMap
     }
 }
 
-fn wall_repulsion_force_y(nodes: &mut Vec<Node>) {
+fn lennard_jones_repulsion_multithreaded(nodes: &mut Vec<Node>, objects_interactions: &HashMap<u32, Vec<usize>>) {
+    let v0 = simulation_general::object_repulsion_v0;
+    let dx = simulation_general::object_repulsion_dx;
+
+    let objects: Vec<u32> = objects_interactions.keys().copied().collect();
+
+    let nodes_copy = nodes.clone();
+
+    nodes.par_iter_mut().filter(|n| n.is_boundary).for_each(|n| {
+        objects.iter().for_each(|current_object_id| {
+            if *current_object_id != n.object_id {
+                objects_interactions[current_object_id].iter().for_each(|j| {
+                    let dir = nodes_copy[*j].position - n.position;
+                    let l = dir.length();
+                    let c = (dx / l).powi(13);
+                    let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+    
+                    n.current_acceleration -= v / n.mass;
+                });
+            }
+        });
+    });
+}
+
+fn wall_repulsion_force_y(nodes: &mut [Node]) {
     let v0 = simulation_general::wall_repulsion_v0;
     let dx = simulation_general::wall_repulsion_dx;
 
@@ -107,15 +131,15 @@ fn wall_repulsion_force_y(nodes: &mut Vec<Node>) {
     });
 }
 
-fn gravity_force(nodes: &mut Vec<Node>) {
+fn gravity_force(nodes: &mut [Node]) {
     nodes.iter_mut().for_each(|n| {
         n.current_acceleration.y += -9.81;
     });
 }
 
-fn drag_force(nodes: &mut Vec<Node>) {
+fn drag_force(nodes: &mut [Node]) {
     nodes.iter_mut().for_each(|n| {
-        n.current_acceleration -= n.velocity * n.drag;
+        n.current_acceleration -= n.velocity * n.velocity.length() * n.drag;
     });
 }
 
@@ -149,7 +173,8 @@ pub fn simulate_multi_thread_cpu(
     gravity_force(nodes);
 
     lennard_jones_connections_multithreaded(nodes, connections_structure);
-    lennard_jones_repulsion(nodes, objects_interactions);
+    lennard_jones_repulsion_multithreaded(nodes, objects_interactions);
+    // lennard_jones_repulsion(nodes, objects_interactions);
 
     wall_repulsion_force_y(nodes);
     drag_force(nodes);

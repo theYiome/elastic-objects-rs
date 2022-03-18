@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use crate::node::{Node, self};
 
-pub const object_repulsion_v0: f32 = 20.0;
-pub const object_repulsion_dx: f32 = 0.01;
+pub const object_repulsion_v0: f32 = 10.0;
+pub const object_repulsion_dx: f32 = 0.015;
 
 pub const wall_repulsion_v0: f32 = 200.0;
 pub const wall_repulsion_dx: f32 = 0.05;

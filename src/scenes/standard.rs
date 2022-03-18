@@ -17,9 +17,11 @@ use super::generate_scene::standard_scene;
 
 #[derive(PartialEq)]
 enum SimulationEngine {
-    CPU,
-    OPENCL,
-    CUDA,
+    Cpu,
+    CpuMultithread,
+    OpenCl,
+    Cuda,
+    None
 }
 
 pub fn run_with_animation() {
@@ -70,7 +72,7 @@ pub fn run_with_animation() {
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
 
-    let mut current_simulation_engine = SimulationEngine::CUDA;
+    let mut current_simulation_engine = SimulationEngine::None;
     let mut current_coloring_mode = graphics::ColoringMode::KineticEnergy;
 
     // prepare opencl and cuda programs
@@ -113,7 +115,17 @@ pub fn run_with_animation() {
         }
 
         match current_simulation_engine {
-            SimulationEngine::CPU => {
+            SimulationEngine::Cpu => {
+                for _i in 0..steps_per_frame {
+                    simulation_cpu::simulate_single_thread_cpu(
+                        dt,
+                        &mut nodes,
+                        &connections_map,
+                        &objects_interactions,
+                    );
+                }
+            }
+            SimulationEngine::CpuMultithread => {
                 for _i in 0..steps_per_frame {
                     simulation_cpu::simulate_multi_thread_cpu(
                         dt,
@@ -122,17 +134,8 @@ pub fn run_with_animation() {
                         &objects_interactions,
                     );
                 }
-            }
-            SimulationEngine::OPENCL => {
-                // nodes = simulation_gpu::simulate_opencl(
-                //     &nodes,
-                //     &opencl_program,
-                //     &connections_map,
-                //     steps_per_frame,
-                //     dt,
-                // );
-            }
-            SimulationEngine::CUDA => {}
+            },
+            _ => {}
         }
 
         let last_frame_symulation_time = dt * steps_per_frame as f32;
@@ -179,7 +182,7 @@ pub fn run_with_animation() {
             ui.label("Zoom");
             ui.add(egui::Slider::new(zoom, RangeInclusive::new(0.1, 2.0)));
             ui.label("dt");
-            ui.add(egui::Slider::new(&mut dt, RangeInclusive::new(0.0, 0.0001)));
+            ui.add(egui::Slider::new(&mut dt, RangeInclusive::new(0.0, 0.00005)));
             ui.label("Symulation steps per frame");
             ui.add(egui::Slider::new(
                 &mut steps_per_frame,
@@ -189,20 +192,20 @@ pub fn run_with_animation() {
             ui.horizontal(|ui| {
                 ui.selectable_value(
                     &mut current_simulation_engine,
-                    SimulationEngine::CPU,
-                    "Use CPU",
+                    SimulationEngine::Cpu,
+                    "CPU single threaded",
                 );
                 ui.selectable_value(
                     &mut current_simulation_engine,
-                    SimulationEngine::OPENCL,
-                    "Use OpenCL",
-                );
-                ui.selectable_value(
-                    &mut current_simulation_engine,
-                    SimulationEngine::CUDA,
-                    "Use CUDA",
+                    SimulationEngine::CpuMultithread,
+                    "CPU multi threaded",
                 );
             });
+            ui.selectable_value(
+                &mut current_simulation_engine,
+                SimulationEngine::None,
+                "Stop simulation",
+            );
             ui.separator();
             ui.horizontal(|ui| {
                 ui.selectable_value(
@@ -232,7 +235,7 @@ pub fn run_with_animation() {
             display,
             &graphics::draw_disks(
                 &nodes,
-                &connections_map,
+                &connections_structure,
                 &objects_interactions,
                 &current_coloring_mode,
                 last_frame_symulation_time,

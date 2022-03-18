@@ -18,6 +18,6 @@ void main() {
     outcolor = color;
     vec2 new_position = local_position * vec2(scale_x, scale_y) + position;
     new_position.y *= screen_ratio;
-    new_position *= zoom;
-    gl_Position = vec4(new_position + camera_position, 0.0, 1.0);
+    // new_position *= zoom;
+    gl_Position = vec4((new_position + camera_position) * zoom, 0.0, 1.0);
 }

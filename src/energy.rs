@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::node;
+use crate::node::{self, Node};
 
-fn object_repulsion_energy(nodes: &Vec<node::Node>, objects: &Vec<Vec<usize>>) -> f32 {
+fn object_repulsion_energy(nodes: &[Node], objects: &Vec<Vec<usize>>) -> f32 {
     let mut total_object_repulsion_energy = 0.0;
 
     let length = objects.len();
@@ -32,7 +32,7 @@ fn object_repulsion_energy(nodes: &Vec<node::Node>, objects: &Vec<Vec<usize>>) -
     return total_object_repulsion_energy;
 }
 
-fn bond_energy(nodes: &Vec<node::Node>, connections: &HashMap<(usize, usize), (f32, f32)>) -> f32 {
+fn bond_energy(nodes: &[Node], connections: &HashMap<(usize, usize), (f32, f32)>) -> f32 {
     let mut total_bond_energy = 0.0;
 
     connections.keys().for_each(|(a, b)| {
@@ -51,7 +51,7 @@ fn bond_energy(nodes: &Vec<node::Node>, connections: &HashMap<(usize, usize), (f
     return total_bond_energy;
 }
 
-fn wall_repulsion_energy(nodes: &Vec<node::Node>) -> f32 {
+fn wall_repulsion_energy(nodes: &[Node]) -> f32 {
     let mut total_wall_repulsion_energy = 0.0;
 
     nodes.iter().for_each(|n| {
@@ -69,7 +69,7 @@ fn wall_repulsion_energy(nodes: &Vec<node::Node>) -> f32 {
     return total_wall_repulsion_energy;
 }
 
-fn gravity_energy(nodes: &Vec<node::Node>) -> f32 {
+fn gravity_energy(nodes: &[Node]) -> f32 {
     let mut total_gravity_energy = 0.0;
     nodes.iter().enumerate().for_each(|(i, n1)| {
         total_gravity_energy += n1.mass * 9.81 * (n1.position.y + 0.5);
@@ -77,7 +77,7 @@ fn gravity_energy(nodes: &Vec<node::Node>) -> f32 {
     return total_gravity_energy;
 }
 
-fn kinetic_energy(nodes: &Vec<node::Node>) -> f32 {
+fn kinetic_energy(nodes: &[Node]) -> f32 {
     let mut total_kinetic_energy = 0.0;
     nodes.iter().enumerate().for_each(|(i, n1)| {
         total_kinetic_energy += n1.velocity.length_squared() * n1.mass * 0.5;
@@ -86,7 +86,7 @@ fn kinetic_energy(nodes: &Vec<node::Node>) -> f32 {
 }
 
 pub fn calculate_total_energy(
-    nodes: &Vec<node::Node>,
+    nodes: &[Node],
     connections: &HashMap<(usize, usize), (f32, f32)>,
     objects: &Vec<Vec<usize>>,
 ) -> (f32, f32, f32, f32, f32) {

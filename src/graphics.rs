@@ -108,50 +108,24 @@ pub fn radius_from_area(area: f32) -> f32 {
 }
 
 fn calculate_temperatue(
-    nodes: &Vec<Node>,
-    connections: &HashMap<(usize, usize), (f32, f32)>,
-    objects_interactions: &HashMap<u32, Vec<usize>>
+    nodes: &[Node],
+    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
+    // objects_interactions: &HashMap<u32, Vec<usize>>
 ) -> Vec<f32> {
     let mut forces: Vec<Vec2> = vec![Vec2::new(0.0, 0.0); nodes.len()];
 
-    connections.keys().for_each(|(a, b)| {
-        let i = *a;
-        let j = *b;
-        let (dx, v0) = *connections.get(&(i, j)).unwrap();
-
-        let dir = nodes[j].position - nodes[i].position;
-        let l = dir.length();
-
-        let c = (dx / l).powi(7) - (dx / l).powi(13);
-        let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-
-        forces[i] += v;
-        forces[j] -= v;
+    nodes.iter().enumerate().for_each(|(i, n)| {
+        connections_structure[i].iter().for_each(|(j, dx, v0)| {
+            let dir = nodes[*j].position - n.position;
+            let l = dir.length();
+    
+            let c = (dx / l).powi(7) - (dx / l).powi(13);
+            let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+    
+            forces[i] += v;
+        });
     });
 
-    let v0 = simulation_general::object_repulsion_v0;
-    let dx = simulation_general::object_repulsion_dx;
-
-    let objects: Vec<u32> = objects_interactions.keys().copied().collect();
-
-    for obj_i in 0..objects.len() {
-        for obj_j in obj_i+1..objects.len() {
-            objects_interactions[&objects[obj_i]].iter().for_each(|i| {
-                let a = *i;
-                objects_interactions[&objects[obj_j]].iter().for_each(|j| {
-                    let b = *j;
-                    let dir = nodes[b].position - nodes[a].position;
-
-                    let l = dir.length();
-                    let c = (dx / l).powi(13);
-                    let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-    
-                    forces[a] += v;
-                    forces[b] -= v;
-                });
-            });
-        }
-    }
 
     let v0 = simulation_general::wall_repulsion_v0;
     let dx = simulation_general::wall_repulsion_dx;
@@ -165,11 +139,6 @@ fn calculate_temperatue(
 
         forces[index] -= v;
     });
-
-    // nodes.iter().enumerate().for_each(|(index, n)| {
-    //     forces[index] -= n.velocity * n.drag;
-    //     forces[index].y += -9.81;
-    // });
 
     forces
         .iter()
@@ -186,8 +155,8 @@ pub enum ColoringMode {
 }
 
 pub fn draw_disks(
-    nodes: &Vec<Node>,
-    connections: &HashMap<(usize, usize), (f32, f32)>,
+    nodes: &[Node],
+    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
     objects_interactions: &HashMap<u32, Vec<usize>>,
     coloring_mode: &ColoringMode,
     dt: f32
@@ -196,8 +165,8 @@ pub fn draw_disks(
     // let colors = color_from_kinetic_energy(nodes);
     let colors = match coloring_mode {
         ColoringMode::KineticEnergy => color_from_kinetic_energy(nodes),
-        ColoringMode::Temperature => color_from_temperature(nodes, connections, objects_interactions, dt),
-        ColoringMode::Boundary => nodes.iter().map(|n| if n.is_boundary { [0.0, 0.0, 0.0] } else { [0.3, 0.3, 0.3] } ).collect()
+        ColoringMode::Temperature => color_from_temperature(nodes, connections_structure, objects_interactions, dt),
+        ColoringMode::Boundary => color_from_boundary(nodes)
     };
 
     nodes
@@ -217,57 +186,86 @@ pub fn draw_disks(
         .collect()
 }
 
+fn color_from_boundary(nodes: &[Node]) -> Vec<[f32; 3]> {
+    let max_id = nodes.iter().max_by(|x, y| x.object_id.cmp(&y.object_id)).unwrap().object_id;
+    let min_id = nodes.iter().min_by(|x, y| x.object_id.cmp(&y.object_id)).unwrap().object_id;
+    nodes.iter().map(|n| {
+        if !n.is_boundary { 
+            [0.3, 0.3, 0.3] 
+        } else {
+            number_to_rgb(n.object_id as f32 * 0.95, min_id as f32, max_id as f32)
+        } 
+    }).collect()
+}
+
 fn color_from_temperature(
-    nodes: &Vec<Node>,
-    connections: &HashMap<(usize, usize), (f32, f32)>,
+    nodes: &[Node],
+    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
     objects_interactions: &HashMap<u32, Vec<usize>>,
     dt: f32,
 ) -> Vec<[f32; 3]> {
-    const TEMPERATURE_CACHE_SIZE: usize = 200;
+    const TEMPERATURE_CACHE_SIZE: usize = 500;
+    const RECORD_INTERVAL: f32 = 0.0005;
+    const TOTAL_DT: f32 = TEMPERATURE_CACHE_SIZE as f32 * RECORD_INTERVAL;
+
     static mut TEMPERATURE_CACHE: Vec<Vec<f32>> = Vec::new();
-    static mut DT_CACHE: Vec<f32> = Vec::new();
     static mut CURRENT_RECORD: usize = 0;
+    static mut CURRENT_DT: f32 = 0.0;
     unsafe {
         TEMPERATURE_CACHE.resize(nodes.len(), vec![0.0; TEMPERATURE_CACHE_SIZE]);
         TEMPERATURE_CACHE
             .iter_mut()
             .for_each(|cache| cache.resize(TEMPERATURE_CACHE_SIZE, 0.0));
-        DT_CACHE.resize(TEMPERATURE_CACHE_SIZE, 0.0);
 
-        if dt > 0.0 {
+        CURRENT_DT += dt;
+
+        if CURRENT_DT > RECORD_INTERVAL {
             CURRENT_RECORD = (CURRENT_RECORD + 1) % TEMPERATURE_CACHE_SIZE;
-            let current_temperature = calculate_temperatue(nodes, connections, objects_interactions);
+            let current_temperature = calculate_temperatue(nodes, connections_structure);
             TEMPERATURE_CACHE
                 .iter_mut()
                 .enumerate()
                 .for_each(|(node_index, cache)| {
                     cache[CURRENT_RECORD] = current_temperature[node_index];
                 });
-            DT_CACHE[CURRENT_RECORD] = dt;
+            CURRENT_DT = 0.0;
         }
     }
 
-    let total_dt = unsafe {
-        let dt_sum = DT_CACHE.iter().copied().sum::<f32>();
-        if dt_sum > 0.0 {
-            dt_sum
-        } else {
-            f32::INFINITY
-        }
-    };
-
-    nodes
+    let energy: Vec<f32> = nodes
         .iter()
         .enumerate()
-        .map(|(i, n)| {
-            let color: f32 = unsafe { -0.5 * TEMPERATURE_CACHE[i].iter().copied().sum::<f32>() / total_dt };
-            number_to_rgb(color, -1000.0, 8000.0)
-        })
-        .collect()
+        .map(|(i, n)| unsafe { -0.5 * TEMPERATURE_CACHE[i].iter().copied().sum::<f32>() / TOTAL_DT })
+        .collect();
+
+    
+    let avg_per_node: Vec<f32> = energy.par_iter().enumerate().map(|(i, n)| {
+        let mut sum = energy[i] * 5.0;
+        let mut node_count: usize = 0;
+        connections_structure[i].iter().for_each(|(j, dx, v0)| {
+            connections_structure[*j].iter().for_each(|(k, dx, v0)| {
+                connections_structure[*k].iter().for_each(|(m, dx, v0)| {
+                    connections_structure[*m].iter().for_each(|(l, dx, v0)| {
+                        sum += energy[*l];
+                        node_count += 1;
+                    });
+                    sum += energy[*m] * 2.0;
+                    node_count += 2;
+                });
+                sum += energy[*k] * 3.0;
+                node_count += 3;
+            });
+            sum += energy[*j] * 4.0;
+            node_count += 4;
+        });
+        sum / (node_count as f32 + 5.0)
+    }).collect();
+
+    avg_per_node.iter().map(|color| number_to_rgb(*color, -2000.0, 10000.0)).collect()
 }
 
 fn color_from_kinetic_energy(
-    nodes: &Vec<Node>,
+    nodes: &[Node],
 ) -> Vec<[f32; 3]> {
 
     nodes
@@ -277,20 +275,6 @@ fn color_from_kinetic_energy(
         })
         .collect()
 }
-
-//     for (k, v) in connections {
-//         let (dx, v0) = *v;
-//         let (a, b) = (nodes[k.0].position, nodes[k.1].position);
-//         let color = ((a - b).length() - dx) * 20.0;
-//         graphics::add_rectangle(
-//             &mut verticies,
-//             &mut indices,
-//             a,
-//             b,
-//             0.007 + v0 * 0.00001,
-//             [0.2 + color, 0.2 + color, 0.2 + color],
-//         );
-//     }
 
 fn number_to_rgb(mut t: f32, min: f32, max: f32) -> [f32; 3] {
     assert!(max > min);
@@ -319,3 +303,17 @@ fn number_to_rgb(mut t: f32, min: f32, max: f32) -> [f32; 3] {
         }
     };
 }
+
+//     for (k, v) in connections {
+//         let (dx, v0) = *v;
+//         let (a, b) = (nodes[k.0].position, nodes[k.1].position);
+//         let color = ((a - b).length() - dx) * 20.0;
+//         graphics::add_rectangle(
+//             &mut verticies,
+//             &mut indices,
+//             a,
+//             b,
+//             0.007 + v0 * 0.00001,
+//             [0.2 + color, 0.2 + color, 0.2 + color],
+//         );
+//     }
