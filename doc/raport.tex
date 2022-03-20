@@ -263,7 +263,7 @@
     \begin{equation}
         \left< E_{kinetyczna, k} \right> = k_B T_k \Rightarrow T_k = \frac{\left< E_{kinetyczna, k} \right>}{k_B}
     \end{equation}
-    Gdzie $k_B$ tostała Boltzmanna.
+    Gdzie $k_B$ to stała Boltzmanna.
 
     \begin{enumerate}
         \item Jeśli $\vec{F_n} = 0 \Rightarrow T_k = 0$ czyli temperatura taka jak otoczenie.
@@ -274,14 +274,21 @@
 
     \begin{figure}[h]
         \centering
-        \includegraphics[width=8cm]{pressure_px}
+        \includegraphics[width=8cm]{pressure_box}
+        \caption{Schemat komory przeznaczonej do obliczania ciśnienia na węźle}
     \end{figure}
 
-    Węzeł otaczamy w komorze o boku $\Delta$. Zgodnie z definicją ciśnienie na ściankach można opisać wzorem:
+    Węzeł otaczamy w komorze o boku $\Delta = 2 dx$ gdzie $d_0 > 10 dx$. 
+    Obliczamy pochodną siły jaka odziaływała by na węzeł gdyby został 
+    on przemieszczony o $dx$ w każdym z czterech kierunków. Pochodna z siły Lennarda-Jonesa:
+    \begin{equation}
+        \frac{d}{dl} F_{LJ} = 3\frac{V_0}{(d_0)^2} \left[ -7 \left(\frac{d_0}{l}\right)^{8} + 13 \left(\frac{d_0}{l}\right)^{14} \right]
+    \end{equation}
+    
+    Zgodnie z definicją ciśnienie na ściankach można opisać wzorem:
     \begin{equation}
         P_x (x \pm \frac{\Delta}{2}) = \frac{F_x (x \pm \frac{\Delta}{2})}{\Delta}
     \end{equation}
-    Siła:
     \begin{equation}
         F_x (x + \frac{\Delta}{2}) = F_x (x) + \frac{\partial F_x}{\partial x} 
         \left| _{x + \frac{x}{2}}  \frac{x}{2} + \frac{\partial^2 F_x}{\partial x^2 }  \right| \frac{\Delta^2}{4} + O(\Delta^3)
@@ -310,12 +317,9 @@
     \begin{equation}
         p_{srednie} = \frac{1}{2} \left( -p_x - p_y \right)
     \end{equation}
-    Dodajemy minus ponieważ siła jest skierowana do środka komory a ciśnienie powinno być większe od zera.
-    \begin{enumerate}
-        \item $\Delta$ powinno być małe np. $\Delta = \frac{\delta_{LJ}}{20}$ gdzie $\delta_{LJ}$ to parametr potencjału Lennarda-Jonesa
-        \item dla położenia $k$-tego węzła $\vec{r_k}$ trzeba policzyć 4 pochodną siły.
-        \item pochodne eliminuje wpływ pola grawitacjnego, poniewać jest to wartość stała.
-    \end{enumerate}
+    Dodajemy minus ponieważ siła jest skierowana do środka komory a ciśnienie powinno być większe od zera. 
+    Dla każdego węzła trzeba policzyć pochodne siły w czterech punktach. 
+    Pochodna eliminuje wpływ pola grawitacjnego, poniewać jest to wartość stała.
 
     \subsection{Testy poprawność wzoru}
     \begin{enumerate}

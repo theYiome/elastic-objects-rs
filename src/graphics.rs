@@ -1,3 +1,4 @@
+use std::hash::Hash;
 use std::{collections::HashMap, f32::consts::PI};
 
 use crate::node::Node;
@@ -109,7 +110,7 @@ pub fn radius_from_area(area: f32) -> f32 {
 
 fn calculate_temperatue(
     nodes: &[Node],
-    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
+    connections_structure: &[Vec<(usize, f32, f32)>],
     // objects_interactions: &HashMap<u32, Vec<usize>>
 ) -> Vec<f32> {
     let mut forces: Vec<Vec2> = vec![Vec2::new(0.0, 0.0); nodes.len()];
@@ -151,12 +152,13 @@ fn calculate_temperatue(
 pub enum ColoringMode {
     KineticEnergy,
     Temperature,
-    Boundary
+    Boundary,
+    Pressure
 }
 
 pub fn draw_disks(
     nodes: &[Node],
-    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
+    connections_structure: &[Vec<(usize, f32, f32)>],
     objects_interactions: &HashMap<u32, Vec<usize>>,
     coloring_mode: &ColoringMode,
     dt: f32
@@ -166,7 +168,8 @@ pub fn draw_disks(
     let colors = match coloring_mode {
         ColoringMode::KineticEnergy => color_from_kinetic_energy(nodes),
         ColoringMode::Temperature => color_from_temperature(nodes, connections_structure, objects_interactions, dt),
-        ColoringMode::Boundary => color_from_boundary(nodes)
+        ColoringMode::Boundary => color_from_boundary(nodes),
+        ColoringMode::Pressure => color_from_pressure(nodes, connections_structure)
     };
 
     nodes
@@ -186,6 +189,28 @@ pub fn draw_disks(
         .collect()
 }
 
+fn force_derivative_near_node(nodes: &[Node], connections_structure: &[(usize, f32, f32)], point: Vec2) -> Vec2 {
+    connections_structure.iter().fold(Vec2::new(0.0, 0.0), |accum, &(i, dx, v0)| {
+        let dir = nodes[i].position - point;
+        let l = dir.length();
+        let c = -7.0 * (dx / l).powi(8) + 13.0 * (dx / l).powi(14);
+        let v = dir.normalize() * 3.0 * (v0 / (dx * dx)) * c;
+        // println!("f: {}", 3.0 * (v0 / (dx * dx)) * c);
+        accum + v
+    })
+}
+
+fn force_derivative_near_node2(nodes: &[Node], connections_structure: &[(usize, f32, f32)], point: Vec2) -> Vec2 {
+    connections_structure.iter().fold(Vec2::new(0.0, 0.0), |accum, &(i, dx, v0)| {
+        let dir = nodes[i].position - point;
+        let l = dir.length();
+        let c = (dx / l).powi(7) + (dx / l).powi(13);
+        let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+        // println!("f: {}", 3.0 * (v0 / (dx * dx)) * c);
+        accum + v
+    })
+}
+
 fn color_from_boundary(nodes: &[Node]) -> Vec<[f32; 3]> {
     let max_id = nodes.iter().max_by(|x, y| x.object_id.cmp(&y.object_id)).unwrap().object_id;
     let min_id = nodes.iter().min_by(|x, y| x.object_id.cmp(&y.object_id)).unwrap().object_id;
@@ -198,9 +223,55 @@ fn color_from_boundary(nodes: &[Node]) -> Vec<[f32; 3]> {
     }).collect()
 }
 
+// fn color_from_pressure2(
+//     nodes: &[Node],
+//     connections_structure: &[Vec<(usize, f32, f32)>]
+// ) -> Vec<[f32; 3]> {
+
+//     nodes.iter().enumerate().map(|(index, n)| {
+//         if connections_structure[index].len() < 1 {
+//             [0.0, 0.0, 0.0]
+//         }
+//         else {
+//             let pressure = connections_structure[index].iter().fold(0.0, |accum, &(i, dx, v0)| {
+//                 let dir = nodes[i].position - n.position;
+//                 let l = dir.length();
+//                 let c = (dx / l).powi(7) + (dx / l).powi(13);
+//                 // let v = dir.normalize() * 3.0 * (1.0 / dx) * c;
+//                 // println!("f: {}", 3.0 * (v0 / (dx * dx)) * c);
+//                 accum + (3.0 * (1.0 / dx) * c).abs()
+//             });
+//             number_to_rgb(pressure, 2000.0, 5000.0)
+//         }
+//     }).collect()
+// }
+
+fn color_from_pressure(
+    nodes: &[Node],
+    connections_structure: &[Vec<(usize, f32, f32)>]
+) -> Vec<[f32; 3]> {
+
+    nodes.iter().enumerate().map(|(index, n)| {
+        if connections_structure[index].len() < 1 {
+            [0.0, 0.0, 0.0]
+        }
+        else {
+            let dx = 0.0005;
+            let top = force_derivative_near_node2(nodes, &connections_structure[index], n.position + Vec2::new(0.0, dx)).y;
+            let bottom = force_derivative_near_node2(nodes, &connections_structure[index], n.position + Vec2::new(0.0, -dx)).y;
+            let right = force_derivative_near_node2(nodes, &connections_structure[index], n.position + Vec2::new(dx, 0.0)).x;
+            let left = force_derivative_near_node2(nodes, &connections_structure[index], n.position + Vec2::new(-dx, 0.0)).x;
+            let pressure = -0.25 * (-(right - left) - (top - bottom));
+            // println!("{pressure}");
+            number_to_rgb(pressure, 83600.0, 86400.0)
+        }
+    }).collect()
+}
+
+
 fn color_from_temperature(
     nodes: &[Node],
-    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
+    connections_structure: &[Vec<(usize, f32, f32)>],
     objects_interactions: &HashMap<u32, Vec<usize>>,
     dt: f32,
 ) -> Vec<[f32; 3]> {
@@ -238,30 +309,29 @@ fn color_from_temperature(
         .map(|(i, n)| unsafe { -0.5 * TEMPERATURE_CACHE[i].iter().copied().sum::<f32>() / TOTAL_DT })
         .collect();
 
-    
     let avg_per_node: Vec<f32> = energy.par_iter().enumerate().map(|(i, n)| {
-        let mut sum = energy[i] * 5.0;
+        let mut sum = energy[i];
         let mut node_count: usize = 0;
-        connections_structure[i].iter().for_each(|(j, dx, v0)| {
-            connections_structure[*j].iter().for_each(|(k, dx, v0)| {
-                connections_structure[*k].iter().for_each(|(m, dx, v0)| {
-                    connections_structure[*m].iter().for_each(|(l, dx, v0)| {
-                        sum += energy[*l];
+        connections_structure[i].iter().for_each(|&(j, dx, v0)| {
+            connections_structure[j].iter().for_each(|&(k, dx, v0)| {
+                connections_structure[k].iter().for_each(|&(m, dx, v0)| {
+                    connections_structure[m].iter().for_each(|&(l, dx, v0)| {
+                        sum += energy[l];
                         node_count += 1;
                     });
-                    sum += energy[*m] * 2.0;
-                    node_count += 2;
+                    sum += energy[m];
+                    node_count += 1;
                 });
-                sum += energy[*k] * 3.0;
-                node_count += 3;
+                sum += energy[k];
+                node_count += 1;
             });
-            sum += energy[*j] * 4.0;
-            node_count += 4;
+            sum += energy[j];
+            node_count += 1;
         });
-        sum / (node_count as f32 + 5.0)
+        sum / (node_count as f32 + 1.0)
     }).collect();
 
-    avg_per_node.iter().map(|color| number_to_rgb(*color, -2000.0, 10000.0)).collect()
+    avg_per_node.iter().map(|color| number_to_rgb(*color, -2000.0, 9000.0)).collect()
 }
 
 fn color_from_kinetic_energy(

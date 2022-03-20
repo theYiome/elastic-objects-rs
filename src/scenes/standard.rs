@@ -218,10 +218,17 @@ pub fn run_with_animation() {
                     graphics::ColoringMode::Boundary,
                     "Boundary nodes",
                 );
+            });
+            ui.horizontal(|ui| {
                 ui.selectable_value(
                     &mut current_coloring_mode,
                     graphics::ColoringMode::Temperature,
                     "Temperature",
+                );
+                ui.selectable_value(
+                    &mut current_coloring_mode,
+                    graphics::ColoringMode::Pressure,
+                    "Pressure",
                 );
             });
         });
