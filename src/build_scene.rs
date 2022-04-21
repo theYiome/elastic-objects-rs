@@ -1,4 +1,4 @@
-use crate::node::{self, Node};
+use crate::node::{Node};
 use glam::Vec2;
 
 pub fn build_rectangle(
@@ -126,7 +126,7 @@ pub fn count_neighbours(
 }
 
 pub fn get_boundary_nodes(
-    nodes: &Vec<node::Node>,
+    nodes: &Vec<Node>,
     search_distance: f32,
     offset: usize,
 ) -> Vec<usize> {
@@ -139,7 +139,7 @@ pub fn get_boundary_nodes(
                 continue;
             };
 
-            if node::Node::distance(&nodes[i], &nodes[j]) < search_distance {
+            if Node::distance(&nodes[i], &nodes[j]) < search_distance {
                 counts[i] += 1;
             }
         }

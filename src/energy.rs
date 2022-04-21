@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::node::{self, Node};
+use crate::node::{Node};
 
 fn object_repulsion_energy(nodes: &[Node], objects: &Vec<Vec<usize>>) -> f32 {
     let mut total_object_repulsion_energy = 0.0;

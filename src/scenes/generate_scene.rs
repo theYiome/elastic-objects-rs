@@ -5,13 +5,13 @@ use std::vec::Vec;
 pub fn standard_scene() -> (Vec<Node>, HashMap<(usize, usize), (f32, f32)>) {
     let object1_sx = 180;
     let object1_sy = 90;
-    let object1_st = object1_sx * object1_sy;
+    // let object1_st = object1_sx * object1_sy;
     let spacing1 = 0.01;
 
-    let object2_sx = 40;
-    let object2_sy = 80;
-    let object2_st = object2_sx * object2_sy;
-    let object2_m = 15.0;
+    // let object2_sx = 40;
+    // let object2_sy = 80;
+    // let object2_st = object2_sx * object2_sy;
+    // let object2_m = 15.0;
     let spacing2 = 0.01;
 
     // let mut nodes1 = build_scene::build_circle(8, spacing2, -0.12, -0.4, 30.0, 0.5, 1);
@@ -78,7 +78,7 @@ pub fn performance_test_scene_optimized(object_size: usize) -> (Vec<Node>, HashM
     objects.push(build_scene::get_boundary_nodes(&nodes, spacing * 1.1, 0));
 
     let end_of_first = object_size * object_size;
-    let end_of_second = object_size * object_size * 2;
+    // let end_of_second = object_size * object_size * 2;
     println!(
         "{} -> {}",
         object_size,
