@@ -1,10 +1,10 @@
-use crate::{simulation_cpu, energy};
+use crate::{energy};
 use super::generate_scene;
 
 
 pub fn run_performace_test(object_size: usize, dt: f32, simulation_time: f32, optimized: bool) {
 
-    let (mut nodes, mut connections_map, mut objects) = if optimized {
+    let (nodes, connections_map, objects) = if optimized {
         generate_scene::performance_test_scene_optimized(object_size)
     } else {
         generate_scene::performance_test_scene(object_size)

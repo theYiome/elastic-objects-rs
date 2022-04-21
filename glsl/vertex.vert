@@ -1,4 +1,4 @@
-#version 460
+#version 420
 precision mediump float;
 
 in vec2 local_position;

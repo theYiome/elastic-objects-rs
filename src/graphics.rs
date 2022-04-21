@@ -1,8 +1,7 @@
-use std::hash::Hash;
 use std::{collections::HashMap, f32::consts::PI};
 
 use crate::node::Node;
-use crate::{graphics, simulation_general};
+use crate::{simulation_general};
 use glam::Vec2;
 use rayon::prelude::*;
 
@@ -128,8 +127,8 @@ fn calculate_temperatue(
     });
 
 
-    let v0 = simulation_general::wall_repulsion_v0;
-    let dx = simulation_general::wall_repulsion_dx;
+    let v0 = simulation_general::WALL_REPULSION_V0;
+    let dx = simulation_general::WALL_REPULSION_DX;
 
     nodes.iter().enumerate().for_each(|(index, n)| {
         let dir = glam::vec2(n.position.x, -1.0) - n.position;

@@ -2,11 +2,14 @@ use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
 use crate::simulation_general::calculate_connections_structure;
-use crate::{energy, graphics, simulation_cpu, simulation_general, simulation_gpu};
+use crate::{energy, graphics, simulation_cpu, simulation_general};
+
+#[cfg(feature = "rust-gpu-tools")]
+use crate::simulation_gpu;
 
 use glam::Vec2;
 use glium::glutin::event_loop;
-use glium::{glutin, PolygonMode, Surface};
+use glium::{glutin, Surface};
 use glutin::event::ElementState;
 use glutin::{
     event::{Event, VirtualKeyCode, WindowEvent},
@@ -76,8 +79,8 @@ pub fn run_with_animation() {
     let mut current_coloring_mode = graphics::ColoringMode::KineticEnergy;
 
     // prepare opencl and cuda programs
-    let device = *rust_gpu_tools::Device::all().first().unwrap();
-    let opencl_program = simulation_gpu::create_opencl_program(&device);
+    #[cfg(feature = "rust-gpu-tools")]
+    let opencl_program = simulation_gpu::gpu::create_opencl_program();
 
     let (disk_verticies, disk_indices) = graphics::disk_mesh(12);
     // let (disk_verticies, disk_indices) = graphics::square_mesh();
