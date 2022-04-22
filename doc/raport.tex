@@ -89,7 +89,7 @@
     Macierz rzutowania odpowiada za transformację z układu współrzędnych kamery do układu przycinania 
     (clip coordinate system) \cite{grafika3d} (strona 139). W aplikacji używana jest do zmiany położenia 
     obecnie obserwowanego miejsca oraz przybliżanie i oddalanie kamery. Ponieważ przestrzeń po której porusza się
-    kamera jest dwuwymiarowa
+    kamera jest dwuwymiarowa, macierz taka ma wymiary $3 \times 3$.
 
     Istotną optymalizacją było instanced rendering, metoda pozwalająca na renderowanie wielu obiektów na raz 
     przy użyciu jednego draw call. Najpierw należy zainicjalizowawać geometrię obiektu który będzie renderowany, 
@@ -257,31 +257,12 @@
         {\delta_v}^2  =  \frac{g^2 T^2}{12}
     \end{equation}
 
-    Temperatura wciąż wzrasta. Jeżeli jednak $a >> g$ to wpływ jest niewielki a dla $T << 1$ oraz $a >> g$ 
-    np. $a = 5 \cdot g \Rightarrow {\delta_{v_a}}^2 = 25 \cdot {\delta_{v_g}}^2$
+    Z powyższych obliczeń wynikia, że temperatura wciąż wzrasta podczas swobodnego spadku. 
+    Jeżeli jednak $a >> g$ to wpływ na temperaturę jest niewielki a dla $T << 1$ oraz $a >> g$ 
+    np. $a = 5 \cdot g \Rightarrow {\delta_{v_a}}^2 = 25 \cdot {\delta_{v_g}}^2$ \\
 
-    \subsection{Algorytm obliczania}
-    $\tau = \Delta t \cdot j$ dla $j = 0, 1, ..., n-1$ gdzie $\tau$ to okres czas w którym uśredniamy wyniki. \\ 
-    $t = \Delta t \cdot i$ dla $i = 0, 1, ..., N_{time}$ i $t >> \tau$\\ 
-    $t_{max} = \Delta t \cdot N_{time}$ gdzie $t_{max}$ to czas trwania symulacji.
-
-    \begin{equation}
-        {\delta_v}^2 = \left( \frac{1}{n} \sum_{i=0}^{n-1} {v_i}^2 \right)  -  \left( \frac{1}{n} \sum_{i=0}^{n-1} v_i \right)^2
-    \end{equation}
-
-    Należy liczyć na bieżąco $v_{k,j}$ oraz $v_{k,j}^2$ gdzie $k$ to numer cząsteczki a $j = 0, 1, ..., n-1$ to numer chwili czasowej. \\ \\
-    Tworzymy rejestr w postaci tablicy dla każdej cząsteczki.
-
-    \begin{figure}[h]
-        \centering
-        \includegraphics[width=19cm]{tmp_reg}
-        \caption{Rejestry z tymczasowymi wartościami $v_{k,j}$ i $v_{k,j}^2$}
-    \end{figure}
-
-    Do rejestru dostajemy się za pomocą dzielenia modulo $j = i \, \%  \, n$, które gwarantuje, że nie wyjdziemy poza tablicę 
-    oraz stare wartości będą nadpisywana na bieżąco.
-
-    \lstinputlisting[language=C]{code/temperature.c}
+    Ze względu na powyżej przedstawione problemy oraz trudną implementację, metoda ta nie została wykorzystana
+    w dalszej części pracy.
 
     \subsection{Temperatura z twierdzenia o wiriale}
     Prędkości węzłów zmieniają się w czasie, więc będzie też zmieniać się średnia energia kinetyczna układu.
@@ -326,12 +307,38 @@
     \begin{equation}
         \left< E_{kinetyczna, k} \right> = k_B T_k \Rightarrow T_k = \frac{\left< E_{kinetyczna, k} \right>}{k_B}
     \end{equation}
-    Gdzie $k_B$ to stała Boltzmanna.
+    Gdzie $k_B$ to stała Boltzmanna a $T_k$ to obliczona temperatura. \\
 
+    Warto zwrócić uwagę na właściwości powyższego wzoru:
     \begin{enumerate}
-        \item Jeśli $\vec{F_n} = 0 \Rightarrow T_k = 0$ czyli temperatura taka jak otoczenie.
-        \item Jeśli $\left< E_{kinetyczna, k} \right> < 0 \Rightarrow T_k < 0$ oznacza że lokalna temperatura stało się mniejsze niż w otoczeniu obiektu.
+        \item Jeśli $\vec{F_n} = 0 \Rightarrow T_k = 0$ czyli temperatura jest taka jak temperatura otoczenia.
+        \item Jeśli $\left< E_{kinetyczna, k} \right> < 0 \Rightarrow T_k < 0$ oznacza że lokalna 
+        temperatura stało się mniejsze niż w otoczeniu obiektu.
     \end{enumerate}
+
+    \subsection{Algorytm obliczania}
+    $\tau = \Delta t \cdot j$ dla $j = 0, 1, ..., n-1$ gdzie $\tau$ to okres czas w którym uśredniamy wyniki. \\ 
+    $t = \Delta t \cdot i$ dla $i = 0, 1, ..., N_{time}$ i $t >> \tau$\\ 
+    $t_{max} = \Delta t \cdot N_{time}$ gdzie $t_{max}$ to czas trwania symulacji. \\
+    
+    Dla każdej cząsteczki tworzymy rejestr w postaci tablicy. 
+    Suma średnich energii $E_{kinetyczna}$ obliczana jest w każdej chwili czasowej.
+    Aby ustabilizować rezultaty, energia kinetyczna dla węzła będzie obliczana jako 
+    średnia z $n$ ostatnich chwili czasowych a ostateczna temperatura jest uśredniana dla 
+    Do rejestru dostajemy się za pomocą dzielenia modulo $j = i \, \%  \, n$, które gwarantuje, 
+    że nie wyjdziemy poza tablicę oraz stare wartości będą nadpisywana na bieżąco. \\
+
+    Dodatkowo aby bardziej wygładzić wyniki kolor węzła ostateczna temperatura dla danego węzła 
+    jest równa średniej z temperatur $4$ rzędów najbliższych węzłów.
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=8cm]{avg.drawio}
+        \caption{Węzły z których liczona jest średnia temperatura}
+    \end{figure}
+
+    Obliczanie temperatury przy użyciu twierdzenia o wiriale okazało się być bardziej intuicyjne i
+    wyraźnie łatwiejsza w implementacji, dlatego ta metoda będzie używana w dalszej części pracy.
 
     \section{Wizualizacja ciśnienia}
 
@@ -402,7 +409,7 @@
     
     \begin{wrapfigure}{r}{0.45\textwidth}
         \includegraphics[width=0.9\linewidth]{objects_raw} 
-        \caption{Widok aplikacji w fazie testów z widocznymi dwoma obiektami $8 \times 8$ oraz $6 \times 4$}
+        \caption{Widok aplikacji z widocznymi dwoma obiektami $8 \times 8$ oraz $6 \times 4$}
     \end{wrapfigure}
     Jeżeli wszystkie algorytmy symulujące oddziaływania fizyczne zostały zaimplementowane poprawnie 
     to w przypadku gdy nie występują żadne siły oporu energia całkowita układu powinna 
@@ -415,8 +422,9 @@
         \item Energia potencjalna odpychająca pomiędzy obiektami a podłożem
         \item Energia potencjalna odpychająca pomiędzy dwoma obiektami
     \end{enumerate}
-    Do testu zachowania energii wykorzystane są 
-    dwa obiekty o rozmiarach odpowiednio $8 \times 8$ i $6 \times 4$ oraz statyczne podłoże. Obiekty
+
+    Do testu zachowania energii wykorzystane są dwa obiekty o rozmiarach 
+    odpowiednio $8 \times 8$ i $6 \times 4$ oraz statyczne podłoże. Obiekty
     znajdują się w polu grawitacyjnym, nie ma żadnych sił oporu/tarcia.
 
     \subsubsection{Parametry symulacji}
@@ -425,7 +433,7 @@
         dt &= 10^{-5} [s] \\
         t_{max} &= 8 [s]
     \end{align*}
-    \pagebreak
+
     \subsection{Wyniki}
     \begin{figure}[h]
         \centering
@@ -483,9 +491,11 @@
 
     \subsection{Opis testu}
     Rozpatrujemy scenariusz z dwoma obiektami, sprawdzamy liczbę iteracji symulacji na sekundę stopniowo
-    zwiększając liczbę węzłów w obydwóch obiektach. Jest to jednowątkowa wersja algorytmu działająca na CPU, 
-    test został wykonany na procesorze AMD Ryzen 5 5600X.
-    Ilość węzłów w bokach obiektów ustawiana jest kolejno na: 3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60.
+    zwiększając liczbę węzłów w obydwóch obiektach.
+    Test wydajności został wykonany na procesorze AMD Ryzen 5 5600X, 
+    jest to jednowątkowa wersja algorytmu działająca na CPU.
+    Ilość węzłów w bokach obiektów ustawiana jest kolejno na: 
+    3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60.
     
     \subsection{Wyniki}
     Wyniki z przeprowadzonego testu prezentują się następująco:
@@ -497,9 +507,6 @@
             ilości węzłów w bokach obiektów dla dwóch metod obsługi zderzeń
         }
     \end{figure}
-
-    Wersja algorytmu biorąca pod uwagę jedynie węzły brzegowe danych obiektów podczas obliczania kolizji cechuje 
-    się wyraźnie zwiększoną wydajnością.
 
     \begin{table}[H]
         \centering
@@ -553,51 +560,54 @@
     obliczanie wpływu pola grawitacyjnego czy obliczanie wpływu sił oporu.
 
         
-    \section{Test rozrywania obiektu}
+    \section{Test rozrywania dwóch obiektów o małej ilości węzłów}
     \subsection{Opis testu}
-    Jeden obiekt zostaje umieszczony nieruchomo przy podłożu, drugi znajduje się nad nim. Siła grawitacji
-    jest aktywna, z tego powodu wolno spadający obiekt zderza się z obiektem stacjonarnym.
+    Dwa nieruchome obiekty, jeden zostaje umieszczony nieruchomo przy podłożu, 
+    drugi znajduje się na pewnej wysokości nad obiektem pierwszym. Siła grawitacji
+    jest aktywna, z tego powodu obiekt drugi zaczyna spadać na obiekt pierwszy i po chwili zderza się z nim. \\ 
+
     Jeżeli odległość między dwoma połączonymi węzłami zwiększy się powyżej $1.5$ odległości równowagi dla 
     tego połączenia ($d_x$), połączenie to zostaje zerwane, w ten sposób symulujemy rozrywanie obiektów pod dużym 
     obciążeniem. Do obsługi kolizji została użyta wersja algorytmu każdy węzeł z każdym węzłem, ponieważ
     działa on poprawnie dla przenikających się obiektów a przy relatywnie niewielkiej liczbie 
     węzłów ($4$ i $288$) wciąż zapewnia bardzo dobrą płynność działania animacji.
 
-        
     \subsection{Parametry symulacji}
-    Parametry ogólne:
-    \begin{itemize}
-        \item $g = 9.81 [\frac{m}{s^2}]$
-        \item $dt = 10^{-5}[s]$
-    \end{itemize}
-    Odpychanie międzyobiektowe:
-    \begin{itemize}
-        \item $V_{0} = 20$
-        \item $d_{0} = 0.07$
-    \end{itemize}
-    Parametry obiektu $12 \times 24$:
-    \begin{itemize}
-        \item $c_{1} = 5.0$
-        \item $m_{1} = 1.0$
-        \item $d_{1} = 0.08$
-        \item $V_{1} = 70.0$
-        \item $p_{1} = [-0.92, -0.925]$
-    \end{itemize}
-    Parametry obiektu $2 \times 2$:
-    \begin{itemize}
-        \item $c_{2} = 1.0$
-        \item $m_{2} = 30.0, 50.0, 80.0$
-        \item $d_{2} = 0.15$
-        \item $V_{2} = 500.0$
-        \item $p_{2} = [-0.12, 0.8]$
-    \end{itemize}
+    Do symulacji zostały wykorzystane poniższe parametry:
+    \begin{multicols*}{2}
+        \begin{itemize}
+            \item $g = 9.81$
+            \item $dt = 10^{-5}$
+        \end{itemize}
+        Odpychanie międzyobiektowe:
+        \begin{itemize}
+            \item $V_{0} = 20$
+            \item $d_{0} = 0.07$
+        \end{itemize}
+        Parametry obiektu $12 \times 24$:
+        \begin{itemize}
+            \item $c_{1} = 5.0$
+            \item $m_{1} = 1.0$
+            \item $d_{1} = 0.08$
+            \item $V_{1} = 70.0$
+            \item $p_{1} = [-0.92, -0.925]$
+        \end{itemize}
+        Parametry obiektu $2 \times 2$:
+        \begin{itemize}
+            \item $c_{2} = 1.0$
+            \item $m_{2} = 30.0, 50.0, 80.0$
+            \item $d_{2} = 0.15$
+            \item $V_{2} = 500.0$
+            \item $p_{2} = [-0.12, 0.8]$
+        \end{itemize}
+    \end{multicols*}
+
     Parametry $p_x$ oznaczają pozycję początkową obiektu, $m_x$ masę węzłów w obiekcie, 
     $d_x$ pozycję równowagi przyciągania/odpychania pomiędzy dwoma węzłami dla tego
     samego obiektu lub jedynie odpychania dla oddziaływań międzywęzłowych,
     $V_x$ współczynnik oddziaływania międzywęzłowego, $g$ przyśpieszenie grawitacyjne, 
     $c_x$ współczynnik oporu powietrza dla węzłów w obiekcie.
 
-    \newpage
     \subsection{Wolny spadek obiektu o masie 120 kg}
     \begin{figure}[h]
 
@@ -701,7 +711,15 @@
 \chapter{Podsumowanie}
     \section{Wnioski}
     Zastosowanie metoda dynamiki molekularnej daje bardzo interesujące 
-    wyniki podczas symulacji zderzeń obiektów.
+    wyniki podczas symulacji zderzeń obiektów. Zastosowanie dużej ilości węzłów pozwala na 
+    ukazanie realistycznie wyglądających obiektów elastycznych zdolnych do kolizji między sobą 
+    i rozrywających się gdy działa na nie odpowiednio duża siła. \\
+    
+    Konieczność wykonywania i wyświetlania symulacji z dużą ilością węzłów w czasie 
+    rzeczywistym tworzy wiele problemów z wydajnością programu, wymagając
+    od programisty kreatywnego podejścia do optymalizacji. Ukazuje również korzyści wynikające z 
+    zastosowania zrównoleglenia algorytmów, pozwalając na wykonywanie ich znacznie znacznie szybciej na 
+    urządzeniach wielowątkowych takich jak procesory czy karty graficzne.
 
     \section{Dodatek}
 
@@ -726,16 +744,26 @@
     teraz stała się energią wewnętrzną obiektów (wibracje obiektów pochłaniają część energii).
 
     \subsubsection{Proste zderzenie dwóch obiektów}
-    \url{https://www.youtube.com/watch?v=4cGcL_5yUt4}
+    \url{https://www.youtube.com/watch?v=4cGcL_5yUt4} \\ 
+
+    Przypadek pokazujący zderzenie dwóch obiektów nieznajdujących się w polu grawitacyjnym.
+    Jednemu z obiektów nadana jest prędkość początkowa, po chwili obiekty zderzają się i 
+    odbijają się od siebie.
 
     \subsubsection{Zderzenie obiektów 120 kg z 288 kg}
-    \url{https://youtu.be/3dV6EpRacyA}
+    \url{https://youtu.be/3dV6EpRacyA} \\
+
+    Wolny spadek, brak zniszczeń obiektów.
 
     \subsubsection{Zderzenie obiektów 200 kg z 288 kg}
-    \url{https://youtu.be/lRGl7CJiqFU}
+    \url{https://youtu.be/lRGl7CJiqFU} \\
+
+    Wolny spadek, częściowe uszkodzenie jednego z obiektów.
 
     \subsubsection{Zderzenie obiektów 320 kg z 288 kg}
-    \url{https://youtu.be/VYeCsaqNxAY}
+    \url{https://youtu.be/VYeCsaqNxAY} \\
+
+    Wolny spadek, pełne zniszczenie obydwóch obiektów.
 
     \subsection{Repozytorium}
     \subsubsection{Link do repozytorium z kodem}
