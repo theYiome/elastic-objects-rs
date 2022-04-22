@@ -75,13 +75,21 @@
     Do generowania grafiki i animacji zostało wykorzystane API OpenGL w profilu rdzennym (core profile), pozwalającym
     samodzielnie programować shadery \cite{grafika3d} (strona 13). \\
 
-    W nowoczesnym OpenGL potok renderowania składa się z: storzenia buforów na werteksy i indexy, w shaderze werteksów
-    przekształcenia położeń werteksów za pomocą macierzy rzutowania i ustalenia koloru dla każdego werteksa,
-    przycinanie i rasteryzacja, shader fragmentów wykonuje operacje na pikselach mających na celu 
-    ustalenie ostatecznego koloru dla każdego piksela, test głębi, blending \cite{grafika3d} (strona 72). \\
+    W nowoczesnym OpenGL potok renderowania składa się z \cite{grafika3d} (strona 72):
+    \begin{enumerate}
+        \item Stworzenia buforów na werteksy i indeksy.
+        \item W shaderze werteksów przekształcenia położeń werteksów 
+        za pomocą macierzy rzutowania i ustalenia koloru dla każdego werteksu.
+        \item Przycinanie i rasteryzacja.
+        \item Shader fragmentów wykonuje operacje na pikselach mających na celu 
+        ustalenie ostatecznego koloru dla każdego piksela.
+        \item Test głębi, blending.
+    \end{enumerate}
 
     Macierz rzutowania odpowiada za transformację z układu współrzędnych kamery do układu przycinania 
-    (clip coordinate system) \cite{grafika3d} (strona 139) \\
+    (clip coordinate system) \cite{grafika3d} (strona 139). W aplikacji używana jest do zmiany położenia 
+    obecnie obserwowanego miejsca oraz przybliżanie i oddalanie kamery. Ponieważ przestrzeń po której porusza się
+    kamera jest dwuwymiarowa
 
     \section{Model oddziaływań}
     Potencjał Lennarda-Jonesa został wykorzystany do symulacji przyciągania/odpychania 
@@ -95,7 +103,7 @@
         \sigma = \frac{d_0}{\sqrt[6]{2}}
     \end{equation}
     Gdzie $l$ to odległość między dwiema oddziałującymi cząstkami, $V_0$ to współczynnik określający wielkość potencjału 
-    a $\sigma$ to odległość, przy której energia potencjalna odziaływania pomiedzy cząsteczkami wynosi zero. 
+    a $\sigma$ to odległość, przy której energia potencjalna oddziaływania pomiędzy cząsteczkami wynosi zero. 
     Potencjał Lennarda-Jonesa ma swoje minimum w odległości $d_0 = \sqrt[6]{2} \sigma$. \\ \\
     Siła zdefiniowana jest jako pochodna energii:
     \begin{equation}
@@ -121,8 +129,8 @@
     \newpage
     \section{Wizualizacja temperatury}
     \subsection{Temperatura z teorii gazów}
-    Punktem wyjścia moe być zasada ekwipartycji energii: średnia energia kintetyczna na jeden stopień swobody jest równa 
-    $\frac{k_{B}T}{2}$ gdzie $k_{B}$ to stała Boltzmana a $T$ to temperatura.
+    Punktem wyjścia moe być zasada ekwipartycji energii: średnia energia kinetyczna na jeden stopień swobody jest równa 
+    $\frac{k_{B}T}{2}$ gdzie $k_{B}$ to stała Boltzmanna a $T$ to temperatura.
 
     \begin{equation}
         \left< E_{k} \right> = s \frac{k_{B}T}{2}
@@ -142,14 +150,14 @@
 
     \subsection{Weryfikacja poprawności wzoru}
     Rozważmy przypadek gdy obiekt porusza się w przestrzeni jako całość: swobodny spadek w polu grawitacyjnym.
-    Węzły nie drgają i przepieszczają się z tą samą prędkością 
+    Węzły nie drgają i przemieszczają się z tą samą prędkością 
     $\vec{V_k} = \vec{V_0} + \vec{g}t$ dla $t > 0  \Rightarrow  |\vec{V_k}|^2  \Rightarrow  T > 0$ a 
     przecież swobodny spadek nie rozgrzewa ciał. 
     Wniosek: ten wzór jest nieodpowiedni dla naszego modelu, należy go zmodyfikować.
     
     \subsection{Modyfikacja wzoru}
-    Należy przeskalować prędkość, to znaczy odjąć średnią prędkość z jaką porusa się obiekt jako całość, wówczas nie będzie
-    to prowadziło dodadkowego wzrosu temperatury. Def: $\left< v^{2} \right>  =  \frac{1}{T} \int_{0}^{T} v^2(t) dt$
+    Należy przeskalować prędkość, to znaczy odjąć średnią prędkość z jaką porusza się obiekt jako całość, wówczas nie będzie
+    to prowadziło dodatkowego wzrostu temperatury. Def: $\left< v^{2} \right>  =  \frac{1}{T} \int_{0}^{T} v^2(t) dt$
     uśredniony po krótkich odcinkach czasu. Estymator $\left< v^{2} \right>$ to średnia arytmetyczna: 
     $t = t_i = i \cdot \Delta t$ dla $i = 0, 1, ..., n-1$.
 
@@ -158,7 +166,7 @@
         = \frac{1}{n} \sum_{i = 0}^n {v_i}^2
     \end{equation}
 
-    Modyfikujemy wzór odejmująć wartość średnią:
+    Modyfikujemy wzór odejmując wartość średnią:
     \begin{align*}
         \left< \left( v - \left< v \right> \right)^2 \right>  &=  
         \frac{1}{T} \int_{0}^{T} \left( v(t) - \left< v \right> \right)^2 dt  \\
@@ -200,13 +208,13 @@
     \subsection{Algorytm obliczania}
     $\tau = \Delta t \cdot j$ dla $j = 0, 1, ..., n-1$ gdzie $\tau$ to okres czas w którym uśredniamy wyniki. \\ 
     $t = \Delta t \cdot i$ dla $i = 0, 1, ..., N_{time}$ i $t >> \tau$\\ 
-    $t_{max} = \Delta t \cdot N_{time}$ gdzie $t_{max}$ to czas wykonwania symulacji.
+    $t_{max} = \Delta t \cdot N_{time}$ gdzie $t_{max}$ to czas trwania symulacji.
 
     \begin{equation}
         {\delta_v}^2 = \left( \frac{1}{n} \sum_{i=0}^{n-1} {v_i}^2 \right)  -  \left( \frac{1}{n} \sum_{i=0}^{n-1} v_i \right)^2
     \end{equation}
 
-    Należy liczyć na bierząco $v_{k,j}$ oraz $v_{k,j}^2$ gdzie $k$ to numer cząsteczki a $j = 0, 1, ..., n-1$ to numer chwili czasowej. \\ \\
+    Należy liczyć na bieżąco $v_{k,j}$ oraz $v_{k,j}^2$ gdzie $k$ to numer cząsteczki a $j = 0, 1, ..., n-1$ to numer chwili czasowej. \\ \\
     Tworzymy rejestr w postaci tablicy dla każdej cząsteczki.
 
     \begin{figure}[h]
@@ -215,8 +223,8 @@
         \caption{Rejestry z tymczasowymi wartościami $v_{k,j}$ i $v_{k,j}^2$}
     \end{figure}
 
-    Do rejestru dostajemy się za pomocą dzielienia modulo $j = i \, \%  \, n$, które gwarantuje, że nie wyjdziemy poza tablicę 
-    oraz stare wartości będą nadpisywana na bierząco.
+    Do rejestru dostajemy się za pomocą dzielenia modulo $j = i \, \%  \, n$, które gwarantuje, że nie wyjdziemy poza tablicę 
+    oraz stare wartości będą nadpisywana na bieżąco.
 
     \lstinputlisting[language=C]{code/temperature.c}
 
@@ -228,7 +236,7 @@
         = \sum_{k = 1}^{N_p} \frac{m_k}{2} \left< {v_k}^2 \right>
     \end{equation}
 
-    Twierdzenie o wiriale mówi że energia kinetyczna zmienia się wskutek oddziaływań wewnętcznych i można ją 
+    Twierdzenie o wiriale mówi że energia kinetyczna zmienia się wskutek oddziaływań wewnętrznych i można ją 
     liczyć ze wzoru:
 
     \begin{equation}
@@ -279,7 +287,7 @@
     \end{figure}
 
     Węzeł otaczamy w komorze o boku $\Delta = 2 dx$ gdzie $d_0 > 10 dx$. 
-    Obliczamy pochodną siły jaka odziaływała by na węzeł gdyby został 
+    Obliczamy pochodną siły jaka oddziaływała by na węzeł gdyby został 
     on przemieszczony o $dx$ w każdym z czterech kierunków. Pochodna z siły Lennarda-Jonesa:
     \begin{equation}
         \frac{d}{dl} F_{LJ} = 3\frac{V_0}{(d_0)^2} \left[ -7 \left(\frac{d_0}{l}\right)^{8} + 13 \left(\frac{d_0}{l}\right)^{14} \right]
@@ -319,7 +327,7 @@
     \end{equation}
     Dodajemy minus ponieważ siła jest skierowana do środka komory a ciśnienie powinno być większe od zera. 
     Dla każdego węzła trzeba policzyć pochodne siły w czterech punktach. 
-    Pochodna eliminuje wpływ pola grawitacjnego, poniewać jest to wartość stała.
+    Pochodna eliminuje wpływ pola grawitacyjnego, ponieważ jest to wartość stała.
 
     \subsection{Testy poprawność wzoru}
     \begin{enumerate}
@@ -341,14 +349,14 @@
         \includegraphics[width=0.9\linewidth]{objects_raw} 
         \caption{Widok aplikacji w fazie testów z widocznymi dwoma obiektami $8 \times 8$ oraz $6 \times 4$}
     \end{wrapfigure}
-    Jeżeli wszystkie algorytmy symulujące odziaływania fizyczne zostały zimplementowane poprawnie 
+    Jeżeli wszystkie algorytmy symulujące oddziaływania fizyczne zostały zaimplementowane poprawnie 
     to w przypadku gdy nie występują żadne siły oporu energia całkowita układu powinna 
     być stała przez cały czas trwania symulacji. Aby uzyskać poprawny obraz sytuacji należy 
     uwzględnić wszystkie rodzaje energii w układzie: 
     \begin{enumerate}
         \item Energia potencjalna grawitacji
         \item Energia kinetyczna
-        \item Energia potencjalna węwnątrz obiektu
+        \item Energia potencjalna wewnątrz obiektu
         \item Energia potencjalna odpychająca pomiędzy obiektami a podłożem
         \item Energia potencjalna odpychająca pomiędzy dwoma obiektami
     \end{enumerate}
@@ -367,7 +375,7 @@
     \begin{figure}[h]
         \centering
         \includegraphics[width=13cm]{energy_test_0to2s}
-        \caption{Zmiana enegii w czasie dla układu w ciągu pierwszych 1.2 sekund}
+        \caption{Zmiana energii w czasie dla układu w ciągu pierwszych 1.2 sekund}
     \end{figure}
 
     Przy zderzeniach pomiędzy obiektami oraz pomiędzy obiektem i podłożem energia potencjalna
@@ -376,7 +384,7 @@
     \begin{figure}[h]
         \centering
         \includegraphics[width=13cm]{energy_test_0to8s}
-        \caption{Zmiana enegii w czasie dla układu w ciągu pierwszych 8 sekund}
+        \caption{Zmiana energii w czasie dla układu w ciągu pierwszych 8 sekund}
     \end{figure}
     
     Po upłynięciu kilku sekund obiekty zostają przy podłożu, energia będąca początkowo energią
@@ -388,19 +396,19 @@
 
     \section{Test wydajności dla dwóch algorytmów obsługi zderzeń między obiektami}
     \subsection{Opis algorytmów}
-    Naszym celem jest obliczanie siły poędzy odpowiednimi węzłami w taki sposób aby 
+    Naszym celem jest obliczanie siły pomiędzy odpowiednimi węzłami w taki sposób aby 
     obiekty przy zderzeniu odpychały się od siebie.
     
     \begin{figure}[h]
 
         \begin{subfigure}{0.5\textwidth}
         \includegraphics[width=0.9\linewidth, height=6cm]{objects_unoptimized} 
-        \caption{Metoda "każdy z każdym"}
+        \caption{Każdy węzeł jednego obiektu z każdym każdym węzłem drugiego obiektu}
         \end{subfigure}
         
         \begin{subfigure}{0.5\textwidth}
         \includegraphics[width=0.9\linewidth, height=6cm]{objects_optimized}
-        \caption{Metoda węzłów granicznych}
+        \caption{Węzły zewnętrzne jednego obiektu z węzłami zewnętrznymi drugiego obiektu}
         \end{subfigure}
         
         \caption{Reprezentacja dwóch metod obsługi zderzeń}
@@ -416,14 +424,14 @@
     rozpatrywanych węzłów ta liczba jest zmniejszona do zaledwie $4(n-1)$ węzłów.
     Należy zwrócić uwagę, że metoda ta nie będzie poprawnie odwzorowywać oddziaływań dla
     obiektów zagnieżdżonych w sobie. Przykładowa sytuacja, w której algorytm nie zadziała poprawnie
-    to symulacja penetracji obiektu przy kuli/naboju.
+    to symulacja penetracji/rozrywania obiektów.
 
     \subsection{Opis testu}
     Rozpatrujemy scenariusz z dwoma obiektami, sprawdzamy liczbę iteracji symulacji na sekundę stopniowo
-    zwiększając liczbę węzłów w obydwóch obiektach. Test został wykonany na pojedynczym rdzeniu procesora AMD Ryzen 5 5600X, 
-    ilość węzłów w bokach obiektów ustawiana jest kolejno na: 3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60.
+    zwiększając liczbę węzłów w obydwóch obiektach. Jest to jednowątkowa wersja algorytmu działająca na CPU, 
+    test został wykonany na procesorze AMD Ryzen 5 5600X.
+    Ilość węzłów w bokach obiektów ustawiana jest kolejno na: 3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60.
     
-    \newpage
     \subsection{Wyniki}
     Wyniki z przeprowadzonego testu prezentują się następująco:
     \begin{figure}[H]
@@ -473,8 +481,22 @@
         \end{tabular}
         \caption{ Porównanie wydajności przypadku niezoptymalizowanego (a) i zoptymalizowanego (b) }
     \end{table}
-    Dla większych obiektów zyski z zastosowanej optymalizacji są bardzo duże. W przypadku dwóch obiektów
-    $60 \times 60$ ilość iteracji dla algorytmu zoptymalizowanego jest ponad $100$ razy większa.
+    Dla większych obiektów zyski z zastosowanej optymalizacji są bardzo duże, w przypadku dwóch obiektów
+    $60 \times 60$ ilość iteracji dla algorytmu zoptymalizowanego jest ponad $100$ razy większa. \\
+
+    Duży wzrost wydajności można zrozumieć rozpatrując jeden z przypadków, na warsztat weźmy dwa 
+    obiekty kwadratowe $60 \times 60$ co daje $3600$ węzłów na obiekt.
+    Dla wersji niezoptymalizowanej mamy $3600 \times 3600 = 12960000$ operacji, natomiast wersja druga to zaledwie
+    $4(n - 1) \times 4(n - 1) = 4(60 - 1) \times 4(60 - 1) = 236 \times 236 = 55696$ operacji. Oznacza to, że 
+    w wersji każdy węzeł z każdym węzłem dla tego konkretnego przypadku musimy wykonać ponad $232$ razy więcej obliczeń
+    kolizji między obiektami, gdzie zdecydowana większość z nich ma zaniedbywalny efekt na działanie symulacji. \\
+
+    Warto zwrócić uwagę na to, że pomimo redukcji ponad $232$ razy obliczeń dla kolizji, 
+    ilość iteracji symulacji na sekundę dla przypadku dwóch obiektów $60 \time 60$ wzrosła jedynie
+    nieco ponad stukrotnie. Wynika to z faktu, że optymalizacja ta obejmuje jedynie etap obliczania
+    kolizji między różnymi obiektami i nie wpływa na obliczanie interakcji w tym samym obiekcie,
+    obliczanie wpływu pola grawitacyjnego czy obliczanie wpływu sił oporu.
+
         
     \section{Test rozrywania obiektu}
     \subsection{Opis testu}
@@ -514,14 +536,14 @@
         \item $V_{2} = 500.0$
         \item $p_{2} = [-0.12, 0.8]$
     \end{itemize}
-    Parametry $p_x$ oznaczają pozycję początkową obiektu, $m_x$ masę węzłow w obiekcie, 
+    Parametry $p_x$ oznaczają pozycję początkową obiektu, $m_x$ masę węzłów w obiekcie, 
     $d_x$ pozycję równowagi przyciągania/odpychania pomiędzy dwoma węzłami dla tego
-    samego obiektu lub jedynie odpychania dla odziaływań międzywęzłowych,
-    $V_x$ współczynnik odziaływania międzywęzłowego, $g$ przyśpieszenie grawitacyjne, 
-    $c_x$ współcznnik oporu powietrza dla węzłów w obiekcie.
+    samego obiektu lub jedynie odpychania dla oddziaływań międzywęzłowych,
+    $V_x$ współczynnik oddziaływania międzywęzłowego, $g$ przyśpieszenie grawitacyjne, 
+    $c_x$ współczynnik oporu powietrza dla węzłów w obiekcie.
 
     \newpage
-    \subsection{Wyniki dla 120 kg}
+    \subsection{Wolny spadek obiektu o masie 120 kg}
     \begin{figure}[h]
 
         \begin{subfigure}{0.5\textwidth}
@@ -547,16 +569,16 @@
         
         \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 120 kg na obiekt $12 \times 24$ o masie 288 kg}
     \end{figure}
-    Masa pojednczczego węzła w wolno spadającym obiekcie wynosi 30 kg co daje łączną masę równą 120 kg.
+    Masa pojedynczego węzła w wolno spadającym obiekcie wynosi 30 kg co daje łączną masę równą 120 kg.
     Węzły o kolorze czarnym mają zerową energię kinetyczną, 
-    zmienieją kolor na czerwony proporcjonalnie do ilości posiadanej energii kinetczynej. 
-    Przy zderzeniu widoczny jest transfer energii kinetcznej z obiektu $2 \times 2$ do obiektu $12 \times 24$, 
-    w którym po chwili zaczyna rozchodzić się fala. Ze względu na zastosowanie siły oporu proporcjonalnej do prękości
+    zmieniają kolor na czerwony proporcjonalnie do ilości posiadanej energii kinetycznej. 
+    Przy zderzeniu widoczny jest transfer energii kinetycznej z obiektu $2 \times 2$ do obiektu $12 \times 24$, 
+    w którym po chwili zaczyna rozchodzić się fala. Ze względu na zastosowanie siły oporu proporcjonalnej do prędkości
     po kilku sekundach układ stabilizuje się, obiekt $2 \times 2$ leży nieruchomo na obiekcie $12 \times 24$. 
     Żadne z połączeń międzywęzłowych nie zostało przerwane ze względu na zbyt niską energię zderzenia.
 
     \newpage
-    \subsection{Wyniki dla 200 kg}
+    \subsection{Wolny spadek obiektu o masie 200 kg}
     \begin{figure}[h]
 
         \begin{subfigure}{0.5\textwidth}
@@ -584,12 +606,12 @@
     \end{figure}
 
     Zwiększamy masę węzłów w obiekcie $2 \times 2$ z 30 kg do 50 kg. Ponieważ w reprezentacja wizualnej węzła jego pole 
-    jest proporjonalne do jego masy, tym razem obiekt $2 \times 2$ jest większy.
+    jest proporcjonalne do jego masy, tym razem obiekt $2 \times 2$ jest większy.
     Większa energia kinetyczna przy zderzeniu powoduje przerwanie kilku połączeń międzywęzłowych, a obiekt $2 \times 2$ 
-    utyka w wytworzonej dziurze. Część pierwotnego obiektu $12 \times 24$ oderwała się i utkneła w obiekcie $2 \times 2$.
+    utyka w wytworzonej dziurze. Część pierwotnego obiektu $12 \times 24$ oderwała się i utknęła w obiekcie $2 \times 2$.
 
     \newpage
-    \subsection{Wyniki dla 320 kg}
+    \subsection{Wolny spadek obiektu o masie 320 kg}
     \begin{figure}[h]
 
         \begin{subfigure}{0.5\textwidth}
@@ -629,26 +651,24 @@
     \section{Dodatek}
 
     \subsection{Filmik prezentujące działanie aplikacji}
-
+    
     \subsubsection{Przekazanie energii między dwoma sztywnimi obiektami}
+    \url{https://youtu.be/nolLh6CSa-8} \\
 
-    Mniejszy obiekt $3 \times 3$ po odbiciu od większego obiektu $8 \times  8$ znajdującego się 
-    pod nim wznosi się na
+    Mniejszy obiekt $3 \times 3$ po odbiciu od większego obiektu $8 \times  8$ 
+    znajdującego się  pod nim wznosi się na
     wysokość o wiele większą, niż ta z której rozpoczął spadek swobodny.
-    Występuje tutaj przekazanie części energii z obiektu większego do mniejszego - sama zasada energii jest zachowana.
-    \\
-    \\
-    \url{https://youtu.be/nolLh6CSa-8}
+    Występuje tutaj przekazanie części energii z obiektu 
+    większego do mniejszego - sama zasada energii jest zachowana.
 
     \subsubsection{Przekazanie energii między dwoma miękkimi obiektami}
-    W tym przypadku obiekty są mniej sztywne,
-    obiekt $3 \times 3$ po odbiciu od obiektu $8 \times  8$ wznosi się na wyraźnie mniejszą wysokość niż w przypadku bardziej sztywnych obiektów
+    \url{https://youtu.be/q2uYx8uLl3w} \\
+
+    W tym przypadku obiekty są mniej sztywne, obiekt $3 \times 3$ po odbiciu 
+    od obiektu $8 \times  8$ wznosi się na wyraźnie mniejszą wysokość niż w przypadku bardziej sztywnych obiektów
     (jednak wciąż wyżej niż punkt z którego zaczął spadać). Można to wytłumaczyć tym,
     że znaczna część energii która w poprzednim przypadku była częścią ruchu postępowego,
     teraz stała się energią wewnętrzną obiektów (wibracje obiektów pochłaniają część energii).
-    \\
-    \\
-    \url{https://youtu.be/q2uYx8uLl3w}
 
     \subsubsection{Proste zderzenie dwóch obiektów}
     \url{https://www.youtube.com/watch?v=4cGcL_5yUt4}
