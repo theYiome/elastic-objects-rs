@@ -28,7 +28,7 @@ glium::implement_vertex!(
     color
 );
 
-/// Adds verticies and indices representing circle shape to existing conainer.
+/// Adds vertices and indices representing circle shape to existing container.
 /// `radius` must be greater than `0.0`
 ///
 /// `nr_of_triangles` specifies accuracy of the circle, must be at least 3 or higher.
@@ -44,15 +44,15 @@ glium::implement_vertex!(
 pub fn disk_mesh(nr_of_triangles: u16) -> (Vec<Vertex>, Vec<u16>) {
     assert!(nr_of_triangles > 2);
 
-    let mut verticies: Vec<Vertex> = Vec::new();
+    let mut vertices: Vec<Vertex> = Vec::new();
     let mut indices: Vec<u16> = Vec::new();
 
     let delta_angle = (2.0 * PI) / nr_of_triangles as f32;
 
-    verticies.push(Vertex {
+    vertices.push(Vertex {
         local_position: [0.0, 0.0],
     });
-    verticies.push(Vertex {
+    vertices.push(Vertex {
         local_position: [0.0, 1.0],
     });
 
@@ -60,7 +60,7 @@ pub fn disk_mesh(nr_of_triangles: u16) -> (Vec<Vertex>, Vec<u16>) {
         let angle = delta_angle * (i - 1) as f32;
         let x = angle.sin();
         let y = angle.cos();
-        verticies.push(Vertex {
+        vertices.push(Vertex {
             local_position: [x, y],
         });
         indices.push(0);
@@ -72,7 +72,7 @@ pub fn disk_mesh(nr_of_triangles: u16) -> (Vec<Vertex>, Vec<u16>) {
     indices.push(nr_of_triangles);
     indices.push(1);
 
-    (verticies, indices)
+    (vertices, indices)
 }
 
 pub fn square_mesh() -> (Vec<Vertex>, Vec<u16>) {
@@ -107,7 +107,7 @@ pub fn radius_from_area(area: f32) -> f32 {
     (area / PI).sqrt()
 }
 
-fn calculate_temperatue(
+fn calculate_temperature(
     nodes: &[Node],
     connections_structure: &[Vec<(usize, f32, f32)>],
     // objects_interactions: &HashMap<u32, Vec<usize>>
@@ -194,7 +194,6 @@ fn force_derivative_near_node(nodes: &[Node], connections_structure: &[(usize, f
         let l = dir.length();
         let c = -7.0 * (dx / l).powi(8) + 13.0 * (dx / l).powi(14);
         let v = dir.normalize() * 3.0 * (v0 / (dx * dx)) * c;
-        // println!("f: {}", 3.0 * (v0 / (dx * dx)) * c);
         accum + v
     })
 }
@@ -205,7 +204,6 @@ fn force_derivative_near_node2(nodes: &[Node], connections_structure: &[(usize, 
         let l = dir.length();
         let c = (dx / l).powi(7) + (dx / l).powi(13);
         let v = dir.normalize() * 3.0 * (v0 / dx) * c;
-        // println!("f: {}", 3.0 * (v0 / (dx * dx)) * c);
         accum + v
     })
 }
@@ -261,7 +259,6 @@ fn color_from_pressure(
             let right = force_derivative_near_node2(nodes, &connections_structure[index], n.position + Vec2::new(dx, 0.0)).x;
             let left = force_derivative_near_node2(nodes, &connections_structure[index], n.position + Vec2::new(-dx, 0.0)).x;
             let pressure = -0.25 * (-(right - left) - (top - bottom));
-            // println!("{pressure}");
             number_to_rgb(pressure, 83600.0, 86400.0)
         }
     }).collect()
@@ -291,7 +288,7 @@ fn color_from_temperature(
 
         if CURRENT_DT > RECORD_INTERVAL {
             CURRENT_RECORD = (CURRENT_RECORD + 1) % TEMPERATURE_CACHE_SIZE;
-            let current_temperature = calculate_temperatue(nodes, connections_structure);
+            let current_temperature = calculate_temperature(nodes, connections_structure);
             TEMPERATURE_CACHE
                 .iter_mut()
                 .enumerate()
