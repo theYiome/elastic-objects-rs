@@ -83,6 +83,61 @@
     Macierz rzutowania odpowiada za transformację z układu współrzędnych kamery do układu przycinania 
     (clip coordinate system) \cite{grafika3d} (strona 139) \\
 
+    Istotną optymalizacją było instanced rendering, metoda pozwalająca na renderowanie wielu obiektów na raz 
+    przy użyciu jednego draw call. Najpierw należy zainicjalizowawać geometrię obiektu który będzie renderowany, 
+    następnie stworzyć tablicę zwierającą infomację między innymi o położeniu każdego z tych obiektów. W ten sposób
+    zamiast renderowania każdego obiektu w osobnym draw call, można zrenderować wszystkie obiekty w jednym draw call.
+
+    \section{Wybór technologii}
+    Rust jest szybkim kompilowanym językiem programowania, wielokrotnie wybieranym most beloved programming language
+    przez społeczność Stack Overflow. Cechuje się \dots
+
+    eGui to biblioteka do renderowania interfejsu graficznego, prosta i kompatybilna z Rust i OpenGL
+
+    Rayon to biblioteka do programowania wielowątkowego w Rust, substytut OpenMP z środowiska C.
+
+    OpenGL jest prosty, odpowiedni do tego typu projektu.
+
+    CUDA jest bardzo wydajnym językiem programowania GPU, wykorzystywanym do obliczeń na GPU firmy Nvidia.
+
+    OpenCL jest bardzo wydajnym językiem programowania wielowątkowego, 
+    działa na wielu platfomach i sprzętach różnych producentów.
+
+    \section{Motywacje stojące za wybraniem tego tematu}
+    Motywacje osobiste.
+    Co jest innowacyjne i użyteczne.
+
+    \section{Język programowania Rust}
+    Do programowania wydajnych wielowątkowych symulacji komputerowych 
+    ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
+    polished set of tools to help you along the way'' - \cite{rustbook} (strona 1)
+
+    \section{Architektura projektu}
+    Rust, eGui, OpenGL, CUDA, OpenCL.
+    \dots
+
+    \section{Napotkane problemy i próby ich rozwiązania}
+    Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
+    było zbyt wolne. Następnie przy użyciu instanced rendering problem ten został zlikwidowanay po 
+    stronie interfejsu graficznego.
+
+    Następnym problemem była wydajność symulacji,
+
+    Wielowątkowość jest trudna do osiągnięcia, wymaga znacznej modyfikacjii algorytmów.
+
+    \section{Wielowątkowość}
+    (OpenMP) Wątki charakteryzują się współdzielniem pamięci operacyjnej, co może prowadzić to problemów, takich jak nadpisywanie.
+    (MPI )Procesy posiadają swoją odzielną pamięć, dlatego synchronizacja przebiega w inny spoób, taki jak message passing.
+    (CUDA) To podejście hybrydowe (bloki, warpy, wątki)  \cite{cuda} (strona 23)
+
+    ``If you can construct a formula where the output data points can be represented without 
+    relation to each other (...) be very happy'' - \cite{cuda} (strona 24)
+
+    ``Computing has (...) moved from one limited by computational throughput of the 
+    processor, to one where moving the data is the primary limiting factor'' - \cite{cuda} (strona 25)
+
+
+
     \section{Model oddziaływań}
     Potencjał Lennarda-Jonesa został wykorzystany do symulacji przyciągania/odpychania 
     węzłów w jednym obiekcie, symulacji kolizji węzłów ze ścianami oraz symulacji
@@ -670,7 +725,17 @@
         \bibitem{grafika3d}
         Jacek Matulewski (2014) 
         \emph{Grafika 3D czasu rzeczywistego. Nowoczesny OpenGL}, 
-        Wydawnictwo Naukowe PWN SA, Wydanie I.
+        Wydawnictwo Naukowe PWN SA, Wydanie I
+
+        \bibitem{cuda}
+        Shane Cook (2013) 
+        \emph{CUDA Programming, a developer's guide to parallel computing with GPUs}, 
+        Elsevier Inc., Morgan Kaufmann
+
+        \bibitem{rustbook}
+        Steve Klabnik, Carol Nichols (2022)
+        \emph{The Rust Programming Language},
+        \url{https://doc.rust-lang.org/book}
 
     \end{thebibliography}
 
