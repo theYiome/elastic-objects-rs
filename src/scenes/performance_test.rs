@@ -43,7 +43,7 @@ pub fn run_performace_test(object_size: usize, dt: f32, simulation_time: f32, op
         {
             let log_dt = 0.01;
             if current_log_dt > log_dt {
-                let (kinetic, gravity, lennjon, wallrep, objrepu) = energy::calculate_total_energy(&nodes, &connections_map, &objects);
+                let (kinetic, gravity, lennjon, wallrep, objrepu) = energy::calculate_total_energy(&nodes, &connections_map);
 
                 csv_energy_writer
                     .write_record(&[

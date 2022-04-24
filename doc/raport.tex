@@ -1,7 +1,4 @@
 \documentclass[12pt, letterpaper]{report}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage[english,polish]{babel}
 \usepackage{fancyhdr}
 \usepackage{hyperref}
 \usepackage{wrapfig}
@@ -14,6 +11,10 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage[margin=1.5cm]{geometry}
+
+\usepackage[english,polish]{babel}
+\usepackage[utf8]{inputenc}
+% \usepackage[T1]{fontenc}
 
 \graphicspath{ {images/} {images/collisions24x10_2x2} }
 
@@ -72,8 +73,8 @@
     rzeczywistym jako animacje komputerowe.
 
     \section{Generowanie grafiki}
-    Do generowania grafiki i animacji zostało wykorzystane API OpenGL w profilu rdzennym (core profile), pozwalającym
-    samodzielnie programować shadery \cite{grafika3d} (strona 13). \\
+    Do generowania grafiki i animacji zostało wykorzystane API OpenGL w profilu rdzennym (core profile), 
+    pozwalającym samodzielnie programować shadery \cite{grafika3d} (strona 13). \\
 
     W nowoczesnym OpenGL potok renderowania składa się z \cite{grafika3d} (strona 72):
     \begin{enumerate}
@@ -92,10 +93,11 @@
     kamera jest dwuwymiarowa, macierz taka ma wymiary $3 \times 3$.
 
     Istotną optymalizacją było instanced rendering, metoda pozwalająca na renderowanie wielu obiektów na raz 
-    przy użyciu jednego draw call. Najpierw należy zainicjalizowawać geometrię obiektu który będzie renderowany, 
-    następnie stworzyć tablicę zwierającą infomację między innymi o położeniu każdego z tych obiektów. W ten sposób
-    zamiast renderowania każdego obiektu w osobnym draw call, można zrenderować wszystkie obiekty w jednym draw call.
+    przy użyciu jednego draw call. Najpierw należy zainicjalizować geometrię obiektu który będzie renderowany, 
+    następnie stworzyć tablicę zwierającą informację między innymi o położeniu każdego z tych obiektów. W ten sposób
+    zamiast renderowania każdego obiektu w osobnym draw call, można renderować wszystkie obiekty w jednym draw call.
 
+    % --------------------------------------------------------------------------------------------------------------
     \section{Wybór technologii}
     Rust jest szybkim kompilowanym językiem programowania, wielokrotnie wybieranym most beloved programming language
     przez społeczność Stack Overflow. Cechuje się \dots
@@ -103,49 +105,53 @@
     eGui to biblioteka do renderowania interfejsu graficznego, prosta i kompatybilna z Rust i OpenGL
 
     Rayon to biblioteka do programowania wielowątkowego w Rust, substytut OpenMP z środowiska C.
-
+    
     OpenGL jest prosty, odpowiedni do tego typu projektu.
-
+    
     CUDA jest bardzo wydajnym językiem programowania GPU, wykorzystywanym do obliczeń na GPU firmy Nvidia.
-
+    
     OpenCL jest bardzo wydajnym językiem programowania wielowątkowego, 
-    działa na wielu platfomach i sprzętach różnych producentów.
-
+    działa na wielu platformach i sprzętach różnych producentów.
+    
+    % --------------------------------------------------------------------------------------------------------------
     \section{Motywacje stojące za wybraniem tego tematu}
     Motywacje osobiste.
     Co jest innowacyjne i użyteczne.
-
+    
+    % --------------------------------------------------------------------------------------------------------------
     \section{Język programowania Rust}
     Do programowania wydajnych wielowątkowych symulacji komputerowych 
     ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
     polished set of tools to help you along the way'' - \cite{rustbook} (strona 1)
-
+    
+    % --------------------------------------------------------------------------------------------------------------
     \section{Architektura projektu}
     Rust, eGui, OpenGL, CUDA, OpenCL.
     \dots
-
+    
+    % --------------------------------------------------------------------------------------------------------------
     \section{Napotkane problemy i próby ich rozwiązania}
     Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
-    było zbyt wolne. Następnie przy użyciu instanced rendering problem ten został zlikwidowanay po 
+    było zbyt wolne. Następnie przy użyciu instanced rendering problem ten został zlikwidowany po 
     stronie interfejsu graficznego.
-
+    
     Następnym problemem była wydajność symulacji,
-
-    Wielowątkowość jest trudna do osiągnięcia, wymaga znacznej modyfikacjii algorytmów.
-
+    
+    Wielowątkowość jest trudna do osiągnięcia, wymaga znacznej modyfikacji algorytmów.
+    
+    % --------------------------------------------------------------------------------------------------------------
     \section{Wielowątkowość}
-    (OpenMP) Wątki charakteryzują się współdzielniem pamięci operacyjnej, co może prowadzić to problemów, takich jak nadpisywanie.
-    (MPI )Procesy posiadają swoją odzielną pamięć, dlatego synchronizacja przebiega w inny spoób, taki jak message passing.
-    (CUDA) To podejście hybrydowe (bloki, warpy, wątki)  \cite{cuda} (strona 23)
+    (OpenMP) Wątki charakteryzują się współdzieleniem pamięci operacyjnej, co może prowadzić to problemów, takich jak nadpisywanie.
+    (MPI) Procesy posiadają swoją oddzielną pamięć, dlatego synchronizacja przebiega w inny sposób, taki jak message passing.
+    (CUDA) To podejście hybrydowe (bloki, warps, wątki)  \cite{cuda} (strona 23)
 
     ``If you can construct a formula where the output data points can be represented without 
     relation to each other (...) be very happy'' - \cite{cuda} (strona 24)
-
+    
     ``Computing has (...) moved from one limited by computational throughput of the 
     processor, to one where moving the data is the primary limiting factor'' - \cite{cuda} (strona 25)
-
-
-
+    
+    % --------------------------------------------------------------------------------------------------------------
     \section{Model oddziaływań}
     Potencjał Lennarda-Jonesa został wykorzystany do symulacji przyciągania/odpychania 
     węzłów w jednym obiekcie, symulacji kolizji węzłów ze ścianami oraz symulacji
@@ -181,10 +187,10 @@
         F_{LJ} = 3\frac{V_0}{d_0} \left[ \left(\frac{d_0}{l}\right)^{7} - \left(\frac{d_0}{l}\right)^{13} \right]
     \end{equation}
 
-    \newpage
-    \section{Wizualizacja temperatury}
-    \subsection{Temperatura z teorii gazów}
-    Punktem wyjścia moe być zasada ekwipartycji energii: średnia energia kinetyczna na jeden stopień swobody jest równa 
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Temperatura z teorii gazów}
+    \subsection{Opis metody}
+    Punktem wyjścia może być zasada ekwipartycji energii: średnia energia kinetyczna na jeden stopień swobody jest równa 
     $\frac{k_{B}T}{2}$ gdzie $k_{B}$ to stała Boltzmanna a $T$ to temperatura.
 
     \begin{equation}
@@ -264,7 +270,9 @@
     Ze względu na powyżej przedstawione problemy oraz trudną implementację, metoda ta nie została wykorzystana
     w dalszej części pracy.
 
-    \subsection{Temperatura z twierdzenia o wiriale}
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Temperatura z twierdzenia o wiriale}
+    \subsection{Opis metody}
     Prędkości węzłów zmieniają się w czasie, więc będzie też zmieniać się średnia energia kinetyczna układu.
 
     \begin{equation}
@@ -340,6 +348,7 @@
     Obliczanie temperatury przy użyciu twierdzenia o wiriale okazało się być bardziej intuicyjne i
     wyraźnie łatwiejsza w implementacji, dlatego ta metoda będzie używana w dalszej części pracy.
 
+    % --------------------------------------------------------------------------------------------------------------
     \section{Wizualizacja ciśnienia}
 
     \begin{figure}[h]
@@ -456,7 +465,7 @@
     Zmiana energii całkowitej w czasie działania całej symulacji była mniejsza niż $1\%$. Na tej
     podstawie można uznać, że algorytmy zostały zaimplementowane poprawnie.
 
-
+    % --------------------------------------------------------------------------------------------------------------
     \section{Test wydajności dla dwóch algorytmów obsługi zderzeń między obiektami}
     \subsection{Opis algorytmów}
     Naszym celem jest obliczanie siły pomiędzy odpowiednimi węzłami w taki sposób aby 
@@ -559,7 +568,7 @@
     kolizji między różnymi obiektami i nie wpływa na obliczanie interakcji w tym samym obiekcie,
     obliczanie wpływu pola grawitacyjnego czy obliczanie wpływu sił oporu.
 
-        
+    % --------------------------------------------------------------------------------------------------------------
     \section{Test rozrywania dwóch obiektów o małej ilości węzłów}
     \subsection{Opis testu}
     Dwa nieruchome obiekty, jeden zostaje umieszczony nieruchomo przy podłożu, 
@@ -721,8 +730,8 @@
     zastosowania zrównoleglenia algorytmów, pozwalając na wykonywanie ich znacznie znacznie szybciej na 
     urządzeniach wielowątkowych takich jak procesory czy karty graficzne.
 
+    % --------------------------------------------------------------------------------------------------------------
     \section{Dodatek}
-
     \subsection{Filmik prezentujące działanie aplikacji}
     
     \subsubsection{Przekazanie energii między dwoma sztywnimi obiektami}
