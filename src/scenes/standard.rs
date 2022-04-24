@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
 use crate::simulation_general::calculate_connections_structure;
-use crate::{energy, graphics, simulation_cpu, simulation_general};
+use crate::{energy, graphics, simulation_cpu, simulation_general, simulation_gpu};
 
 #[cfg(feature = "rust-gpu-tools")]
 use crate::simulation_gpu;
@@ -137,6 +137,16 @@ pub fn run_with_animation() {
                         &objects_interactions,
                     );
                 }
+            },
+            #[cfg(feature = "rust-gpu-tools")]
+            SimulationEngine::OpenCl => {
+                nodes = simulation_gpu::simulate_opencl(
+                    &nodes,
+                    &opencl_program,
+                    &connections_map,
+                    steps_per_frame,
+                    dt,
+                );
             },
             _ => {}
         }
