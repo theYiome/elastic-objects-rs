@@ -1,6 +1,14 @@
 use crate::{build_scene, node::Node};
 use std::collections::HashMap;
 use std::vec::Vec;
+use rayon::collections::binary_heap;
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
+struct Scene {
+    nodes: Vec<Node>,
+    connections: HashMap<(usize, usize), (f32, f32)>
+}
 
 pub fn standard_scene() -> (Vec<Node>, HashMap<(usize, usize), (f32, f32)>) {
     let object1_sx = 180;
@@ -29,6 +37,23 @@ pub fn standard_scene() -> (Vec<Node>, HashMap<(usize, usize), (f32, f32)>) {
     let mut nodes = Vec::new();
     nodes.append(&mut nodes1);
     nodes.append(&mut nodes2);
+
+    let scene = Scene {
+        nodes: nodes.clone(),
+        connections: connections_map.clone()
+    };
+
+    let f = std::fs::File::create("scenes/default.bincode").unwrap();
+    bincode::serialize_into(f, &scene).unwrap();
+
+    let f2 = std::fs::File::open("scenes/default.bincode").unwrap();
+    let decoded: Scene = bincode::deserialize_from(f2).unwrap();
+    // let encoded: Vec<u8> = bincode::serialize(&scene).unwrap();
+    // // 8 bytes for the length of the vector, 4 bytes per float.
+    // // assert_eq!(encoded.len(), 8 + 4 * 4);
+    // let mut decoded: Scene = bincode::deserialize(&encoded[..]).unwrap();
+    // // decoded.nodes[0].position.x = 0.0;
+    assert_eq!(scene, decoded);
 
     (nodes, connections_map)
 }
