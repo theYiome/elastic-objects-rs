@@ -1,4 +1,4 @@
-use crate::node::{Node};
+use crate::simulation::node::{Node};
 use glam::Vec2;
 
 pub fn build_rectangle(

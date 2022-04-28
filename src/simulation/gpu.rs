@@ -1,7 +1,7 @@
 #[cfg(feature = "rust-gpu-tools")]
 mod gpu {
     use std::collections::HashMap;
-    use crate::node::Node;
+    use super::node::Node;
     use glam::Vec2;
     
     use rust_gpu_tools::{cuda, opencl, program_closures, Device, GPUError, Program};

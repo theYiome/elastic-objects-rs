@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use crate::{node::Node, simulation_general};
+use super::node::Node;
+
 use rayon::prelude::*;
 
 // https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
@@ -63,8 +64,8 @@ fn lennard_jones_connections_multithreaded(
 }
 
 fn lennard_jones_repulsion(nodes: &mut [Node], objects_interactions: &HashMap<u32, Vec<usize>>) {
-    let v0 = simulation_general::OBJECT_REPULSION_V0;
-    let dx = simulation_general::OBJECT_REPULSION_DX;
+    let v0 = super::general::OBJECT_REPULSION_V0;
+    let dx = super::general::OBJECT_REPULSION_DX;
 
     let objects: Vec<u32> = objects_interactions.keys().copied().collect();
 
@@ -92,8 +93,8 @@ fn lennard_jones_repulsion(nodes: &mut [Node], objects_interactions: &HashMap<u3
 }
 
 fn lennard_jones_repulsion_multithreaded(nodes: &mut Vec<Node>, objects_interactions: &HashMap<u32, Vec<usize>>) {
-    let v0 = simulation_general::OBJECT_REPULSION_V0;
-    let dx = simulation_general::OBJECT_REPULSION_DX;
+    let v0 = super::general::OBJECT_REPULSION_V0;
+    let dx = super::general::OBJECT_REPULSION_DX;
 
     let objects: Vec<u32> = objects_interactions.keys().copied().collect();
 
@@ -116,8 +117,8 @@ fn lennard_jones_repulsion_multithreaded(nodes: &mut Vec<Node>, objects_interact
 }
 
 fn wall_repulsion_force_y(nodes: &mut [Node]) {
-    let v0 = simulation_general::WALL_REPULSION_V0;
-    let dx = simulation_general::WALL_REPULSION_DX;
+    let v0 = super::general::WALL_REPULSION_V0;
+    let dx = super::general::WALL_REPULSION_DX;
 
     nodes.iter_mut().for_each(|n| {
         let dir = glam::vec2(n.position.x, -1.0) - n.position;

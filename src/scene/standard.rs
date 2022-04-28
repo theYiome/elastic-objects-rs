@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
-use crate::simulation_general::calculate_connections_structure;
-use crate::{energy, graphics, simulation_cpu, simulation_general, simulation_gpu};
+// use crate::energy;
+use crate::simulation;
+use crate::graphics;
 
 #[cfg(feature = "rust-gpu-tools")]
 use crate::simulation_gpu;
@@ -31,7 +32,7 @@ pub fn run_with_animation() {
     // scene objects
 
     let (mut nodes, mut connections_map) = standard_scene();
-    let mut connections_structure = simulation_general::calculate_connections_structure(&connections_map, &nodes);
+    let mut connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
 
     let initial_window_width: u32 = 1280;
     let initial_window_height: u32 = 720;
@@ -93,7 +94,7 @@ pub fn run_with_animation() {
     .unwrap();
 
     let mut objects_interactions: HashMap<u32, Vec<usize>> =
-        simulation_general::calculate_objects_interactions_structure(&mut nodes);
+        simulation::general::calculate_objects_interactions_structure(&mut nodes);
 
     let mut redraw_clousure = move |display: &glium::Display,
                                     egui: &mut egui_glium::EguiGlium,
@@ -109,10 +110,10 @@ pub fn run_with_animation() {
             // dt = 0.005;
         }
 
-        match simulation_general::handle_connection_break(&mut nodes, &mut connections_map) {
+        match simulation::general::handle_connection_break(&mut nodes, &mut connections_map) {
             Some(x) => {
                 objects_interactions = x;
-                connections_structure = calculate_connections_structure(&connections_map, &nodes);
+                connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
             }
             None => {}
         }
@@ -120,7 +121,7 @@ pub fn run_with_animation() {
         match current_simulation_engine {
             SimulationEngine::Cpu => {
                 for _i in 0..steps_per_frame {
-                    simulation_cpu::simulate_single_thread_cpu(
+                    simulation::cpu::simulate_single_thread_cpu(
                         dt,
                         &mut nodes,
                         &connections_map,
@@ -130,7 +131,7 @@ pub fn run_with_animation() {
             }
             SimulationEngine::CpuMultithread => {
                 for _i in 0..steps_per_frame {
-                    simulation_cpu::simulate_multi_thread_cpu(
+                    simulation::cpu::simulate_multi_thread_cpu(
                         dt,
                         &mut nodes,
                         &connections_structure,
@@ -140,7 +141,7 @@ pub fn run_with_animation() {
             },
             #[cfg(feature = "rust-gpu-tools")]
             SimulationEngine::OpenCl => {
-                nodes = simulation_gpu::simulate_opencl(
+                nodes = simulation::gpu::simulate_opencl(
                     &nodes,
                     &opencl_program,
                     &connections_map,
@@ -256,7 +257,6 @@ pub fn run_with_animation() {
             &graphics::draw_disks(
                 &nodes,
                 &connections_structure,
-                &objects_interactions,
                 &current_coloring_mode,
                 last_frame_symulation_time,
             ),

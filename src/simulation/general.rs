@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::node::{Node};
+use super::node::Node;
 
 pub const OBJECT_REPULSION_V0: f32 = 10.0;
 pub const OBJECT_REPULSION_DX: f32 = 0.015;

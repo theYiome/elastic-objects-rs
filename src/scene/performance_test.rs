@@ -1,4 +1,4 @@
-use crate::{energy};
+use crate::simulation::energy;
 use super::generate_scene;
 
 

@@ -1,9 +1,9 @@
-use crate::{node::Node, simulation_general};
+use crate::simulation::node::Node;
 use std::collections::HashMap;
 
 fn object_repulsion_energy(nodes: &[Node]) -> f32 {
-    let v0 = simulation_general::OBJECT_REPULSION_V0;
-    let dx = simulation_general::WALL_REPULSION_DX;
+    let v0 = super::general::OBJECT_REPULSION_V0;
+    let dx = super::general::WALL_REPULSION_DX;
     let m01 = 1.12246204831;
     let sigma = (1.0 / m01) * dx;
 
@@ -39,8 +39,8 @@ fn bond_energy(nodes: &[Node], connections: &HashMap<(usize, usize), (f32, f32)>
 }
 
 fn wall_repulsion_energy(nodes: &[Node]) -> f32 {
-    let v0 = simulation_general::WALL_REPULSION_V0;
-    let dx = simulation_general::WALL_REPULSION_DX;
+    let v0 = super::general::WALL_REPULSION_V0;
+    let dx = super::general::WALL_REPULSION_DX;
     let m01 = 1.12246204831;
     let sigma = (1.0 / m01) * dx;
 

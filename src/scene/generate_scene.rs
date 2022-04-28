@@ -1,7 +1,7 @@
-use crate::{build_scene, node::Node};
+use crate::build_scene;
+use crate::simulation::node::Node;
 use std::collections::HashMap;
 use std::vec::Vec;
-use rayon::collections::binary_heap;
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
