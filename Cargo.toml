@@ -3,6 +3,7 @@ name = "elastic-objects-rs"
 version = "0.1.1"
 edition = "2021"
 rust-version = "1.60"
+default-run = "simulation"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -26,3 +27,7 @@ rust-gpu-tools = ["dep:rust-gpu-tools"]
 [[bin]]
 name = "simulation"
 path = "src/main.rs"
+
+[[bin]]
+name = "generate_scenes"
+path = "src/scene/main.rs"

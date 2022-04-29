@@ -26,11 +26,12 @@ mod gpu {
     
     pub fn simulate_opencl(
         nodes: &Vec<Node>,
-        program: &Program,
         connections_map: &HashMap<(usize, usize), (f32, f32)>,
         iterations: u32,
         dt: f32,
     ) -> Vec<Node> {
+
+        static program: Program = simulation_gpu::gpu::create_opencl_program();
     
         let mut connections_keys: Vec<(u32, u32)> = Vec::new();
         let mut connections_vals: Vec<(f32, f32)> = Vec::new();

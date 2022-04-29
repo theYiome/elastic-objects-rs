@@ -79,10 +79,6 @@ pub fn run_with_animation() {
     let mut current_simulation_engine = SimulationEngine::None;
     let mut current_coloring_mode = graphics::ColoringMode::KineticEnergy;
 
-    // prepare opencl and cuda programs
-    #[cfg(feature = "rust-gpu-tools")]
-    let opencl_program = simulation_gpu::gpu::create_opencl_program();
-
     let (disk_verticies, disk_indices) = graphics::disk_mesh(12);
     // let (disk_verticies, disk_indices) = graphics::square_mesh();
     let disk_vertex_buffer = glium::VertexBuffer::immutable(&display, &disk_verticies).unwrap();
@@ -213,6 +209,12 @@ pub fn run_with_animation() {
                     &mut current_simulation_engine,
                     SimulationEngine::CpuMultithread,
                     "CPU multi threaded",
+                );
+                #[cfg(feature = "rust-gpu-tools")]
+                ui.selectable_value(
+                    &mut current_simulation_engine,
+                    SimulationEngine::OpenCl,
+                    "GPU OpenCL",
                 );
             });
             ui.selectable_value(

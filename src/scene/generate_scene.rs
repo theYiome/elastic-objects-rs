@@ -2,13 +2,8 @@ use crate::build_scene;
 use crate::simulation::node::Node;
 use std::collections::HashMap;
 use std::vec::Vec;
-use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
-struct Scene {
-    nodes: Vec<Node>,
-    connections: HashMap<(usize, usize), (f32, f32)>
-}
+use super::Scene;
 
 pub fn standard_scene() -> (Vec<Node>, HashMap<(usize, usize), (f32, f32)>) {
     let object1_sx = 180;
