@@ -10,4 +10,7 @@ pub struct Scene {
 
 mod objects;
 pub mod default;
+pub mod scene01;
+pub mod scene02;
+pub mod scene03;
 pub mod two_squares;

@@ -4,7 +4,10 @@ use rayon::prelude::*;
 fn main() {
 
     let mut scenes_to_generate: Vec<(Scene, String)> = vec![
-        (mylib::scene::default::generate(), "default".to_string())
+        (mylib::scene::default::generate(), "default".to_string()),
+        (mylib::scene::scene01::generate(), "scene01".to_string()),
+        (mylib::scene::scene02::generate(), "scene02".to_string()),
+        (mylib::scene::scene03::generate(), "scene03".to_string()),
     ];
 
     let object_sizes = [3, 5, 9, 13, 15, 19, 21, 25, 30, 35, 40, 45, 50, 55, 60];
