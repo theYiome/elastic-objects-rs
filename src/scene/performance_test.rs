@@ -1,13 +1,13 @@
 use crate::simulation::energy;
-use super::generate_scene;
+use super::scene02;
 
 
 pub fn run_performace_test(object_size: usize, dt: f32, simulation_time: f32, optimized: bool) {
 
     let (nodes, connections_map, objects) = if optimized {
-        generate_scene::performance_test_scene_optimized(object_size)
+        scene02::performance_test_scene_optimized(object_size)
     } else {
-        generate_scene::performance_test_scene(object_size)
+        scene02::performance_test_scene(object_size)
     };
 
     // loging to csv file

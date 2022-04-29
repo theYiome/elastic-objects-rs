@@ -1,13 +1,6 @@
 use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
-// use crate::energy;
-use crate::simulation;
-use crate::graphics;
-
-#[cfg(feature = "rust-gpu-tools")]
-use crate::simulation_gpu;
-
 use glam::Vec2;
 use glium::glutin::event_loop;
 use glium::{glutin, Surface};
@@ -17,7 +10,14 @@ use glutin::{
     event_loop::ControlFlow,
 };
 
-use super::generate_scene::standard_scene;
+
+#[cfg(feature = "rust-gpu-tools")]
+use crate::simulation_gpu;
+
+// use crate::energy;
+use crate::scene::Scene;
+use crate::simulation;
+use crate::graphics;
 
 #[derive(PartialEq)]
 enum SimulationEngine {
@@ -28,10 +28,8 @@ enum SimulationEngine {
     None
 }
 
-pub fn run_with_animation() {
-    // scene objects
-
-    let (mut nodes, mut connections_map) = standard_scene();
+pub fn run_with_gui(scene: Scene) {
+    let (mut nodes, mut connections_map) = (scene.nodes, scene.connections);
     let mut connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
 
     let initial_window_width: u32 = 1280;

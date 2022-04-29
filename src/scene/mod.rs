@@ -4,12 +4,10 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 pub struct Scene {
-    nodes: Vec<Node>,
-    connections: HashMap<(usize, usize), (f32, f32)>
+    pub nodes: Vec<Node>,
+    pub connections: HashMap<(usize, usize), (f32, f32)>
 }
 
-
-// pub mod performance_test;
-pub mod standard;
-pub mod generate_scene;
-pub mod performance_test;
+mod objects;
+pub mod default;
+pub mod two_squares;
