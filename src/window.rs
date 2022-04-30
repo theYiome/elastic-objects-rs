@@ -10,14 +10,13 @@ use glutin::{
     event_loop::ControlFlow,
 };
 
-
 #[cfg(feature = "rust-gpu-tools")]
 use crate::simulation_gpu;
 
 // use crate::energy;
+use crate::graphics;
 use crate::scene::Scene;
 use crate::simulation;
-use crate::graphics;
 
 #[derive(PartialEq)]
 enum SimulationEngine {
@@ -25,12 +24,59 @@ enum SimulationEngine {
     CpuMultithread,
     OpenCl,
     Cuda,
-    None
+    None,
+}
+
+fn create_node_buffers(
+    display: &glium::Display,
+) -> (
+    glium::VertexBuffer<graphics::Vertex>,
+    glium::IndexBuffer<u16>,
+) {
+    let (disk_verticies, disk_indices) = graphics::disk_mesh(12);
+    // let (disk_verticies, disk_indices) = graphics::square_mesh();
+    let vertex_buffer = glium::VertexBuffer::immutable(display, &disk_verticies).unwrap();
+    let index_buffer = glium::IndexBuffer::immutable(
+        display,
+        glium::index::PrimitiveType::TrianglesList,
+        &disk_indices,
+    )
+    .unwrap();
+
+    (vertex_buffer, index_buffer)
+}
+
+fn create_node_program(display: &glium::Display) -> glium::Program {
+    let vertex_shader_src = std::fs::read_to_string("glsl/vertex.vert").unwrap();
+    let fragment_shader_src = std::fs::read_to_string("glsl/fragment.frag").unwrap();
+
+    glium::Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap()
+}
+
+struct Settings {
+    dt: f32,
+    steps_per_frame: u32,
+    engine: SimulationEngine,
+    coloring_mode: graphics::ColoringMode,
+    gui_active: bool,
+    zoom: f32,
+    camera_position: Vec2,
 }
 
 pub fn run_with_gui(scene: Scene) {
+    let mut settings = Settings {
+        dt: 0.0,
+        steps_per_frame: 5,
+        engine: SimulationEngine::None,
+        coloring_mode: graphics::ColoringMode::KineticEnergy,
+        gui_active: true,
+        zoom: 0.55,
+        camera_position: Vec2::new(0.0, 0.0),
+    };
+
     let (mut nodes, mut connections_map) = (scene.nodes, scene.connections);
-    let mut connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
+    let mut connections_structure =
+        simulation::general::calculate_connections_structure(&connections_map, &nodes);
 
     let initial_window_width: u32 = 1280;
     let initial_window_height: u32 = 720;
@@ -47,76 +93,42 @@ pub fn run_with_gui(scene: Scene) {
 
         glium::Display::new(wb, cb, &event_loop).unwrap()
     };
-
-    let vertex_shader_src = std::fs::read_to_string("glsl/vertex.vert").unwrap();
-    let fragment_shader_src = std::fs::read_to_string("glsl/fragment.frag").unwrap();
-
-    let program =
-        glium::Program::from_source(&display, &vertex_shader_src, &fragment_shader_src, None)
-            .unwrap();
+    let mut egui = egui_glium::EguiGlium::new(&display);
+    let (disk_vertex_buffer, disk_index_buffer) = create_node_buffers(&display);
+    let program = create_node_program(&display);
 
     // loging to csv file
-    let log_path = "data/log.csv";
-    // let mut log_file = File::create(log_path).unwrap();
-    // let mut reader = csv::Reader::from_path(log_path).unwrap();
-    let mut csv_writer = csv::Writer::from_path(log_path).unwrap();
+    // let log_path = "data/log.csv";
+    // let mut csv_writer = csv::Writer::from_path(log_path).unwrap();
 
-    let mut dt: f32 = 0.0;
     let mut total_symulation_time: f32 = 0.0;
     let mut current_log_dt = 0.0;
-
-    let mut egui = egui_glium::EguiGlium::new(&display);
-
-    let mut now = std::time::Instant::now();
-    // let mut last_frame_time = std::time::Instant::now();
-
-    let mut steps_per_frame: u32 = 5;
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
-
-    let mut current_simulation_engine = SimulationEngine::None;
-    let mut current_coloring_mode = graphics::ColoringMode::KineticEnergy;
-
-    let (disk_verticies, disk_indices) = graphics::disk_mesh(12);
-    // let (disk_verticies, disk_indices) = graphics::square_mesh();
-    let disk_vertex_buffer = glium::VertexBuffer::immutable(&display, &disk_verticies).unwrap();
-    let disk_index_buffer = glium::IndexBuffer::immutable(
-        &display,
-        glium::index::PrimitiveType::TrianglesList,
-        &disk_indices,
-    )
-    .unwrap();
 
     let mut objects_interactions: HashMap<u32, Vec<usize>> =
         simulation::general::calculate_objects_interactions_structure(&mut nodes);
 
+    let mut now = std::time::Instant::now();
     let mut redraw_clousure = move |display: &glium::Display,
                                     egui: &mut egui_glium::EguiGlium,
-                                    egui_active: bool,
-                                    zoom: &mut f32,
-                                    camera_position: Vec2,
-                                    screen_ratio: f32| {
-        // real time dependent dt
-        {
-            // let measured_dt = last_frame_time.elapsed().as_secs_f32();
-            // last_frame_time = std::time::Instant::now();
-            // dt = if measured_dt > 0.01 {0.01} else {measured_dt};
-            // dt = 0.005;
-        }
-
+                                    screen_ratio: f32,
+                                    settings: &mut Settings| {
+        // check connection breaks
         match simulation::general::handle_connection_break(&mut nodes, &mut connections_map) {
             Some(x) => {
                 objects_interactions = x;
-                connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
+                connections_structure =
+                    simulation::general::calculate_connections_structure(&connections_map, &nodes);
             }
             None => {}
         }
 
-        match current_simulation_engine {
+        match settings.engine {
             SimulationEngine::Cpu => {
-                for _i in 0..steps_per_frame {
+                for _i in 0..settings.steps_per_frame {
                     simulation::cpu::simulate_single_thread_cpu(
-                        dt,
+                        settings.dt,
                         &mut nodes,
                         &connections_map,
                         &objects_interactions,
@@ -124,15 +136,15 @@ pub fn run_with_gui(scene: Scene) {
                 }
             }
             SimulationEngine::CpuMultithread => {
-                for _i in 0..steps_per_frame {
+                for _i in 0..settings.steps_per_frame {
                     simulation::cpu::simulate_multi_thread_cpu(
-                        dt,
+                        settings.dt,
                         &mut nodes,
                         &connections_structure,
                         &objects_interactions,
                     );
                 }
-            },
+            }
             #[cfg(feature = "rust-gpu-tools")]
             SimulationEngine::OpenCl => {
                 nodes = simulation::gpu::simulate_opencl(
@@ -142,11 +154,11 @@ pub fn run_with_gui(scene: Scene) {
                     steps_per_frame,
                     dt,
                 );
-            },
+            }
             _ => {}
         }
 
-        let last_frame_symulation_time = dt * steps_per_frame as f32;
+        let last_frame_symulation_time = settings.dt * settings.steps_per_frame as f32;
         total_symulation_time += last_frame_symulation_time;
 
         fps_counter += 1;
@@ -164,7 +176,7 @@ pub fn run_with_gui(scene: Scene) {
         //     let log_dt = 0.01;
         //     if current_log_dt > log_dt {
         //         let (kinetic, gravity, lennjon, wallrep, objrepu) =
-        //             energy::calculate_total_energy(&nodes, &connections_map);
+        //             simulation::energy::calculate_total_energy(&nodes, &connections_map);
 
         //         csv_writer
         //             .write_record(&[
@@ -184,68 +196,7 @@ pub fn run_with_gui(scene: Scene) {
 
         // create egui interface
         egui.begin_frame(&display);
-        egui::Window::new("General settings").show(egui.ctx(), |ui| {
-            ui.label("Press F1 to hide/show this menu");
-            ui.label(format!("FPS: {}", current_fps));
-            ui.label("Zoom");
-            ui.add(egui::Slider::new(zoom, RangeInclusive::new(0.1, 2.0)));
-            ui.label("dt");
-            ui.add(egui::Slider::new(&mut dt, RangeInclusive::new(0.0, 0.00005)));
-            ui.label("Symulation steps per frame");
-            ui.add(egui::Slider::new(
-                &mut steps_per_frame,
-                RangeInclusive::new(0, 100),
-            ));
-            ui.separator();
-            ui.horizontal(|ui| {
-                ui.selectable_value(
-                    &mut current_simulation_engine,
-                    SimulationEngine::Cpu,
-                    "CPU single threaded",
-                );
-                ui.selectable_value(
-                    &mut current_simulation_engine,
-                    SimulationEngine::CpuMultithread,
-                    "CPU multi threaded",
-                );
-                #[cfg(feature = "rust-gpu-tools")]
-                ui.selectable_value(
-                    &mut current_simulation_engine,
-                    SimulationEngine::OpenCl,
-                    "GPU OpenCL",
-                );
-            });
-            ui.selectable_value(
-                &mut current_simulation_engine,
-                SimulationEngine::None,
-                "Stop simulation",
-            );
-            ui.separator();
-            ui.horizontal(|ui| {
-                ui.selectable_value(
-                    &mut current_coloring_mode,
-                    graphics::ColoringMode::KineticEnergy,
-                    "Kinetic Energy",
-                );
-                ui.selectable_value(
-                    &mut current_coloring_mode,
-                    graphics::ColoringMode::Boundary,
-                    "Boundary nodes",
-                );
-            });
-            ui.horizontal(|ui| {
-                ui.selectable_value(
-                    &mut current_coloring_mode,
-                    graphics::ColoringMode::Temperature,
-                    "Temperature",
-                );
-                ui.selectable_value(
-                    &mut current_coloring_mode,
-                    graphics::ColoringMode::Pressure,
-                    "Pressure",
-                );
-            });
-        });
+        draw_settings(egui, current_fps, settings);
         let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
 
         let mut target = display.draw();
@@ -257,7 +208,7 @@ pub fn run_with_gui(scene: Scene) {
             &graphics::draw_disks(
                 &nodes,
                 &connections_structure,
-                &current_coloring_mode,
+                &settings.coloring_mode,
                 last_frame_symulation_time,
             ),
         )
@@ -279,15 +230,15 @@ pub fn run_with_gui(scene: Scene) {
                 &program,
                 &glium::uniform! {
                     screen_ratio: screen_ratio,
-                    zoom: *zoom,
-                    camera_position: camera_position.to_array()
+                    zoom: settings.zoom,
+                    camera_position: settings.camera_position.to_array()
                 },
                 &params,
             )
             .unwrap();
 
         // draw egui
-        if egui_active {
+        if settings.gui_active {
             egui.paint(&display, &mut target, egui_shapes);
         }
 
@@ -295,10 +246,7 @@ pub fn run_with_gui(scene: Scene) {
         target.finish().unwrap();
     };
 
-    let mut zoom: f32 = 0.55;
-    let mut egui_active = true;
     let mut is_mouse_dragging = false;
-    let mut camera_position: Vec2 = Vec2::new(0.0, 0.0);
     let mut screen_ratio: f32 = initial_window_width as f32 / initial_window_height as f32;
     let mut window_width: f32 = initial_window_width as f32;
 
@@ -309,10 +257,8 @@ pub fn run_with_gui(scene: Scene) {
             redraw_clousure(
                 &display,
                 &mut egui,
-                egui_active,
-                &mut zoom,
-                camera_position,
                 screen_ratio,
+                &mut settings
             )
         };
 
@@ -334,7 +280,7 @@ pub fn run_with_gui(scene: Scene) {
                             if input.virtual_keycode == Some(VirtualKeyCode::F1)
                                 && input.state == ElementState::Pressed
                             {
-                                egui_active = !egui_active;
+                                settings.gui_active = !settings.gui_active;
                             }
                         }
                         WindowEvent::MouseWheel {
@@ -345,15 +291,15 @@ pub fn run_with_gui(scene: Scene) {
                         } => {
                             match delta {
                                 glutin::event::MouseScrollDelta::LineDelta(x, y) => {
-                                    zoom += (x + y) * 0.05;
+                                    settings.zoom += (x + y) * 0.05;
                                 }
                                 glutin::event::MouseScrollDelta::PixelDelta(a) => {
                                     println!("PixelDelta {}", a.to_logical::<f32>(1.0).y);
-                                    zoom += a.to_logical::<f32>(1.0).y * 0.05;
+                                    settings.zoom += a.to_logical::<f32>(1.0).y * 0.05;
                                 }
                             }
-                            if zoom < 0.1 {
-                                zoom = 0.1
+                            if settings.zoom < 0.1 {
+                                settings.zoom = 0.1
                             };
                         }
                         WindowEvent::MouseInput {
@@ -386,10 +332,10 @@ pub fn run_with_gui(scene: Scene) {
                 glutin::event::DeviceEvent::MouseMotion { delta } => {
                     if is_mouse_dragging {
                         let drag_scale: f32 = 1.0 / (window_width * 0.5);
-                        camera_position.x += delta.0 as f32 * drag_scale;
-                        camera_position.y += -delta.1 as f32 * drag_scale * screen_ratio;
+                        settings.camera_position.x += delta.0 as f32 * drag_scale;
+                        settings.camera_position.y += -delta.1 as f32 * drag_scale * screen_ratio;
                     }
-                },
+                }
                 _ => {}
             },
             Event::RedrawRequested { .. } => {
@@ -406,4 +352,71 @@ pub fn run_with_gui(scene: Scene) {
 
     // do execute main loop clousure
     event_loop.run(main_loop);
+}
+
+fn draw_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, settings: &mut Settings) {
+    egui::Window::new("General settings").show(egui.ctx(), |ui| {
+        ui.label("Press F1 to hide/show this menu");
+        ui.label(format!("FPS: {}", current_fps));
+        ui.label("Zoom");
+        ui.add(egui::Slider::new(
+            &mut settings.zoom,
+            RangeInclusive::new(0.1, 2.0),
+        ));
+        ui.label("dt");
+        ui.add(egui::Slider::new(
+            &mut settings.dt,
+            RangeInclusive::new(0.0, 0.00005),
+        ));
+        ui.label("Symulation steps per frame");
+        ui.add(egui::Slider::new(
+            &mut settings.steps_per_frame,
+            RangeInclusive::new(0, 100),
+        ));
+        ui.separator();
+        ui.horizontal(|ui| {
+            ui.selectable_value(
+                &mut settings.engine,
+                SimulationEngine::Cpu,
+                "CPU single threaded",
+            );
+            ui.selectable_value(
+                &mut settings.engine,
+                SimulationEngine::CpuMultithread,
+                "CPU multi threaded",
+            );
+            #[cfg(feature = "rust-gpu-tools")]
+            ui.selectable_value(&mut settings.engine, SimulationEngine::OpenCl, "GPU OpenCL");
+        });
+        ui.selectable_value(
+            &mut settings.engine,
+            SimulationEngine::None,
+            "Stop simulation",
+        );
+        ui.separator();
+        ui.horizontal(|ui| {
+            ui.selectable_value(
+                &mut settings.coloring_mode,
+                graphics::ColoringMode::KineticEnergy,
+                "Kinetic Energy",
+            );
+            ui.selectable_value(
+                &mut settings.coloring_mode,
+                graphics::ColoringMode::Boundary,
+                "Boundary nodes",
+            );
+        });
+        ui.horizontal(|ui| {
+            ui.selectable_value(
+                &mut settings.coloring_mode,
+                graphics::ColoringMode::Temperature,
+                "Temperature",
+            );
+            ui.selectable_value(
+                &mut settings.coloring_mode,
+                graphics::ColoringMode::Pressure,
+                "Pressure",
+            );
+        });
+    });
 }
