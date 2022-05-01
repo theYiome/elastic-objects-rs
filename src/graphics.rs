@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std:: f32::consts::PI;
 
 use crate::simulation::node::Node;
@@ -10,7 +11,7 @@ pub struct Vertex {
 glium::implement_vertex!(Vertex, local_position);
 
 #[derive(Copy, Clone)]
-pub struct InstanceAttribute {
+pub struct NodeAttribute {
     position: [f32; 2],
     scale_x: f32,
     scale_y: f32,
@@ -18,7 +19,7 @@ pub struct InstanceAttribute {
     color: [f32; 3],
 }
 glium::implement_vertex!(
-    InstanceAttribute,
+    NodeAttribute,
     position,
     scale_x,
     scale_y,
@@ -118,7 +119,7 @@ pub fn draw_disks(
     connections_structure: &[Vec<(usize, f32, f32)>],
     coloring_mode: &ColoringMode,
     dt: f32
-) -> Vec<InstanceAttribute> {
+) -> Vec<NodeAttribute> {
 
     // let colors = color_from_kinetic_energy(nodes);
     let colors = match coloring_mode {
@@ -134,7 +135,7 @@ pub fn draw_disks(
         .map(|(i, n)| {
             let radius = 0.0045 + radius_from_area(n.mass) * 0.000;
 
-            InstanceAttribute {
+            NodeAttribute {
                 position: n.position.to_array(),
                 scale_x: radius,
                 scale_y: radius,
@@ -224,16 +225,31 @@ fn number_to_rgb(mut t: f32, min: f32, max: f32) -> [f32; 3] {
     };
 }
 
-//     for (k, v) in connections {
-//         let (dx, v0) = *v;
-//         let (a, b) = (nodes[k.0].position, nodes[k.1].position);
-//         let color = ((a - b).length() - dx) * 20.0;
-//         graphics::add_rectangle(
-//             &mut verticies,
-//             &mut indices,
-//             a,
-//             b,
-//             0.007 + v0 * 0.00001,
-//             [0.2 + color, 0.2 + color, 0.2 + color],
-//         );
-//     }
+
+
+#[derive(Copy, Clone)]
+pub struct ConnectionAttribute {
+    position_a: [f32; 2],
+    position_b: [f32; 2],
+    color: [f32; 3],
+    width: f32,
+}
+glium::implement_vertex!(
+    ConnectionAttribute,
+    position_a,
+    position_b,
+    color,
+    width,
+);
+
+pub fn draw_connections(connections: &HashMap<(usize, usize), (f32, f32)>, nodes: &[Node]) -> Vec<ConnectionAttribute> {
+    connections.iter().map(|(k, v)| {
+        // let (dx, v0) = *v;
+        ConnectionAttribute {
+            position_a: nodes[k.0].position.to_array(),
+            position_b: nodes[k.1].position.to_array(),
+            color: [0.1, 0.1, 0.1],
+            width: 0.001
+        }
+    }).collect()
+}

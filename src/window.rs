@@ -46,9 +46,35 @@ fn create_node_buffers(
     (vertex_buffer, index_buffer)
 }
 
+fn create_connection_buffers(
+    display: &glium::Display,
+) -> (
+    glium::VertexBuffer<graphics::Vertex>,
+    glium::IndexBuffer<u16>,
+) {
+    let (disk_verticies, disk_indices) = graphics::square_mesh();
+    // let (disk_verticies, disk_indices) = graphics::square_mesh();
+    let vertex_buffer = glium::VertexBuffer::immutable(display, &disk_verticies).unwrap();
+    let index_buffer = glium::IndexBuffer::immutable(
+        display,
+        glium::index::PrimitiveType::TrianglesList,
+        &disk_indices,
+    )
+    .unwrap();
+
+    (vertex_buffer, index_buffer)
+}
+
 fn create_node_program(display: &glium::Display) -> glium::Program {
-    let vertex_shader_src = std::fs::read_to_string("glsl/vertex.vert").unwrap();
-    let fragment_shader_src = std::fs::read_to_string("glsl/fragment.frag").unwrap();
+    let vertex_shader_src = std::fs::read_to_string("glsl/nodes.vert").unwrap();
+    let fragment_shader_src = std::fs::read_to_string("glsl/basic_coloring.frag").unwrap();
+
+    glium::Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap()
+}
+
+fn create_connection_program(display: &glium::Display) -> glium::Program {
+    let vertex_shader_src = std::fs::read_to_string("glsl/connections.vert").unwrap();
+    let fragment_shader_src = std::fs::read_to_string("glsl/basic_coloring.frag").unwrap();
 
     glium::Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap()
 }
@@ -94,8 +120,12 @@ pub fn run_with_gui(scene: Scene) {
         glium::Display::new(wb, cb, &event_loop).unwrap()
     };
     let mut egui = egui_glium::EguiGlium::new(&display);
+
     let (disk_vertex_buffer, disk_index_buffer) = create_node_buffers(&display);
-    let program = create_node_program(&display);
+    let nodes_program = create_node_program(&display);
+
+    let (square_vertex_buffer, square_index_buffer) = create_connection_buffers(&display);
+    let connection_program = create_connection_program(&display);
 
     // loging to csv file
     // let log_path = "data/log.csv";
@@ -203,13 +233,12 @@ pub fn run_with_gui(scene: Scene) {
         // draw things behind egui here
         target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
 
+
         let instance_buffer = glium::VertexBuffer::dynamic(
             display,
-            &graphics::draw_disks(
+            &graphics::draw_connections(
+                &connections_map,
                 &nodes,
-                &connections_structure,
-                &settings.coloring_mode,
-                last_frame_symulation_time,
             ),
         )
         .unwrap();
@@ -225,9 +254,35 @@ pub fn run_with_gui(scene: Scene) {
 
         target
             .draw(
+                (&square_vertex_buffer, instance_buffer.per_instance().unwrap()),
+                &square_index_buffer,
+                &connection_program,
+                &glium::uniform! {
+                    screen_ratio: screen_ratio,
+                    zoom: settings.zoom,
+                    camera_position: settings.camera_position.to_array()
+                },
+                &params,
+            )
+            .unwrap();
+
+
+        let instance_buffer = glium::VertexBuffer::dynamic(
+            display,
+            &graphics::draw_disks(
+                &nodes,
+                &connections_structure,
+                &settings.coloring_mode,
+                last_frame_symulation_time,
+            ),
+        )
+        .unwrap();
+
+        target
+            .draw(
                 (&disk_vertex_buffer, instance_buffer.per_instance().unwrap()),
                 &disk_index_buffer,
-                &program,
+                &nodes_program,
                 &glium::uniform! {
                     screen_ratio: screen_ratio,
                     zoom: settings.zoom,
