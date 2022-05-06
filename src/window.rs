@@ -85,6 +85,8 @@ struct Settings {
     engine: SimulationEngine,
     coloring_mode: graphics::ColoringMode,
     gui_active: bool,
+    draw_nodes: bool,
+    draw_connections: bool,
     zoom: f32,
     camera_position: Vec2,
 }
@@ -96,6 +98,8 @@ pub fn run_with_gui(scene: Scene) {
         engine: SimulationEngine::None,
         coloring_mode: graphics::ColoringMode::KineticEnergy,
         gui_active: true,
+        draw_nodes: true,
+        draw_connections: true,
         zoom: 0.55,
         camera_position: Vec2::new(0.0, 0.0),
     };
@@ -144,161 +148,173 @@ pub fn run_with_gui(scene: Scene) {
                                     egui: &mut egui_glium::EguiGlium,
                                     screen_ratio: f32,
                                     settings: &mut Settings| {
-        // check connection breaks
-        match simulation::general::handle_connection_break(&mut nodes, &mut connections_map) {
-            Some(x) => {
-                objects_interactions = x;
-                connections_structure =
-                    simulation::general::calculate_connections_structure(&connections_map, &nodes);
+        
+        //? simulation calculations
+        let last_frame_symulation_time = {
+            // check connection breaks
+            match simulation::general::handle_connection_break(&mut nodes, &mut connections_map) {
+                Some(x) => {
+                    objects_interactions = x;
+                    connections_structure =
+                        simulation::general::calculate_connections_structure(&connections_map, &nodes);
+                }
+                None => {}
             }
-            None => {}
-        }
-
-        match settings.engine {
-            SimulationEngine::Cpu => {
-                for _i in 0..settings.steps_per_frame {
-                    simulation::cpu::simulate_single_thread_cpu(
-                        settings.dt,
-                        &mut nodes,
+    
+            match settings.engine {
+                SimulationEngine::Cpu => {
+                    for _i in 0..settings.steps_per_frame {
+                        simulation::cpu::simulate_single_thread_cpu(
+                            settings.dt,
+                            &mut nodes,
+                            &connections_map,
+                            &objects_interactions,
+                        );
+                    }
+                }
+                SimulationEngine::CpuMultithread => {
+                    for _i in 0..settings.steps_per_frame {
+                        simulation::cpu::simulate_multi_thread_cpu(
+                            settings.dt,
+                            &mut nodes,
+                            &connections_structure,
+                            &objects_interactions,
+                        );
+                    }
+                }
+                #[cfg(feature = "rust-gpu-tools")]
+                SimulationEngine::OpenCl => {
+                    nodes = simulation::gpu::simulate_opencl(
+                        &nodes,
+                        &opencl_program,
                         &connections_map,
-                        &objects_interactions,
+                        steps_per_frame,
+                        dt,
                     );
                 }
+                _ => {}
             }
-            SimulationEngine::CpuMultithread => {
-                for _i in 0..settings.steps_per_frame {
-                    simulation::cpu::simulate_multi_thread_cpu(
-                        settings.dt,
-                        &mut nodes,
-                        &connections_structure,
-                        &objects_interactions,
-                    );
-                }
-            }
-            #[cfg(feature = "rust-gpu-tools")]
-            SimulationEngine::OpenCl => {
-                nodes = simulation::gpu::simulate_opencl(
-                    &nodes,
-                    &opencl_program,
-                    &connections_map,
-                    steps_per_frame,
-                    dt,
-                );
-            }
-            _ => {}
-        }
 
-        let last_frame_symulation_time = settings.dt * settings.steps_per_frame as f32;
-        total_symulation_time += last_frame_symulation_time;
-
-        fps_counter += 1;
-        {
-            let update_every_ms: u32 = 500;
-            if now.elapsed().as_millis() > update_every_ms as u128 {
-                now = std::time::Instant::now();
-                current_fps = fps_counter * (1000 / update_every_ms);
-                fps_counter = 0;
-            }
-        }
-
-        current_log_dt += last_frame_symulation_time;
-        // {
-        //     let log_dt = 0.01;
-        //     if current_log_dt > log_dt {
-        //         let (kinetic, gravity, lennjon, wallrep, objrepu) =
-        //             simulation::energy::calculate_total_energy(&nodes, &connections_map);
-
-        //         csv_writer
-        //             .write_record(&[
-        //                 total_symulation_time.to_string(),
-        //                 (current_fps * steps_per_frame).to_string(),
-        //                 kinetic.to_string(),
-        //                 gravity.to_string(),
-        //                 lennjon.to_string(),
-        //                 wallrep.to_string(),
-        //                 objrepu.to_string(),
-        //             ])
-        //             .unwrap();
-
-        //         current_log_dt = 0.0;
-        //     }
-        // }
-
-        // create egui interface
-        egui.begin_frame(&display);
-        draw_settings(egui, current_fps, settings);
-        let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
-
-        let mut target = display.draw();
-        // draw things behind egui here
-        target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
-
-
-        let instance_buffer = glium::VertexBuffer::dynamic(
-            display,
-            &graphics::draw_connections(
-                &connections_map,
-                &nodes,
-            ),
-        )
-        .unwrap();
-
-        let params = glium::DrawParameters {
-            depth: glium::Depth {
-                test: glium::DepthTest::IfLess,
-                write: true,
-                ..Default::default()
-            },
-            ..Default::default()
+            settings.dt * settings.steps_per_frame as f32
         };
 
-        target
-            .draw(
-                (&square_vertex_buffer, instance_buffer.per_instance().unwrap()),
-                &square_index_buffer,
-                &connection_program,
-                &glium::uniform! {
-                    screen_ratio: screen_ratio,
-                    zoom: settings.zoom,
-                    camera_position: settings.camera_position.to_array()
-                },
-                &params,
-            )
-            .unwrap();
-
-
-        let instance_buffer = glium::VertexBuffer::dynamic(
-            display,
-            &graphics::draw_disks(
-                &nodes,
-                &connections_structure,
-                &settings.coloring_mode,
-                last_frame_symulation_time,
-            ),
-        )
-        .unwrap();
-
-        target
-            .draw(
-                (&disk_vertex_buffer, instance_buffer.per_instance().unwrap()),
-                &disk_index_buffer,
-                &nodes_program,
-                &glium::uniform! {
-                    screen_ratio: screen_ratio,
-                    zoom: settings.zoom,
-                    camera_position: settings.camera_position.to_array()
-                },
-                &params,
-            )
-            .unwrap();
-
-        // draw egui
-        if settings.gui_active {
-            egui.paint(&display, &mut target, egui_shapes);
+        //? logging and analitics
+        {
+            total_symulation_time += last_frame_symulation_time;
+    
+            fps_counter += 1;
+            {
+                let update_every_ms: u32 = 500;
+                if now.elapsed().as_millis() > update_every_ms as u128 {
+                    now = std::time::Instant::now();
+                    current_fps = fps_counter * (1000 / update_every_ms);
+                    fps_counter = 0;
+                }
+            }
+    
+            current_log_dt += last_frame_symulation_time;
+            // {
+            //     let log_dt = 0.01;
+            //     if current_log_dt > log_dt {
+            //         let (kinetic, gravity, lennjon, wallrep, objrepu) =
+            //             simulation::energy::calculate_total_energy(&nodes, &connections_map);
+    
+            //         csv_writer
+            //             .write_record(&[
+            //                 total_symulation_time.to_string(),
+            //                 (current_fps * steps_per_frame).to_string(),
+            //                 kinetic.to_string(),
+            //                 gravity.to_string(),
+            //                 lennjon.to_string(),
+            //                 wallrep.to_string(),
+            //                 objrepu.to_string(),
+            //             ])
+            //             .unwrap();
+    
+            //         current_log_dt = 0.0;
+            //     }
+            // }
         }
 
-        // draw things on top of egui here
-        target.finish().unwrap();
+        //? drawing objects and gui
+        {
+            // create egui interface
+            egui.begin_frame(&display);
+            draw_settings(egui, current_fps, settings);
+            let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
+    
+            let mut target = display.draw();
+            // draw things behind egui here
+            target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
+    
+            let params = glium::DrawParameters {
+                depth: glium::Depth {
+                    test: glium::DepthTest::IfLess,
+                    write: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            };
+    
+            if settings.draw_connections {
+                let instance_buffer = glium::VertexBuffer::dynamic(
+                    display,
+                    &graphics::draw_connections(
+                        &connections_map,
+                        &nodes,
+                    ),
+                )
+                .unwrap();
+    
+                target
+                    .draw(
+                        (&square_vertex_buffer, instance_buffer.per_instance().unwrap()),
+                        &square_index_buffer,
+                        &connection_program,
+                        &glium::uniform! {
+                            screen_ratio: screen_ratio,
+                            zoom: settings.zoom,
+                            camera_position: settings.camera_position.to_array()
+                        },
+                        &params,
+                    )
+                    .unwrap();
+            }
+    
+            if settings.draw_nodes {
+                let instance_buffer = glium::VertexBuffer::dynamic(
+                    display,
+                    &graphics::draw_disks(
+                        &nodes,
+                        &connections_structure,
+                        &settings.coloring_mode,
+                        last_frame_symulation_time,
+                    ),
+                )
+                .unwrap();
+    
+                target
+                    .draw(
+                        (&disk_vertex_buffer, instance_buffer.per_instance().unwrap()),
+                        &disk_index_buffer,
+                        &nodes_program,
+                        &glium::uniform! {
+                            screen_ratio: screen_ratio,
+                            zoom: settings.zoom,
+                            camera_position: settings.camera_position.to_array()
+                        },
+                        &params,
+                    )
+                    .unwrap();
+            }
+    
+            // draw egui
+            if settings.gui_active {
+                egui.paint(&display, &mut target, egui_shapes);
+            }
+    
+            target.finish().unwrap();
+        }
     };
 
     let mut is_mouse_dragging = false;
@@ -472,6 +488,12 @@ fn draw_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, settings: &
                 graphics::ColoringMode::Pressure,
                 "Pressure",
             );
+        });
+        ui.separator();
+        // checkboxes for settings.draw_connections and settings.draw_nodes
+        ui.horizontal(|ui| {
+            ui.checkbox(&mut settings.draw_connections, "Draw connections");
+            ui.checkbox(&mut settings.draw_nodes, "Draw nodes");
         });
     });
 }

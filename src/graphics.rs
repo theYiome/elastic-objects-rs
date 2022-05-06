@@ -243,13 +243,13 @@ glium::implement_vertex!(
 );
 
 pub fn draw_connections(connections: &HashMap<(usize, usize), (f32, f32)>, nodes: &[Node]) -> Vec<ConnectionAttribute> {
-    connections.iter().map(|(k, v)| {
+    connections.iter().map(|(k, _v)| {
         // let (dx, v0) = *v;
         ConnectionAttribute {
             position_a: nodes[k.0].position.to_array(),
             position_b: nodes[k.1].position.to_array(),
             color: [0.1, 0.1, 0.1],
-            width: 0.001
+            width: 0.0016
         }
     }).collect()
 }

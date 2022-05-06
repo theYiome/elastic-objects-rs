@@ -15,9 +15,18 @@ out vec3 outcolor;
 
 void main() {
     outcolor = color;
-    float len = length(position_b - position_a);
-    vec2 position = position_a + (position_b - position_a) * 0.5;
-    vec2 new_position = local_position * vec2(len, width) + position;
-    new_position.y *= screen_ratio;
-    gl_Position = vec4((new_position + camera_position) * zoom, 0.1, 1.0);
+
+    vec2 angle_vector = position_b - position_a;
+    float len = length(angle_vector);
+    float alpha = atan(angle_vector.y, angle_vector.x);
+    vec2 translation = position_a + (position_b - position_a) * 0.5;
+
+    vec2 scaled = local_position * vec2(len, width);
+    // rotate scaled by alpha
+    vec2 rotated = vec2(scaled.x * cos(alpha) - scaled.y * sin(alpha), scaled.x * sin(alpha) + scaled.y * cos(alpha));
+    // translate rotated
+    vec2 translated = rotated + translation;
+
+    translated.y *= screen_ratio;
+    gl_Position = vec4((translated + camera_position) * zoom, 0.1, 1.0);
 }
