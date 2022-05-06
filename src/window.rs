@@ -105,8 +105,8 @@ pub fn run_with_gui(scene: Scene) {
     };
 
     let (mut nodes, mut connections_map) = (scene.nodes, scene.connections);
-    let mut connections_structure =
-        simulation::general::calculate_connections_structure(&connections_map, &nodes);
+    let mut connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
+    let mut collisions_structure = simulation::general::calculate_collisions_structure_simple(&nodes);
 
     let initial_window_width: u32 = 1280;
     let initial_window_height: u32 = 720;
@@ -150,13 +150,13 @@ pub fn run_with_gui(scene: Scene) {
                                     settings: &mut Settings| {
         
         //? simulation calculations
-        let last_frame_symulation_time = {
+        {
             // check connection breaks
             match simulation::general::handle_connection_break(&mut nodes, &mut connections_map) {
                 Some(x) => {
                     objects_interactions = x;
-                    connections_structure =
-                        simulation::general::calculate_connections_structure(&connections_map, &nodes);
+                    connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
+                    collisions_structure = simulation::general::calculate_collisions_structure_simple(&nodes);
                 }
                 None => {}
             }
@@ -179,6 +179,7 @@ pub fn run_with_gui(scene: Scene) {
                             &mut nodes,
                             &connections_structure,
                             &objects_interactions,
+                            &collisions_structure
                         );
                     }
                 }
@@ -195,8 +196,8 @@ pub fn run_with_gui(scene: Scene) {
                 _ => {}
             }
 
-            settings.dt * settings.steps_per_frame as f32
         };
+        let last_frame_symulation_time = settings.dt * settings.steps_per_frame as f32;
 
         //? logging and analitics
         {

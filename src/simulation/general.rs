@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use super::node::Node;
+use rayon::prelude::*;
 
 pub const OBJECT_REPULSION_V0: f32 = 10.0;
 pub const OBJECT_REPULSION_DX: f32 = 0.015;
@@ -78,4 +79,17 @@ pub fn calculate_connections_structure(connections_map: &HashMap<(usize, usize),
         connections_structure[k.1].push((k.0, v.0, v.1));
     });
     connections_structure
+}
+
+pub fn calculate_collisions_structure_simple(nodes: &Vec<Node>) -> Vec<Vec<usize>> {
+    nodes.par_iter().map(|n| {
+        if n.is_boundary {
+            nodes.iter().enumerate().filter(|(_j, n2)| {
+                n2.is_boundary && n.object_id != n2.object_id
+            }).map(|(j, _n2)| j).collect()
+        }
+        else {
+            Vec::new()
+        }
+    }).collect()
 }

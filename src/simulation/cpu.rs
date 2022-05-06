@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use super::node::Node;
 
+use glam::Vec2;
 use rayon::prelude::*;
 
 // https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
@@ -116,6 +117,23 @@ fn lennard_jones_repulsion_multithreaded(nodes: &mut Vec<Node>, objects_interact
     });
 }
 
+fn lennard_jones_repulsion_multithreaded_2(nodes: &mut Vec<Node>, collisions_sturcture: &Vec<Vec<usize>>) {
+    let v0 = super::general::OBJECT_REPULSION_V0;
+    let dx = super::general::OBJECT_REPULSION_DX;
+    let acceleration_diff: Vec<Vec2> = nodes.par_iter().enumerate().map(|(i, n)| {
+        collisions_sturcture[i].iter().fold(Vec2::new(0.0, 0.0), |accum, j| {
+            let dir = nodes[*j].position - n.position;
+            let l = dir.length();
+            let c = (dx / l).powi(13);
+            accum + (dir.normalize() * 3.0 * (v0 / dx) * c)
+        })
+    }).collect();
+
+    nodes.par_iter_mut().enumerate().for_each(|(i, n)| {
+        n.current_acceleration -= acceleration_diff[i] / n.mass;
+    });
+}
+
 fn wall_repulsion_force_y(nodes: &mut [Node]) {
     let v0 = super::general::WALL_REPULSION_V0;
     let dx = super::general::WALL_REPULSION_DX;
@@ -167,14 +185,16 @@ pub fn simulate_multi_thread_cpu(
     dt: f32,
     nodes: &mut Vec<Node>,
     connections_structure: &Vec<Vec<(usize, f32, f32)>>,
-    objects_interactions: &HashMap<u32, Vec<usize>>
+    objects_interactions: &HashMap<u32, Vec<usize>>,
+    collisions_structure: &Vec<Vec<usize>>
 ) {
     start_integrate_velocity_verlet(dt, nodes);
 
     gravity_force(nodes);
 
     lennard_jones_connections_multithreaded(nodes, connections_structure);
-    lennard_jones_repulsion_multithreaded(nodes, objects_interactions);
+    // lennard_jones_repulsion_multithreaded(nodes, objects_interactions);
+    lennard_jones_repulsion_multithreaded_2(nodes, collisions_structure);
     // lennard_jones_repulsion(nodes, objects_interactions);
 
     wall_repulsion_force_y(nodes);
