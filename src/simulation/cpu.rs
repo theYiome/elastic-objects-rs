@@ -129,7 +129,7 @@ fn lennard_jones_repulsion_multithreaded_2(nodes: &mut Vec<Node>, collisions_stu
         })
     }).collect();
 
-    nodes.par_iter_mut().enumerate().for_each(|(i, n)| {
+    nodes.iter_mut().enumerate().for_each(|(i, n)| {
         n.current_acceleration -= acceleration_diff[i] / n.mass;
     });
 }
