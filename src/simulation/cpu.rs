@@ -49,18 +49,19 @@ fn lennard_jones_connections_multithreaded(
     connections_structure: &Vec<Vec<(usize, f32, f32)>>,
 ) {
     
-    let nodes_copy = nodes.clone();
-    
-    nodes.par_iter_mut().enumerate().for_each(|(i, n)| {
-        connections_structure[i].iter().for_each(|(j, dx, v0)| {
-            let dir = nodes_copy[*j].position - n.position;
+    let acceleration_diff: Vec<Vec2> = nodes.par_iter().enumerate().map(|(i, n)| {
+        connections_structure[i].iter().fold(Vec2::new(0.0, 0.0), |accum, (j, dx, v0)| {
+            let dir = nodes[*j].position - n.position;
             let l = dir.length();
     
             let c = (dx / l).powi(7) - (dx / l).powi(13);
-            let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+            accum + (dir.normalize() * 3.0 * (v0 / dx) * c / n.mass)
+        })
+    }).collect();
     
-            n.current_acceleration += v / n.mass;
-        });
+    
+    nodes.iter_mut().enumerate().for_each(|(i, n)| {
+        n.current_acceleration += acceleration_diff[i];
     });
 }
 
@@ -125,12 +126,12 @@ fn lennard_jones_repulsion_multithreaded_2(nodes: &mut Vec<Node>, collisions_stu
             let dir = nodes[*j].position - n.position;
             let l = dir.length();
             let c = (dx / l).powi(13);
-            accum + (dir.normalize() * 3.0 * (v0 / dx) * c)
+            accum + (dir.normalize() * 3.0 * (v0 / dx) * c / n.mass)
         })
     }).collect();
 
     nodes.iter_mut().enumerate().for_each(|(i, n)| {
-        n.current_acceleration -= acceleration_diff[i] / n.mass;
+        n.current_acceleration -= acceleration_diff[i];
     });
 }
 
