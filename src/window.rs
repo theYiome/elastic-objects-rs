@@ -106,7 +106,10 @@ pub fn run_with_gui(scene: Scene) {
 
     let (mut nodes, mut connections_map) = (scene.nodes, scene.connections);
     let mut connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
-    let mut collisions_structure = simulation::general::calculate_collisions_structure_simple(&nodes);
+    let cell_size = simulation::general::OBJECT_REPULSION_DX * 1.2;
+    let mut grid = simulation::general::Grid::new(&nodes, cell_size);
+    let mut collisions_structure = simulation::general::calculate_collisions_structure_with_grid(&nodes, &grid);
+    // let mut collisions_structure = simulation::general::calculate_collisions_structure_simple(&nodes);
 
     let initial_window_width: u32 = 1280;
     let initial_window_height: u32 = 720;
@@ -156,10 +159,13 @@ pub fn run_with_gui(scene: Scene) {
                 Some(x) => {
                     objects_interactions = x;
                     connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
-                    collisions_structure = simulation::general::calculate_collisions_structure_simple(&nodes);
+                    // collisions_structure = simulation::general::calculate_collisions_structure_simple(&nodes);
                 }
                 None => {}
             }
+
+            grid = simulation::general::Grid::new(&nodes, cell_size);
+            collisions_structure = simulation::general::calculate_collisions_structure_with_grid(&nodes, &grid);
     
             match settings.engine {
                 SimulationEngine::Cpu => {

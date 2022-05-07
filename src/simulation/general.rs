@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use super::node::Node;
+use glam::Vec2;
 use rayon::prelude::*;
 
 pub const OBJECT_REPULSION_V0: f32 = 10.0;
@@ -79,6 +80,128 @@ pub fn calculate_connections_structure(connections_map: &HashMap<(usize, usize),
         connections_structure[k.1].push((k.0, v.0, v.1));
     });
     connections_structure
+}
+
+pub struct Grid {
+    pub top_left: Vec2,
+    pub bottom_right: Vec2,
+    pub cells: Vec<Vec<Vec<usize>>>,
+    pub cell_size: f32,
+    pub cell_count_x: usize,
+    pub cell_count_y: usize,
+}
+
+impl Grid {
+    // return index of the cell that contains the point
+    pub fn get_cell_index(&self, point: &Vec2) -> (usize, usize) {
+        let mut x = ((point.x - self.top_left.x) / self.cell_size) as i32;
+        let mut y = ((self.top_left.y - point.y) / self.cell_size) as i32;
+        if x >= self.cell_count_x as i32 {
+            x = self.cell_count_x as i32 - 1;
+        }
+        else if x < 0 {
+            x = 0;
+        }
+        if y >= self.cell_count_y as i32 {
+            y = self.cell_count_y as i32 - 1;
+        }
+        else if y < 0 {
+            y = 0;
+        }
+        (x as usize, y as usize)
+    }
+
+    // return values of cells that contain the point and the cells that are adjacent to it including the cell itself and diagonals
+    pub fn get_node_indexes_from_neighbours(&self, point: &Vec2) -> Vec<usize> {
+        let (x, y) = self.get_cell_index(point);
+        let mut neighbours: Vec<usize> = Vec::new();
+        neighbours.append(&mut self.cells[x][y].clone());
+        if y > 0 {
+            neighbours.append(&mut self.cells[x][y - 1].clone());
+        }
+        if y < self.cell_count_y - 1 {
+            neighbours.append(&mut self.cells[x][y + 1].clone());
+        }
+        if x > 0 {
+            neighbours.append(&mut self.cells[x - 1][y].clone());
+        }
+        if x < self.cell_count_x - 1 {
+            neighbours.append(&mut self.cells[x + 1][y].clone());
+        }
+        if x > 0 && y > 0 {
+            neighbours.append(&mut self.cells[x - 1][y - 1].clone());
+        }
+        if x > 0 && y < self.cell_count_y - 1 {
+            neighbours.append(&mut self.cells[x - 1][y + 1].clone());
+        }
+        if x < self.cell_count_x - 1 && y > 0 {
+            neighbours.append(&mut self.cells[x + 1][y - 1].clone());
+        }
+        if x < self.cell_count_x - 1 && y < self.cell_count_y - 1 {
+            neighbours.append(&mut self.cells[x + 1][y + 1].clone());
+        }
+        neighbours
+    }
+
+    pub fn new(nodes: &Vec<Node>, cell_size: f32) -> Grid {
+        // get the largest and lowest position x and y from nodes
+        // let mut top_left = Vec2::new(std::f32::MAX, std::f32::MIN);
+        // let mut bottom_right = Vec2::new(std::f32::MIN, std::f32::MAX);
+        // nodes.iter().for_each(|n| {
+        //     if n.position.x < top_left.x {
+        //         top_left.x = n.position.x;
+        //     }
+        //     if n.position.y > top_left.y {
+        //         top_left.y = n.position.y;
+        //     }
+        //     if n.position.x > bottom_right.x {
+        //         bottom_right.x = n.position.x;
+        //     }
+        //     if n.position.y < bottom_right.y {
+        //         bottom_right.y = n.position.y;
+        //     }
+        // });
+        let top_left = Vec2::new(-1.0, 1.0);
+        let bottom_right = Vec2::new(1.0, -1.0);
+    
+        let width = bottom_right.x - top_left.x;
+        let height = top_left.y - bottom_right.y;
+    
+        let cell_count_x = (width / cell_size).ceil() as usize;
+        let cell_count_y = (height / cell_size).ceil() as usize;
+    
+        let cells: Vec<Vec<Vec<usize>>> = vec![vec![Vec::new(); cell_count_y]; cell_count_x];
+    
+        let mut grid = Grid {
+            top_left,
+            bottom_right,
+            cells,
+            cell_size,
+            cell_count_x,
+            cell_count_y,
+        };
+     
+        nodes.iter().enumerate().for_each(|(index, n)| {
+            if n.is_boundary {
+                let (x, y) = grid.get_cell_index(&n.position);
+                grid.cells[x][y].push(index);
+            }
+        });
+    
+        grid
+    }
+}
+
+
+pub fn calculate_collisions_structure_with_grid(nodes: &Vec<Node>, grid: &Grid) -> Vec<Vec<usize>> {
+    nodes.par_iter().map(|n| {
+        if n.is_boundary {
+            grid.get_node_indexes_from_neighbours(&n.position).iter().copied().filter(|j| nodes[*j].object_id != n.object_id).collect()
+        }
+        else {
+            vec![]
+        }
+    }).collect()
 }
 
 pub fn calculate_collisions_structure_simple(nodes: &Vec<Node>) -> Vec<Vec<usize>> {
