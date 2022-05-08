@@ -145,24 +145,30 @@ impl Grid {
 
     pub fn new(nodes: &Vec<Node>, cell_size: f32) -> Grid {
         // get the largest and lowest position x and y from nodes
-        // let mut top_left = Vec2::new(std::f32::MAX, std::f32::MIN);
-        // let mut bottom_right = Vec2::new(std::f32::MIN, std::f32::MAX);
-        // nodes.iter().for_each(|n| {
-        //     if n.position.x < top_left.x {
-        //         top_left.x = n.position.x;
-        //     }
-        //     if n.position.y > top_left.y {
-        //         top_left.y = n.position.y;
-        //     }
-        //     if n.position.x > bottom_right.x {
-        //         bottom_right.x = n.position.x;
-        //     }
-        //     if n.position.y < bottom_right.y {
-        //         bottom_right.y = n.position.y;
-        //     }
-        // });
-        let top_left = Vec2::new(-1.0, 1.0);
-        let bottom_right = Vec2::new(1.0, -1.0);
+        let mut top_left = Vec2::new(std::f32::MAX, std::f32::MIN);
+        let mut bottom_right = Vec2::new(std::f32::MIN, std::f32::MAX);
+        nodes.iter().for_each(|n| {
+            if n.position.x < top_left.x {
+                top_left.x = n.position.x;
+            }
+            if n.position.y > top_left.y {
+                top_left.y = n.position.y;
+            }
+            if n.position.x > bottom_right.x {
+                bottom_right.x = n.position.x;
+            }
+            if n.position.y < bottom_right.y {
+                bottom_right.y = n.position.y;
+            }
+        });
+        
+        const MAX_SIZE: f32 = 2.0;
+        if top_left.x < -MAX_SIZE { top_left.x = -MAX_SIZE };
+        if top_left.y > MAX_SIZE { top_left.y = MAX_SIZE };
+        if bottom_right.x > MAX_SIZE { bottom_right.x = MAX_SIZE };
+        if bottom_right.y < -MAX_SIZE { bottom_right.y = -MAX_SIZE };
+        // let top_left = Vec2::new(-1.0, 1.0);
+        // let bottom_right = Vec2::new(1.0, -1.0);
     
         let width = bottom_right.x - top_left.x;
         let height = top_left.y - bottom_right.y;

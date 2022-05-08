@@ -3,7 +3,7 @@ use std::ops::RangeInclusive;
 
 use glam::Vec2;
 use glium::glutin::event_loop;
-use glium::{glutin, Surface};
+use glium::{glutin, Surface, PolygonMode};
 use glutin::event::ElementState;
 use glutin::{
     event::{Event, VirtualKeyCode, WindowEvent},
@@ -79,6 +79,13 @@ fn create_connection_program(display: &glium::Display) -> glium::Program {
     glium::Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap()
 }
 
+fn create_grid_program(display: &glium::Display) -> glium::Program {
+    let vertex_shader_src = std::fs::read_to_string("glsl/grid.vert").unwrap();
+    let fragment_shader_src = std::fs::read_to_string("glsl/basic_coloring.frag").unwrap();
+
+    glium::Program::from_source(display, &vertex_shader_src, &fragment_shader_src, None).unwrap()
+}
+
 struct Settings {
     dt: f32,
     steps_per_frame: u32,
@@ -87,6 +94,7 @@ struct Settings {
     gui_active: bool,
     draw_nodes: bool,
     draw_connections: bool,
+    draw_grid: bool,
     zoom: f32,
     camera_position: Vec2,
 }
@@ -100,13 +108,14 @@ pub fn run_with_gui(scene: Scene) {
         gui_active: true,
         draw_nodes: true,
         draw_connections: true,
+        draw_grid: true,
         zoom: 0.55,
         camera_position: Vec2::new(0.0, 0.0),
     };
 
     let (mut nodes, mut connections_map) = (scene.nodes, scene.connections);
     let mut connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
-    let cell_size = simulation::general::OBJECT_REPULSION_DX * 1.2;
+    let cell_size = simulation::general::OBJECT_REPULSION_DX * 2.0;
     let mut grid = simulation::general::Grid::new(&nodes, cell_size);
     let mut collisions_structure = simulation::general::calculate_collisions_structure_with_grid(&nodes, &grid);
     // let mut collisions_structure = simulation::general::calculate_collisions_structure_simple(&nodes);
@@ -133,6 +142,8 @@ pub fn run_with_gui(scene: Scene) {
 
     let (square_vertex_buffer, square_index_buffer) = create_connection_buffers(&display);
     let connection_program = create_connection_program(&display);
+
+    let grid_program = create_grid_program(&display);
 
     // loging to csv file
     // let log_path = "data/log.csv";
@@ -253,6 +264,34 @@ pub fn run_with_gui(scene: Scene) {
             let mut target = display.draw();
             // draw things behind egui here
             target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
+
+            // draw grid
+            if settings.draw_grid {
+                let grid_params = glium::DrawParameters {
+                    depth: glium::Depth {
+                        test: glium::DepthTest::IfLess,
+                        write: true,
+                        ..Default::default()
+                    },
+                    polygon_mode: PolygonMode::Line,
+                    ..Default::default()
+                };
+
+                let grid_verticies = graphics::draw_grid(&grid);
+                let grid_vertex_buffer = glium::VertexBuffer::immutable(display, &grid_verticies).unwrap();
+                target.draw(
+                    &grid_vertex_buffer, 
+                    &glium::index::NoIndices(glium::index::PrimitiveType::LinesList), 
+                    &grid_program, 
+                    &glium::uniform! {
+                        screen_ratio: screen_ratio,
+                        zoom: settings.zoom,
+                        camera_position: settings.camera_position.to_array()
+                    },
+                    &grid_params
+                ).unwrap();
+            }
+
     
             let params = glium::DrawParameters {
                 depth: glium::Depth {
@@ -497,10 +536,11 @@ fn draw_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, settings: &
             );
         });
         ui.separator();
-        // checkboxes for settings.draw_connections and settings.draw_nodes
+        // checkboxes for settings.draw
         ui.horizontal(|ui| {
             ui.checkbox(&mut settings.draw_connections, "Draw connections");
             ui.checkbox(&mut settings.draw_nodes, "Draw nodes");
+            ui.checkbox(&mut settings.draw_grid, "Draw grid");
         });
     });
 }

@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 use std:: f32::consts::PI;
 
+use glam::Vec2;
+
+use crate::simulation::general::Grid;
 use crate::simulation::node::Node;
 use crate::simulation;
 
@@ -144,6 +147,27 @@ pub fn draw_disks(
             }
         })
         .collect()
+}
+
+pub fn draw_grid(grid: &Grid) -> Vec<Vertex> {
+    let mut vertices: Vec<Vertex> = Vec::new();
+
+    let y_offset = Vec2::new(0.0, grid.cell_size * grid.cell_count_y as f32);
+    for x in 0..grid.cell_count_x+1 {
+        let start_point = grid.top_left + ((x as f32) * Vec2::new(grid.cell_size, 0.0));
+        let end_point = start_point - y_offset;
+        vertices.push(Vertex { local_position: start_point.to_array() });
+        vertices.push(Vertex { local_position: end_point.to_array() });
+    }
+
+    let x_offset = Vec2::new(grid.cell_size * grid.cell_count_x as f32, 0.0);
+    for y in 0..grid.cell_count_y+1 {
+        let start_point = grid.top_left - ((y as f32) * Vec2::new(0.0, grid.cell_size));
+        let end_point = start_point + x_offset;
+        vertices.push(Vertex { local_position: start_point.to_array() });
+        vertices.push(Vertex { local_position: end_point.to_array() });
+    }
+    vertices
 }
 
 fn color_from_boundary(nodes: &[Node]) -> Vec<[f32; 3]> {
