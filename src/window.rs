@@ -154,8 +154,7 @@ pub fn run_with_gui(scene: Scene) {
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
 
-    let mut objects_interactions: HashMap<u32, Vec<usize>> =
-        simulation::general::calculate_objects_interactions_structure(&mut nodes);
+    let mut objects_interactions: HashMap<u32, Vec<usize>> = simulation::general::calculate_objects_interactions_structure(&mut nodes);
 
     let mut now = std::time::Instant::now();
     let mut redraw_clousure = move |display: &glium::Display,
@@ -166,13 +165,10 @@ pub fn run_with_gui(scene: Scene) {
         //? simulation calculations
         {
             // check connection breaks
-            match simulation::general::handle_connection_break(&mut nodes, &mut connections_map) {
-                Some(x) => {
-                    objects_interactions = x;
-                    connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
-                    // collisions_structure = simulation::general::calculate_collisions_structure_simple(&nodes);
-                }
-                None => {}
+            if simulation::general::handle_connection_break(&mut nodes, &mut connections_map) {
+                // objects_interactions = simulation::general::calculate_objects_interactions_structure(&mut nodes);
+                connections_structure = simulation::general::calculate_connections_structure(&connections_map, &nodes);
+                // collisions_structure = simulation::general::calculate_collisions_structure_simple(&nodes);
             }
 
             grid = simulation::general::Grid::new(&nodes, cell_size);

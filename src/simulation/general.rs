@@ -32,7 +32,7 @@ fn nodes_too_far(nodes: &mut Vec<Node>, connections: &mut HashMap<(usize, usize)
 pub fn handle_connection_break(
     nodes: &mut Vec<Node>,
     connections: &mut HashMap<(usize, usize), (f32, f32)>,
-) -> Option<HashMap<u32, Vec<usize>>> {
+) -> bool {
 
     let connections_to_break = nodes_too_far(nodes, connections);
     let recalculate_objects_interactions = connections_to_break.len() > 0;
@@ -47,11 +47,7 @@ pub fn handle_connection_break(
         connections.remove(&k);
     }
 
-    if recalculate_objects_interactions {
-        return Some(calculate_objects_interactions_structure(nodes));
-    }
-
-    return None;
+    recalculate_objects_interactions
 }
 
 pub fn calculate_objects_interactions_structure(nodes: &mut Vec<Node>) -> HashMap<u32, Vec<usize>> {
