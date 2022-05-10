@@ -266,6 +266,18 @@ glium::implement_vertex!(
     width,
 );
 
+pub fn draw_connections_2(connections: &HashMap<(usize, usize), (f32, f32)>, nodes: &[Node]) -> Vec<Vertex> {
+    let mut vertices: Vec<Vertex> = Vec::new();
+
+    connections.iter().for_each(|(k, _v)| {
+        vertices.push(Vertex { local_position: nodes[k.0].position.to_array() });
+        vertices.push(Vertex { local_position: nodes[k.1].position.to_array() });
+    });
+    
+    vertices
+}
+
+
 pub fn draw_connections(connections: &HashMap<(usize, usize), (f32, f32)>, nodes: &[Node]) -> Vec<ConnectionAttribute> {
     connections.iter().map(|(k, _v)| {
         // let (dx, v0) = *v;
