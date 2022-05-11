@@ -9,7 +9,7 @@ use crate::simulation;
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
-    local_position: [f32; 2],
+    pub local_position: [f32; 2],
 }
 glium::implement_vertex!(Vertex, local_position);
 

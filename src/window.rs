@@ -33,6 +33,7 @@ pub struct SimulationSettings {
     pub steps_per_frame: u32,
     engine: SimulationEngine,
     pub use_grid: bool,
+    pub cell_size: f32,
 }
 
 pub struct RenderingSettings {
@@ -54,6 +55,7 @@ pub fn run_with_gui(mut scene: Scene) {
         steps_per_frame: 5,
         engine: SimulationEngine::None,
         use_grid: USE_GRID,
+        cell_size: simulation::general::OBJECT_REPULSION_DX * 2.5
     };
 
     let mut rendering_settings = RenderingSettings {
@@ -67,8 +69,7 @@ pub fn run_with_gui(mut scene: Scene) {
     };
 
     let mut connections_structure = simulation::general::calculate_connections_structure(&scene.connections, &scene.nodes);
-    let cell_size = simulation::general::OBJECT_REPULSION_DX * 2.0;
-    let mut grid = simulation::general::Grid::new(&scene.nodes, cell_size);
+    let mut grid = simulation::general::Grid::new(&scene.nodes, simulation_settings.cell_size);
     // let mut collisions_structure = simulation::general::calculate_collisions_structure_with_grid(&scene.nodes, &grid);
     let mut collisions_structure = simulation::general::calculate_collisions_structure_simple(&scene.nodes);
 
@@ -128,7 +129,7 @@ pub fn run_with_gui(mut scene: Scene) {
             }
 
             if simulation_settings.use_grid {
-                grid = simulation::general::Grid::new(&scene.nodes, cell_size);
+                grid = simulation::general::Grid::new(&scene.nodes, simulation_settings.cell_size);
                 collisions_structure = simulation::general::calculate_collisions_structure_with_grid(&scene.nodes, &grid);
             }
     
@@ -383,11 +384,19 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
         ui.label("Press F1 to hide/show this menu");
         ui.separator();
         ui.label(format!("FPS: {}", current_fps));
+        ui.separator();
         ui.label("dt");
         ui.add(egui::Slider::new(
             &mut simulation_settings.dt,
             RangeInclusive::new(0.0, 0.00005),
         ));
+        ui.separator();
+        ui.label("Grid size");
+        ui.add(egui::Slider::new(
+            &mut simulation_settings.cell_size,
+            RangeInclusive::new(0.02, 0.3),
+        ));
+        ui.separator();
         ui.label("Symulation steps per frame");
         ui.add(egui::Slider::new(
             &mut simulation_settings.steps_per_frame,

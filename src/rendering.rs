@@ -1,5 +1,5 @@
 use glium::{VertexBuffer, IndexBuffer, PolygonMode, Surface};
-use crate::graphics;
+use crate::graphics::{self, Vertex};
 use crate::scene::Scene;
 use crate::simulation::general::Grid;
 use crate::window::{RenderingSettings, SimulationSettings};
@@ -30,6 +30,35 @@ impl SceneRenderer {
         
         let last_frame_simulation_time = simulation_settings.dt * simulation_settings.steps_per_frame as f32;
         
+        // draw floor
+        {
+            let floor_params = glium::DrawParameters {
+                depth: glium::Depth {
+                    test: glium::DepthTest::IfLess,
+                    write: true,
+                    ..Default::default()
+                },
+                polygon_mode: PolygonMode::Line,
+                line_width: Some(10.0),
+                ..Default::default()
+            };
+    
+            const FLOOR_HEIGHT: f32 = -0.96;
+            let floor_verticies: Vec<Vertex> = vec![Vertex {local_position: [-1.5, FLOOR_HEIGHT]}, Vertex {local_position: [1.5, FLOOR_HEIGHT]}];
+            let floor_vertex_buffer = glium::VertexBuffer::immutable(display, &floor_verticies).unwrap();
+            target.draw(
+                &floor_vertex_buffer, 
+                &glium::index::NoIndices(glium::index::PrimitiveType::LinesList), 
+                &self.connection_program, 
+                &glium::uniform! {
+                    screen_ratio: screen_ratio,
+                    zoom: settings.zoom,
+                    camera_position: settings.camera_position.to_array()
+                },
+                &floor_params
+            ).unwrap();
+        }
+
         // draw grid
         if settings.draw_grid {
             let grid_params = glium::DrawParameters {
