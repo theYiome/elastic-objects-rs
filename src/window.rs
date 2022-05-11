@@ -45,12 +45,15 @@ pub struct RenderingSettings {
     pub camera_position: Vec2,
 }
 
+
+const USE_GRID: bool = false;
+
 pub fn run_with_gui(mut scene: Scene) {
     let mut simulation_settings = SimulationSettings {
         dt: 0.0,
         steps_per_frame: 5,
         engine: SimulationEngine::None,
-        use_grid: false,
+        use_grid: USE_GRID,
     };
 
     let mut rendering_settings = RenderingSettings {
@@ -107,6 +110,14 @@ pub fn run_with_gui(mut scene: Scene) {
         
         //? simulation calculations
         {
+            unsafe {
+                static mut LAST_ITERATION_USE_GRID: bool = USE_GRID;
+                if simulation_settings.use_grid != LAST_ITERATION_USE_GRID && simulation_settings.use_grid == false {
+                    collisions_structure = simulation::general::calculate_collisions_structure_simple(&scene.nodes);
+                }
+                LAST_ITERATION_USE_GRID = simulation_settings.use_grid;
+            }
+
             // check connection breaks
             if simulation::general::handle_connection_break(&mut scene.nodes, &mut scene.connections) {
                 // objects_interactions = simulation::general::calculate_objects_interactions_structure(&mut scene.nodes);
