@@ -1,11 +1,10 @@
 #[cfg(feature = "rust-gpu-tools")]
 pub mod gpu {
-    use std::collections::HashMap;
     use glam::Vec2;
     
     use rust_gpu_tools::{cuda, opencl, program_closures, Device, GPUError, Program};
 
-    use crate::simulation::node::Node;
+    use crate::simulation::{node::{Node, self}, cpu::{start_integrate_velocity_verlet, end_integrate_velocity_verlet}};
     
     // fn cuda(device: &Device) -> Program {
     //     // The kernel was compiled with:
@@ -26,72 +25,71 @@ pub mod gpu {
     }
     
     pub fn simulate_opencl(
-        nodes: &[Node],
-        connections_map: &HashMap<(usize, usize), (f32, f32)>,
-        iterations: u32,
         dt: f32,
+        nodes: &mut [Node],
+        connections_structure: &[Vec<(usize, f32, f32)>],
+        collisions_structure: &[Vec<usize>],
         program: &Program
-    ) -> Vec<Node> {
+    ) {
+        
+        start_integrate_velocity_verlet(dt, nodes);
 
+        {
+            let flat_connections: Vec<&(usize, f32, f32)> = connections_structure.iter().flatten().collect();
+            let flat_collisions: Vec<&usize> = collisions_structure.iter().flatten().collect();
+            let mut collisions_indexes: Vec<usize> = vec![0; nodes.len()];
+            // println!("{}", collisions_indexes.len());
     
-        let mut connections_keys: Vec<(u32, u32)> = Vec::new();
-        let mut connections_vals: Vec<(f32, f32)> = Vec::new();
-        for (k1, k2) in connections_map {
-            connections_keys.push((k1.0 as u32, k1.1 as u32));
-            connections_vals.push(*k2);
+            let mut current_index = 0;
+            nodes.iter().enumerate().for_each(|(i, _)| {
+                let new_index = current_index + collisions_structure[i].len();
+                collisions_indexes[i] = new_index;
+                current_index = new_index;
+            });
+                
+            let closures = program_closures!(|program, _args| -> Result<Vec<Vec2>, GPUError> {
+                // Make sure the input data has the same length.
+                let dt_div = if dt != 0.0 { (1.0 / dt) as u32 } else { 0 };
+                // println!("{}", dt_div);
+                
+                // Copy the data to the GPU.
+                let node_buffer = program.create_buffer_from_slice(&nodes)?;
+                let collision_structure_buffer = program.create_buffer_from_slice(&flat_collisions)?;
+                let collision_indexes_buffer = program.create_buffer_from_slice(&collisions_indexes)?;
+    
+                let mut result: Vec<Vec2> = vec![Vec2::new(0.0, 0.0); nodes.len()];
+                let result_buffer = program.create_buffer_from_slice(&result)?;
+    
+                // Get the kernel.
+                let block_size = 1024;
+                let block_count = nodes.len() / block_size + 1;
+                let kernel = program.create_kernel("main", block_size, block_count)?;
+        
+                // Execute the kernel.
+                kernel
+                    .arg(&(nodes.len() as u32))
+                    .arg(&node_buffer)
+                    .arg(&(flat_collisions.len() as u32))
+                    .arg(&collision_structure_buffer)
+                    .arg(&collision_indexes_buffer)
+                    .arg(&dt_div)
+                    .arg(&result_buffer)
+                    .run()?;
+        
+                // Get the resulting data.
+                program.read_into_buffer(&result_buffer, &mut result)?;
+        
+                Ok(result)
+            });
+        
+            let result = program.run(closures, ()).unwrap();
+    
+            nodes.iter_mut().enumerate().for_each(|(i, n)| {
+                // println!("{} {} {}", i, result[i].x, result[i].y);
+                n.current_acceleration += result[i];
+            });
         }
-    
-        let closures = program_closures!(|program, _args| -> Result<Vec<Node>, GPUError> {
-            // Make sure the input data has the same length.
-            let length = nodes.len();
-            let dt_div = if dt != 0.0 { (1.0 / dt) as u32 } else { 0 };
-            // println!("{}", dt_div);
-    
-            // Copy the data to the GPU.
-            let node_buffer = program.create_buffer_from_slice(&nodes)?;
-            let connections_keys_buffer = program.create_buffer_from_slice(&connections_keys)?;
-            let connections_vals_buffer = program.create_buffer_from_slice(&connections_vals)?;
-    
-            // The result buffer has the same length as the input buffers.
-            // let result_buffer = unsafe { program.create_buffer::<u32>(length)? };
-    
-            // Get the kernel.
-            let block_size = 1024;
-            let block_count = nodes.len() / block_size + 1;
-            let kernel = program.create_kernel("main", block_size, block_count)?;
-    
-            // Execute the kernel.
-            kernel
-                .arg(&(length as u32))
-                .arg(&node_buffer)
-                .arg(&(connections_keys.len() as u32))
-                .arg(&connections_keys_buffer)
-                .arg(&connections_vals_buffer)
-                .arg(&iterations)
-                .arg(&dt_div)
-                .run()?;
-    
-            // Get the resulting data.
-            let mut result: Vec<Node> = Vec::new();
-            result.resize(
-                length,
-                Node {
-                    position: Vec2::new(0.0, 0.0),
-                    velocity: Vec2::new(0.0, 0.0),
-                    current_acceleration: Vec2::new(0.0, 0.0),
-                    last_acceleration: Vec2::new(0.0, 0.0),
-                    mass: 1.0,
-                    drag: 0.0,
-                    object_id: 1,
-                    is_boundary: false
-                },
-            );
-            program.read_into_buffer(&node_buffer, &mut result)?;
-    
-            Ok(result)
-        });
-    
-        let result = program.run(closures, ()).unwrap();
-        result
+
+        end_integrate_velocity_verlet(dt, nodes);
     }
 }

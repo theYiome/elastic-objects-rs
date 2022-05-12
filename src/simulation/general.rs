@@ -214,7 +214,7 @@ pub fn calculate_collisions_structure_simple(nodes: &Vec<Node>) -> Vec<Vec<usize
             }).map(|(j, _n2)| j).collect()
         }
         else {
-            Vec::new()
+            vec![]
         }
     }).collect()
 }

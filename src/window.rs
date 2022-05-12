@@ -1,19 +1,14 @@
-use std::collections::HashMap;
 use std::ops::RangeInclusive;
 
 use glam::Vec2;
 use glium::glutin::event_loop;
-use glium::{glutin, Surface, PolygonMode};
+use glium::{glutin, Surface};
 use glutin::event::ElementState;
 use glutin::{
     event::{Event, VirtualKeyCode, WindowEvent},
     event_loop::ControlFlow,
 };
 
-#[cfg(feature = "rust-gpu-tools")]
-use crate::simulation::gpu;
-
-// use crate::energy;
 use crate::graphics;
 use crate::scene::Scene;
 use crate::simulation;
@@ -25,7 +20,6 @@ enum SimulationEngine {
     CpuMultithread,
     CpuMultithreadSingleKernel,
     OpenCl,
-    Cuda,
     None,
 }
 
@@ -101,6 +95,7 @@ pub fn run_with_gui(mut scene: Scene) {
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
 
+    #[cfg(feature = "rust-gpu-tools")]
     let opencl_program = simulation::gpu::gpu::create_opencl_program();
 
     // let mut objects_interactions: HashMap<u32, Vec<usize>> = simulation::general::calculate_objects_interactions_structure(&mut scene.nodes);
@@ -169,13 +164,15 @@ pub fn run_with_gui(mut scene: Scene) {
                 }
                 #[cfg(feature = "rust-gpu-tools")]
                 SimulationEngine::OpenCl => {
-                    scene.nodes = simulation::gpu::gpu::simulate_opencl(
-                        &scene.nodes,
-                        &scene.connections,
-                        simulation_settings.steps_per_frame,
-                        simulation_settings.dt,
-                        &opencl_program
-                    );
+                    for _i in 0..simulation_settings.steps_per_frame {
+                        simulation::gpu::gpu::simulate_opencl(
+                            simulation_settings.dt,
+                            &mut scene.nodes,
+                            &connections_structure,
+                            &collisions_structure,
+                            &opencl_program
+                        );
+                    }
                 }
                 _ => {}
             }

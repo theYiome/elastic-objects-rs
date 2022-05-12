@@ -6,7 +6,7 @@ use glam::Vec2;
 use rayon::prelude::*;
 
 // https://en.wikipedia.org/wiki/Verlet_integration#Velocity_Verlet
-fn start_integrate_velocity_verlet(dt: f32, nodes: &mut [Node]) {
+pub fn start_integrate_velocity_verlet(dt: f32, nodes: &mut [Node]) {
     nodes.iter_mut().for_each(|n| {
         n.position += (n.velocity * dt) + (0.5 * n.current_acceleration * dt * dt);
 
@@ -15,7 +15,7 @@ fn start_integrate_velocity_verlet(dt: f32, nodes: &mut [Node]) {
     });
 }
 
-fn end_integrate_velocity_verlet(dt: f32, nodes: &mut [Node]) {
+pub fn end_integrate_velocity_verlet(dt: f32, nodes: &mut [Node]) {
     nodes.iter_mut().for_each(|n| {
         n.velocity += 0.5 * (n.last_acceleration + n.current_acceleration) * dt;
     });
@@ -45,8 +45,8 @@ fn lennard_jones_connections(
 }
 
 fn lennard_jones_connections_multithreaded(
-    nodes: &mut Vec<Node>,
-    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
+    nodes: &mut [Node],
+    connections_structure: &[Vec<(usize, f32, f32)>],
 ) {
     
     let acceleration_diff: Vec<Vec2> = nodes.par_iter().enumerate().map(|(i, n)| {
@@ -94,31 +94,31 @@ fn lennard_jones_repulsion(nodes: &mut [Node], objects_interactions: &HashMap<u3
     }
 }
 
-fn lennard_jones_repulsion_multithreaded(nodes: &mut Vec<Node>, objects_interactions: &HashMap<u32, Vec<usize>>) {
-    let v0 = super::general::OBJECT_REPULSION_V0;
-    let dx = super::general::OBJECT_REPULSION_DX;
+// fn lennard_jones_repulsion_multithreaded(nodes: &mut Vec<Node>, objects_interactions: &HashMap<u32, Vec<usize>>) {
+//     let v0 = super::general::OBJECT_REPULSION_V0;
+//     let dx = super::general::OBJECT_REPULSION_DX;
 
-    let objects: Vec<u32> = objects_interactions.keys().copied().collect();
+//     let objects: Vec<u32> = objects_interactions.keys().copied().collect();
 
-    let nodes_copy = nodes.clone();
+//     let nodes_copy = nodes.clone();
 
-    nodes.par_iter_mut().filter(|n| n.is_boundary).for_each(|n| {
-        objects.iter().for_each(|current_object_id| {
-            if *current_object_id != n.object_id {
-                objects_interactions[current_object_id].iter().for_each(|j| {
-                    let dir = nodes_copy[*j].position - n.position;
-                    let l = dir.length();
-                    let c = (dx / l).powi(13);
-                    let v = dir.normalize() * 3.0 * (v0 / dx) * c;
+//     nodes.par_iter_mut().filter(|n| n.is_boundary).for_each(|n| {
+//         objects.iter().for_each(|current_object_id| {
+//             if *current_object_id != n.object_id {
+//                 objects_interactions[current_object_id].iter().for_each(|j| {
+//                     let dir = nodes_copy[*j].position - n.position;
+//                     let l = dir.length();
+//                     let c = (dx / l).powi(13);
+//                     let v = dir.normalize() * 3.0 * (v0 / dx) * c;
     
-                    n.current_acceleration -= v / n.mass;
-                });
-            }
-        });
-    });
-}
+//                     n.current_acceleration -= v / n.mass;
+//                 });
+//             }
+//         });
+//     });
+// }
 
-fn lennard_jones_repulsion_multithreaded_2(nodes: &mut Vec<Node>, collisions_sturcture: &Vec<Vec<usize>>) {
+fn lennard_jones_repulsion_multithreaded_2(nodes: &mut [Node], collisions_sturcture: &[Vec<usize>]) {
     let v0 = super::general::OBJECT_REPULSION_V0;
     let dx = super::general::OBJECT_REPULSION_DX;
     let acceleration_diff: Vec<Vec2> = nodes.par_iter().enumerate().map(|(i, n)| {
@@ -135,7 +135,7 @@ fn lennard_jones_repulsion_multithreaded_2(nodes: &mut Vec<Node>, collisions_stu
     });
 }
 
-fn lennard_jones_repulsion_2(nodes: &mut Vec<Node>, collisions_sturcture: &Vec<Vec<usize>>) {
+fn lennard_jones_repulsion_2(nodes: &mut [Node], collisions_sturcture: &[Vec<usize>]) {
     let v0 = super::general::OBJECT_REPULSION_V0;
     let dx = super::general::OBJECT_REPULSION_DX;
     let acceleration_diff: Vec<Vec2> = nodes.iter().enumerate().map(|(i, n)| {
@@ -182,7 +182,7 @@ fn drag_force(nodes: &mut [Node]) {
 
 pub fn simulate_single_thread_cpu(
     dt: f32,
-    nodes: &mut Vec<Node>,
+    nodes: &mut [Node],
     connections: &HashMap<(usize, usize), (f32, f32)>,
     // objects_interactions: &HashMap<u32, Vec<usize>>,
     collisions_structure: &Vec<Vec<usize>>
@@ -202,10 +202,10 @@ pub fn simulate_single_thread_cpu(
 
 pub fn simulate_multi_thread_cpu(
     dt: f32,
-    nodes: &mut Vec<Node>,
-    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
+    nodes: &mut [Node],
+    connections_structure: &[Vec<(usize, f32, f32)>],
     // objects_interactions: &HashMap<u32, Vec<usize>>,
-    collisions_structure: &Vec<Vec<usize>>
+    collisions_structure: &[Vec<usize>]
 ) {
     start_integrate_velocity_verlet(dt, nodes);
 
@@ -224,10 +224,9 @@ pub fn simulate_multi_thread_cpu(
 
 pub fn simulate_multi_thread_cpu_enchanced(
     dt: f32,
-    nodes: &mut Vec<Node>,
-    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
-    // objects_interactions: &HashMap<u32, Vec<usize>>,
-    collisions_structure: &Vec<Vec<usize>>
+    nodes: &mut [Node],
+    connections_structure: &[Vec<(usize, f32, f32)>],
+    collisions_structure: &[Vec<usize>]
 ) {
     start_integrate_velocity_verlet(dt, nodes);
 
