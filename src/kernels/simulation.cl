@@ -24,14 +24,40 @@ struct Vec2 norm(struct Vec2 v) {
     return v;
 };
 
+/*
+pub struct Node {
+    pub position: Vec2,
+    pub velocity: Vec2,
+    pub last_acceleration: Vec2,
+    pub current_acceleration: Vec2,
+    pub mass: f32,
+    pub drag: f32,
+    pub object_id: u32,
+    pub is_boundary: bool
+}
+*/
+
 struct Node {
     float2 position;
     float2 velocity;
     float2 last_acceleration;
     float2 current_acceleration;
     float mass;
-    float damping;
+    float drag;
+    uint object_id;
+    bool is_boundary;
 };
+
+KERNEL void main(uint node_count, GLOBAL struct Node *nodes, uint connections_count, GLOBAL uint2 *connections_keys, GLOBAL float2 *connections_vals, uint iterations, uint dt_div) {
+    size_t index = get_global_id(0);
+
+    float dt = 0.0;
+    if (dt_div != 0)
+        dt = 1.0 / dt_div;
+
+    float v = 100.0f * dt;
+    nodes[index].position += (v, v);
+}
 
 KERNEL void mainkernel(uint node_count, GLOBAL struct Node *nodes, uint connections_count, GLOBAL uint2 *connections_keys, GLOBAL float2 *connections_vals, uint iterations, uint dt_div) {
     size_t index = get_global_id(0);
@@ -141,11 +167,5 @@ KERNEL void mainkernel(uint node_count, GLOBAL struct Node *nodes, uint connecti
             nodes[index].velocity += 0.5f * (nodes[index].last_acceleration + nodes[index].current_acceleration) * dt;
         }
         barrier(CLK_LOCAL_MEM_FENCE | CLK_GLOBAL_MEM_FENCE);
-    }
-}
-
-KERNEL void add(uint node_count, GLOBAL uint *a, GLOBAL uint *b, GLOBAL uint *result) {
-    for (uint i = 0; i < node_count; i++) {
-        result[i] = a[i] + b[i];
     }
 }

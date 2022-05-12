@@ -221,3 +221,58 @@ pub fn simulate_multi_thread_cpu(
 
     end_integrate_velocity_verlet(dt, nodes);
 }
+
+pub fn simulate_multi_thread_cpu_enchanced(
+    dt: f32,
+    nodes: &mut Vec<Node>,
+    connections_structure: &Vec<Vec<(usize, f32, f32)>>,
+    // objects_interactions: &HashMap<u32, Vec<usize>>,
+    collisions_structure: &Vec<Vec<usize>>
+) {
+    start_integrate_velocity_verlet(dt, nodes);
+
+    let acceleration_diff: Vec<Vec2> = nodes.par_iter().enumerate().map(|(i, n)| {
+        let connections: Vec2 = connections_structure[i].iter().fold(Vec2::new(0.0, 0.0), |accum, (j, dx, v0)| {
+            let dir = nodes[*j].position - n.position;
+            let l = dir.length();
+            
+            let c = (dx / l).powi(7) - (dx / l).powi(13);
+            accum + (dir.normalize() * 3.0 * (v0 / dx) * c)
+        });
+        let repulsion: Vec2 = collisions_structure[i].iter().fold(Vec2::new(0.0, 0.0), |accum, j| {
+            const V0: f32 = super::general::OBJECT_REPULSION_V0;
+            const DX: f32 = super::general::OBJECT_REPULSION_DX;
+            let dir = nodes[*j].position - n.position;
+            let l = dir.length();
+            let c = (DX / l).powi(13);
+            accum + (dir.normalize() * 3.0 * (V0 / DX) * c)
+        });
+
+        let wall_repulsion: Vec2 = {
+            const V0: f32 = super::general::WALL_REPULSION_V0;
+            const DX: f32 = super::general::WALL_REPULSION_DX;
+    
+            let dir = glam::vec2(n.position.x, -1.0) - n.position;
+            let l = dir.length();
+    
+            let c = (DX / l).powi(13);
+            dir.normalize() * 3.0 * (V0 / DX) * c
+        };
+
+        let drag = n.velocity * n.velocity.length() * n.drag;
+        
+        let mut result = (connections - repulsion - wall_repulsion) / n.mass;
+        result -= drag;
+        //gravity
+        result.y += -9.81;
+        
+
+        result
+    }).collect();
+
+    nodes.iter_mut().enumerate().for_each(|(i, n)| {
+        n.current_acceleration += acceleration_diff[i];
+    });
+
+    end_integrate_velocity_verlet(dt, nodes);
+}

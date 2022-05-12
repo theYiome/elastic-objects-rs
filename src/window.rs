@@ -11,7 +11,7 @@ use glutin::{
 };
 
 #[cfg(feature = "rust-gpu-tools")]
-use crate::simulation_gpu;
+use crate::simulation::gpu;
 
 // use crate::energy;
 use crate::graphics;
@@ -23,6 +23,7 @@ use crate::rendering;
 enum SimulationEngine {
     Cpu,
     CpuMultithread,
+    CpuMultithreadSingleKernel,
     OpenCl,
     Cuda,
     None,
@@ -100,6 +101,8 @@ pub fn run_with_gui(mut scene: Scene) {
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
 
+    let opencl_program = simulation::gpu::gpu::create_opencl_program();
+
     // let mut objects_interactions: HashMap<u32, Vec<usize>> = simulation::general::calculate_objects_interactions_structure(&mut scene.nodes);
 
     let mut now = std::time::Instant::now();
@@ -154,14 +157,24 @@ pub fn run_with_gui(mut scene: Scene) {
                         );
                     }
                 }
+                SimulationEngine::CpuMultithreadSingleKernel => {
+                    for _i in 0..simulation_settings.steps_per_frame {
+                        simulation::cpu::simulate_multi_thread_cpu_enchanced(
+                            simulation_settings.dt,
+                            &mut scene.nodes,
+                            &connections_structure,
+                            &collisions_structure
+                        );
+                    }
+                }
                 #[cfg(feature = "rust-gpu-tools")]
                 SimulationEngine::OpenCl => {
-                    nodes = simulation::gpu::simulate_opencl(
-                        &nodes,
-                        &opencl_program,
-                        &connections_map,
-                        steps_per_frame,
-                        dt,
+                    scene.nodes = simulation::gpu::gpu::simulate_opencl(
+                        &scene.nodes,
+                        &scene.connections,
+                        simulation_settings.steps_per_frame,
+                        simulation_settings.dt,
+                        &opencl_program
                     );
                 }
                 _ => {}
@@ -403,25 +416,38 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
             RangeInclusive::new(0, 100),
         ));
         ui.separator();
-        ui.horizontal(|ui| {
-            ui.selectable_value(
-                &mut simulation_settings.engine,
-                SimulationEngine::Cpu,
-                "CPU single threaded",
-            );
-            ui.selectable_value(
-                &mut simulation_settings.engine,
-                SimulationEngine::CpuMultithread,
-                "CPU multi threaded",
-            );
-            #[cfg(feature = "rust-gpu-tools")]
-            ui.selectable_value(&mut simulation_settings.engine, SimulationEngine::OpenCl, "GPU OpenCL");
-        });
+        ui.label("Simulation Engine");
         ui.selectable_value(
             &mut simulation_settings.engine,
             SimulationEngine::None,
             "Stop simulation",
         );
+        ui.label("CPU");
+        ui.selectable_value(
+            &mut simulation_settings.engine,
+            SimulationEngine::Cpu,
+            "Single threaded",
+        );
+        ui.label("Multi threaded");
+        ui.horizontal(|ui| {
+            ui.selectable_value(
+                &mut simulation_settings.engine,
+                SimulationEngine::CpuMultithread,
+                "Multiple kernels",
+            );
+            ui.selectable_value(
+                &mut simulation_settings.engine,
+                SimulationEngine::CpuMultithreadSingleKernel,
+                "Single kernel",
+            );
+        });
+        #[cfg(feature = "rust-gpu-tools")]
+        {
+            ui.separator();
+            ui.label("GPU");
+            ui.selectable_value(&mut simulation_settings.engine, SimulationEngine::OpenCl, "OpenCL");
+        }
+        ui.separator();
         ui.horizontal(|ui| {
             ui.checkbox(&mut simulation_settings.use_grid, "Use grid");
         });

@@ -1,37 +1,38 @@
 #[cfg(feature = "rust-gpu-tools")]
-mod gpu {
+pub mod gpu {
     use std::collections::HashMap;
-    use super::node::Node;
     use glam::Vec2;
     
     use rust_gpu_tools::{cuda, opencl, program_closures, Device, GPUError, Program};
+
+    use crate::simulation::node::Node;
     
-    fn cuda(device: &Device) -> Program {
-        // The kernel was compiled with:
-        // nvcc -fatbin -gencode=arch=compute_52,code=sm_52 -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_61,code=sm_61 -gencode=arch=compute_70,code=sm_70 -gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_75,code=compute_75 --x cu add.cl
-        let cuda_kernel = include_bytes!("./kernels/simulation.fatbin");
-        let cuda_device = device.cuda_device().unwrap();
-        let cuda_program = cuda::Program::from_bytes(cuda_device, cuda_kernel).unwrap();
+    // fn cuda(device: &Device) -> Program {
+    //     // The kernel was compiled with:
+    //     // nvcc -fatbin -gencode=arch=compute_52,code=sm_52 -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_61,code=sm_61 -gencode=arch=compute_70,code=sm_70 -gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_75,code=compute_75 --x cu add.cl
+    //     let cuda_kernel = include_bytes!("../kernels/simulation.fatbin");
+    //     let cuda_device = device.cuda_device().unwrap();
+    //     let cuda_program = cuda::Program::from_bytes(cuda_device, cuda_kernel).unwrap();
     
-        Program::Cuda(cuda_program)
-    }
+    //     Program::Cuda(cuda_program)
+    // }
     
     pub fn create_opencl_program() -> Program {
         let device = *rust_gpu_tools::Device::all().first().unwrap();
-        let opencl_kernel = include_str!("./kernels/simulation.cl");
+        let opencl_kernel = include_str!("../kernels/simulation.cl");
         let opencl_device = device.opencl_device().unwrap();
         let opencl_program = opencl::Program::from_opencl(opencl_device, opencl_kernel).unwrap();
         Program::Opencl(opencl_program)
     }
     
     pub fn simulate_opencl(
-        nodes: &Vec<Node>,
+        nodes: &[Node],
         connections_map: &HashMap<(usize, usize), (f32, f32)>,
         iterations: u32,
         dt: f32,
+        program: &Program
     ) -> Vec<Node> {
 
-        static program: Program = simulation_gpu::gpu::create_opencl_program();
     
         let mut connections_keys: Vec<(u32, u32)> = Vec::new();
         let mut connections_vals: Vec<(f32, f32)> = Vec::new();
@@ -55,7 +56,9 @@ mod gpu {
             // let result_buffer = unsafe { program.create_buffer::<u32>(length)? };
     
             // Get the kernel.
-            let kernel = program.create_kernel("mainkernel", 1, nodes.len())?;
+            let block_size = 1024;
+            let block_count = nodes.len() / block_size + 1;
+            let kernel = program.create_kernel("main", block_size, block_count)?;
     
             // Execute the kernel.
             kernel

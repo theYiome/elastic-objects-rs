@@ -3,6 +3,7 @@ use std::fmt;
 use serde::{Serialize, Deserialize};
 
 #[derive(Default, Clone, Copy, Serialize, Deserialize, Debug, PartialEq)]
+#[repr(C)]
 pub struct Node {
     pub position: Vec2,
     pub velocity: Vec2,
