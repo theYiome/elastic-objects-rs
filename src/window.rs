@@ -164,12 +164,17 @@ pub fn run_with_gui(mut scene: Scene) {
                 }
                 #[cfg(feature = "rust-gpu-tools")]
                 SimulationEngine::OpenCl => {
+                    let (flat_collisions, collisions_indexes) = simulation::gpu::gpu::flat_with_indexes(&collisions_structure);
+                    let (flat_connections, connections_indexes) = simulation::gpu::gpu::flat_with_indexes(&connections_structure);
+        
                     for _i in 0..simulation_settings.steps_per_frame {
                         simulation::gpu::gpu::simulate_opencl(
                             simulation_settings.dt,
                             &mut scene.nodes,
-                            &connections_structure,
-                            &collisions_structure,
+                            &flat_collisions,
+                            &collisions_indexes,
+                            &flat_connections,
+                            &connections_indexes,
                             &opencl_program
                         );
                     }

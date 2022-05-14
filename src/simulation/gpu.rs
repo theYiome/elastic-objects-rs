@@ -31,56 +31,17 @@ pub mod gpu {
     pub fn simulate_opencl(
         dt: f32,
         nodes: &mut [Node],
-        connections_structure: &[Vec<(usize, f32, f32)>],
-        collisions_structure: &[Vec<usize>],
+        flat_collisions: &[usize],
+        collisions_indexes: &[usize],
+        flat_connections: &[(usize, f32, f32)],
+        connections_indexes: &[usize],
         program: &Program
     ) {
-        
+
         start_integrate_velocity_verlet(dt, nodes);
 
-        {
-            // let flat_connections: Vec<&(usize, f32, f32)> = connections_structure.iter().flatten().collect();
-            let flat_collisions: Vec<usize> = collisions_structure.iter().flatten().copied().collect();
-            let mut collisions_indexes: Vec<usize> = vec![0; nodes.len()];
-            // println!("{}", collisions_indexes.len());
-    
-            let mut current_index = 0;
-            nodes.iter().enumerate().for_each(|(i, _)| {
-                let new_index = current_index + collisions_structure[i].len();
-                collisions_indexes[i] = new_index;
-                current_index = new_index;
-            });
-
-            //---------------------------------------------------------------------------------------------------------------------
-
-            let flat_connections: Vec<(usize, f32, f32)> = connections_structure.iter().flatten().copied().collect();
-            let mut connections_indexes: Vec<usize> = vec![0; nodes.len()];
-            // println!("{}", collisions_indexes.len());
-    
-            let mut current_index = 0;
-            nodes.iter().enumerate().for_each(|(i, _)| {
-                let new_index = current_index + connections_structure[i].len();
-                connections_indexes[i] = new_index;
-                current_index = new_index;
-            });
-
-            // print collisions_indexes
-            // collisions_indexes.iter().for_each(|i| {
-            //     print!("{} ", i);
-            // });
-            
-            // print flat_collisions
-            // flat_collisions.iter().for_each(|i| {
-            //     print!("{} ", i);
-            // });
-            // println!("\n{} {}", collisions_indexes.len(), flat_collisions.len());
-
-                
+        {       
             let fun = program_closures!(|program, _args| -> Result<Vec<Vec2>, GPUError> {
-                // Make sure the input data has the same length.
-                let dt_div: u32 = if dt != 0.0 { (1.0 / dt) as u32 } else { 0 };
-                // println!("{}", dt_div);
-                
                 // Copy the data to the GPU.
                 let node_buffer = program.create_buffer_from_slice(&nodes)?;
                 let collision_indexes_buffer = program.create_buffer_from_slice(&collisions_indexes)?;
@@ -117,7 +78,6 @@ pub mod gpu {
             let result = program.run(fun, ()).unwrap();
     
             nodes.iter_mut().enumerate().for_each(|(i, n)| {
-                // println!("{} {} {}", i, result[i].x, result[i].y);
                 n.current_acceleration += result[i];
             });
         }

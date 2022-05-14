@@ -47,7 +47,7 @@ KERNEL void main(
     if (i < node_count) {
 
 
-        float2 acceleration = (0.0f, 0.0f);
+        float2 acceleration = (float2)(0.0f, 0.0f);
 
         // Collisions
         {
@@ -91,7 +91,7 @@ KERNEL void main(
 
         // Wall
         {
-            float2 dir = (nodes[i].position.x, -1.0f) - nodes[i].position;
+            float2 dir = (float2)(0.0f, -1.f - nodes[i].position.y);
             float l = length(dir);
             float c = pown(WALL_DX / l, 13);
             acceleration -= (normalize(dir) * 3.0f * (WALL_V0 / WALL_DX) * c);
