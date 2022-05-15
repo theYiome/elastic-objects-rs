@@ -33,7 +33,7 @@ const float WALL_V0 = 200.f;
 const float WALL_DX = 0.05f;
 
 KERNEL void main(
-    const uint node_count,
+    const ulong node_count,
     const GLOBAL struct Node * const nodes, 
     const GLOBAL ulong * const collisions_index, 
     const GLOBAL ulong * const collisions, 

@@ -96,7 +96,13 @@ pub fn run_with_gui(mut scene: Scene) {
     let mut fps_counter: u32 = 0;
 
     #[cfg(feature = "rust-gpu-tools")]
-    let opencl_program = simulation::gpu::gpu::create_opencl_program();
+    let mut opencl_simulation_engine =  {
+        let mut engine = simulation::gpu::gpu::SimulationEngine::new();
+        engine.update_node_buffer(&scene.nodes);
+        engine.update_connection_buffer(&connections_structure);
+        engine.update_collision_buffer(&collisions_structure);
+        engine
+    };
 
     // let mut objects_interactions: HashMap<u32, Vec<usize>> = simulation::general::calculate_objects_interactions_structure(&mut scene.nodes);
 
@@ -164,18 +170,14 @@ pub fn run_with_gui(mut scene: Scene) {
                 }
                 #[cfg(feature = "rust-gpu-tools")]
                 SimulationEngine::OpenCl => {
-                    let (flat_collisions, collisions_indexes) = simulation::gpu::gpu::flat_with_indexes(&collisions_structure);
-                    let (flat_connections, connections_indexes) = simulation::gpu::gpu::flat_with_indexes(&connections_structure);
-        
+                    opencl_simulation_engine.update_connection_buffer(&connections_structure);
+                    opencl_simulation_engine.update_collision_buffer(&collisions_structure);
+
                     for _i in 0..simulation_settings.steps_per_frame {
-                        simulation::gpu::gpu::simulate_opencl(
+                        opencl_simulation_engine.write_node_buffer(&scene.nodes);
+                        opencl_simulation_engine.simulate_opencl(
                             simulation_settings.dt,
                             &mut scene.nodes,
-                            &flat_collisions,
-                            &collisions_indexes,
-                            &flat_connections,
-                            &connections_indexes,
-                            &opencl_program
                         );
                     }
                 }

@@ -226,6 +226,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "cl3"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "46b638ac6d08e4a82553d540b1ca91fcd0ceaeb77ea2b340d891d6f8ea76c9ba"
+dependencies = [
+ "libc",
+ "opencl-sys",
+]
+
+[[package]]
 name = "clipboard-win"
 version = "3.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -657,6 +667,7 @@ dependencies = [
  "glam",
  "glium",
  "glutin",
+ "opencl3 0.8.0",
  "rand",
  "rayon",
  "rust-gpu-tools",
@@ -1272,12 +1283,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2839e79665f131bdb5782e51f2c6c9599c133c6098982a54c794358bf432529c"
 
 [[package]]
+name = "opencl-sys"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56e00f79ff78a90a3674f954061865a212c17292250f33630e27bfa8b0eadbbd"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "opencl3"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8862f86c2b3f757038243318edb55a47b1be7d46376fe6bdd9aedd1b0074902"
 dependencies = [
- "cl3",
+ "cl3 0.4.4",
+ "libc",
+]
+
+[[package]]
+name = "opencl3"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5482a8f99af104a2edfd4954d97c125e18cceea121ae957685377e03feceacf2"
+dependencies = [
+ "cl3 0.8.0",
  "libc",
 ]
 
@@ -1519,7 +1549,7 @@ dependencies = [
  "lazy_static",
  "log",
  "once_cell",
- "opencl3",
+ "opencl3 0.4.1",
  "sha2",
  "temp-env",
  "thiserror",
