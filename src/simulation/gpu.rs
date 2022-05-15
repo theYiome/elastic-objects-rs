@@ -17,7 +17,7 @@ pub mod gpu {
         (flat, indexes)
     }
 
-    use opencl3::{command_queue::{CommandQueue, CL_QUEUE_PROFILING_ENABLE}, types::cl_bool};
+    use opencl3::{command_queue::{CommandQueue, CL_QUEUE_PROFILING_ENABLE, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE}, types::cl_bool};
     use opencl3::context::Context;
     use opencl3::device::{get_all_devices, Device, CL_DEVICE_TYPE_GPU};
     use opencl3::kernel::{ExecuteKernel, Kernel};
@@ -29,7 +29,7 @@ pub mod gpu {
     const PROGRAM_SOURCE: &str = include_str!("../kernels/simulation.cl");
     const KERNEL_NAME: &str = "main";
     const BLANK_BUFFER_SIZE: usize = 1;
-    const WRITE_TYPE: cl_bool = CL_BLOCKING;
+    const WRITE_TYPE: cl_bool = CL_NON_BLOCKING;
 
     pub struct SimulationEngine {
         context: Context,
@@ -62,7 +62,7 @@ pub mod gpu {
             let queue = CommandQueue::create_with_properties(
                 &context,
                 context.default_device(),
-                CL_QUEUE_PROFILING_ENABLE,
+                CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE,
                 0
             ).expect("CommandQueue::create failed");
 
@@ -148,11 +148,11 @@ pub mod gpu {
             self.write_node_buffer(nodes);
         }
 
-        pub fn write_collision_buffer(&mut self, data: &[Vec<usize>]) {
-            let (flat, index) = flat_with_indexes(&data);
-            self.command_queue.enqueue_write_buffer(&mut self.collision_buffer, WRITE_TYPE, 0, &flat, &[]).unwrap();
-            self.command_queue.enqueue_write_buffer(&mut self.collision_index_buffer, WRITE_TYPE, 0, &index, &[]).unwrap();
-        }
+        // pub fn write_collision_buffer(&mut self, data: &[Vec<usize>]) {
+        //     let (flat, index) = flat_with_indexes(&data);
+        //     self.command_queue.enqueue_write_buffer(&mut self.collision_buffer, WRITE_TYPE, 0, &flat, &[]).unwrap();
+        //     self.command_queue.enqueue_write_buffer(&mut self.collision_index_buffer, WRITE_TYPE, 0, &index, &[]).unwrap();
+        // }
 
         pub fn update_collision_buffer(&mut self, data: &[Vec<usize>]) {
             let (flat, index) = flat_with_indexes(&data);
@@ -176,11 +176,11 @@ pub mod gpu {
             self.command_queue.enqueue_write_buffer(&mut self.collision_index_buffer, WRITE_TYPE, 0, &index, &[]).unwrap();
         }
 
-        pub fn write_connection_buffer(&mut self, data: &[Vec<(usize, f32, f32)>]) {
-            let (flat, index) = flat_with_indexes(&data);
-            self.command_queue.enqueue_write_buffer(&mut self.connection_buffer, WRITE_TYPE, 0, &flat, &[]).unwrap();
-            self.command_queue.enqueue_write_buffer(&mut self.connection_index_buffer, WRITE_TYPE, 0, &index, &[]).unwrap();
-        }
+        // pub fn write_connection_buffer(&mut self, data: &[Vec<(usize, f32, f32)>]) {
+        //     let (flat, index) = flat_with_indexes(&data);
+        //     self.command_queue.enqueue_write_buffer(&mut self.connection_buffer, WRITE_TYPE, 0, &flat, &[]).unwrap();
+        //     self.command_queue.enqueue_write_buffer(&mut self.connection_index_buffer, WRITE_TYPE, 0, &index, &[]).unwrap();
+        // }
 
         pub fn update_connection_buffer(&mut self, data: &[Vec<(usize, f32, f32)>]) {
             let (flat, index) = flat_with_indexes(&data);
@@ -205,6 +205,9 @@ pub mod gpu {
         }
 
         fn run_kernel(&self) -> Vec<Vec2> {
+
+            self.command_queue.finish().unwrap();
+
             let kernel_event = ExecuteKernel::new(&self.kernel)
                 .set_arg(&self.node_count)
                 .set_arg(&self.node_buffer)
@@ -214,7 +217,6 @@ pub mod gpu {
                 .set_arg(&self.connection_buffer)
                 .set_arg(&self.result_buffer)
                 .set_global_work_size(self.node_count)
-                // .set_wait_event(&y_write_event)
                 .enqueue_nd_range(&self.command_queue).unwrap();
 
             // Create a results array to hold the results from the OpenCL device
@@ -231,25 +233,26 @@ pub mod gpu {
             ).unwrap();
 
             // Calculate the kernel duration, from the kernel_event
-            let start_time = kernel_event.profiling_command_start().unwrap();
-            let end_time = kernel_event.profiling_command_end().unwrap();
-            let duration = end_time - start_time;
-            println!("kernel execution duration (ns): {}", duration);
+
+            // let start_time = kernel_event.profiling_command_start().unwrap();
+            // let end_time = kernel_event.profiling_command_end().unwrap();
+            // let duration = end_time - start_time;
+            // println!("kernel execution duration (ns): {}", duration);
 
             result
         }
         
         pub fn simulate_opencl(
-            &self,
+            &mut self,
             dt: f32,
             nodes: &mut [Node],
         ) {
     
             start_integrate_velocity_verlet(dt, nodes);
-    
-            // let block_size = 1024;
-            // let block_count = nodes.len() / block_size + 1;
+
             {
+                self.write_node_buffer(nodes);
+
                 let result = self.run_kernel();
                 assert_eq!(result.len(), nodes.len());
 

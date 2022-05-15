@@ -213,9 +213,7 @@ pub fn simulate_multi_thread_cpu(
 
     lennard_jones_connections_multithreaded(nodes, connections_structure);
     lennard_jones_repulsion_multithreaded_2(nodes, collisions_structure);
-    // lennard_jones_repulsion_multithreaded(nodes, objects_interactions);
-    // lennard_jones_repulsion(nodes, objects_interactions);
-
+    
     wall_repulsion_force_y(nodes);
     drag_force(nodes);
 

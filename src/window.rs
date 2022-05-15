@@ -127,14 +127,21 @@ pub fn run_with_gui(mut scene: Scene) {
             if simulation::general::handle_connection_break(&mut scene.nodes, &mut scene.connections) {
                 // objects_interactions = simulation::general::calculate_objects_interactions_structure(&mut scene.nodes);
                 connections_structure = simulation::general::calculate_connections_structure(&scene.connections, &scene.nodes);
+                #[cfg(feature = "rust-gpu-tools")]
+                opencl_simulation_engine.update_connection_buffer(&connections_structure);
+
                 if !simulation_settings.use_grid {
                     collisions_structure = simulation::general::calculate_collisions_structure_simple(&scene.nodes);
+                    #[cfg(feature = "rust-gpu-tools")]
+                    opencl_simulation_engine.update_collision_buffer(&collisions_structure);
                 }
             }
 
             if simulation_settings.use_grid {
                 grid = simulation::general::Grid::new(&scene.nodes, simulation_settings.cell_size);
                 collisions_structure = simulation::general::calculate_collisions_structure_with_grid(&scene.nodes, &grid);
+                #[cfg(feature = "rust-gpu-tools")]
+                opencl_simulation_engine.update_collision_buffer(&collisions_structure);
             }
     
             match simulation_settings.engine {
@@ -170,11 +177,7 @@ pub fn run_with_gui(mut scene: Scene) {
                 }
                 #[cfg(feature = "rust-gpu-tools")]
                 SimulationEngine::OpenCl => {
-                    opencl_simulation_engine.update_connection_buffer(&connections_structure);
-                    opencl_simulation_engine.update_collision_buffer(&collisions_structure);
-
                     for _i in 0..simulation_settings.steps_per_frame {
-                        opencl_simulation_engine.write_node_buffer(&scene.nodes);
                         opencl_simulation_engine.simulate_opencl(
                             simulation_settings.dt,
                             &mut scene.nodes,
