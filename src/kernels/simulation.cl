@@ -33,13 +33,13 @@ const float WALL_V0 = 200.f;
 const float WALL_DX = 0.05f;
 
 KERNEL void main(
-    const ulong node_count,
-    const GLOBAL struct Node * const nodes, 
-    const GLOBAL ulong * const collisions_index, 
-    const GLOBAL ulong * const collisions, 
-    const GLOBAL ulong * const connections_index,
-    const GLOBAL struct Connection * const connections,
-    GLOBAL float2 *result
+    read_only const ulong node_count,
+    read_only const GLOBAL struct Node * const nodes, 
+    read_only const GLOBAL ulong * const collisions_index, 
+    read_only const GLOBAL ulong * const collisions, 
+    read_only const GLOBAL ulong * const connections_index,
+    read_only const GLOBAL struct Connection * const connections,
+    write_only GLOBAL float2 *result
 ) {
 
     size_t i = get_global_id(0);
@@ -97,14 +97,17 @@ KERNEL void main(
             acceleration -= (normalize(dir) * 3.0f * (WALL_V0 / WALL_DX) * c);
         }
 
-        // Sum up acceleration
-        result[i] += acceleration / nodes[i].mass;
+        // acceleration from nodes interactions
+        acceleration /= nodes[i].mass;
 
-        // Drag
-        result[i] -= nodes[i].velocity * length(nodes[i].velocity) * nodes[i].drag;
+        // drag
+        acceleration -= nodes[i].velocity * length(nodes[i].velocity) * nodes[i].drag;
+        
+        // gravity
+        acceleration.y -= 9.81f;
 
-        // Gravity
-        result[i].y -= 9.81f;
+
+        result[i] = acceleration;
     }
 
 }

@@ -23,8 +23,7 @@ pub mod gpu {
     use opencl3::kernel::{ExecuteKernel, Kernel};
     use opencl3::memory::{Buffer, CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY};
     use opencl3::program::Program;
-    use opencl3::types::{cl_event, cl_float, CL_BLOCKING, CL_NON_BLOCKING};
-    use opencl3::Result;
+    use opencl3::types::{CL_BLOCKING, CL_NON_BLOCKING};
     use std::ptr;
 
     const PROGRAM_SOURCE: &str = include_str!("../kernels/simulation.cl");
@@ -34,7 +33,6 @@ pub mod gpu {
 
     pub struct SimulationEngine {
         context: Context,
-        program: Program,
         command_queue: CommandQueue,
         kernel: Kernel,
         node_count: usize,
@@ -117,7 +115,6 @@ pub mod gpu {
 
             Self {
                 context,
-                program,
                 command_queue: queue,
                 kernel,
                 node_count: 0,
@@ -224,16 +221,14 @@ pub mod gpu {
             // and enqueue a read command to read the device buffer into the array
             // after the kernel event completes.
             let mut result: Vec<Vec2> = vec![Vec2::new(0.0, 0.0); self.node_count];
-            let read_event = self.command_queue.enqueue_read_buffer(
+            
+            self.command_queue.enqueue_read_buffer(
                 &self.result_buffer, 
                 CL_BLOCKING, 
                 0, 
                 &mut result, 
                 &vec![kernel_event.get()]
             ).unwrap();
-
-            // Wait for the read_event to complete.
-            // read_event.wait().unwrap();
 
             // Calculate the kernel duration, from the kernel_event
             let start_time = kernel_event.profiling_command_start().unwrap();
