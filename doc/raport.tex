@@ -14,7 +14,9 @@
 
 \usepackage[english,polish]{babel}
 \usepackage[utf8]{inputenc}
-% \usepackage[T1]{fontenc}
+\usepackage[T1]{fontenc}
+\usepackage{dirtree}
+
 
 \graphicspath{ {images/} {images/collisions24x10_2x2} }
 
@@ -127,7 +129,22 @@
     % --------------------------------------------------------------------------------------------------------------
     \section{Architektura projektu}
     Rust, eGui, OpenGL, CUDA, OpenCL.
-    \dots
+
+    \subsection{Struktura plików}
+    \dirtree{%
+        .1 elastic-objects-rs.
+        .2 data.
+        .2 doc.
+        .3 code.
+        .3 images.
+        .2 glsl.
+        .2 scenes.
+        .2 src.
+        .3 bin.
+        .3 kernels.
+        .3 scene.
+        .3 simulation.
+    }
     
     % --------------------------------------------------------------------------------------------------------------
     \section{Napotkane problemy i próby ich rozwiązania}
@@ -472,17 +489,15 @@
     obiekty przy zderzeniu odpychały się od siebie.
     
     \begin{figure}[h]
-
-        \begin{subfigure}{0.5\textwidth}
-        \includegraphics[width=0.9\linewidth, height=6cm]{objects_unoptimized} 
-        \caption{Każdy węzeł jednego obiektu z każdym każdym węzłem drugiego obiektu}
+        \centering
+        \begin{subfigure}[t]{0.45\textwidth}
+            \includegraphics[width=\textwidth, height=6cm]{objects_unoptimized} 
+            \caption{Każdy węzeł jednego obiektu z każdym każdym węzłem drugiego obiektu}
         \end{subfigure}
-        
-        \begin{subfigure}{0.5\textwidth}
-        \includegraphics[width=0.9\linewidth, height=6cm]{objects_optimized}
-        \caption{Węzły zewnętrzne jednego obiektu z węzłami zewnętrznymi drugiego obiektu}
+        \begin{subfigure}[t]{0.45\textwidth}
+            \includegraphics[width=\textwidth, height=6cm]{objects_optimized}
+            \caption{Węzły zewnętrzne jednego obiektu z węzłami zewnętrznymi drugiego obiektu}
         \end{subfigure}
-        
         \caption{Reprezentacja dwóch metod obsługi zderzeń}
     \end{figure}
 
