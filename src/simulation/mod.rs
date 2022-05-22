@@ -5,5 +5,5 @@ pub mod energy;
 pub mod temperature;
 pub mod pressure;
 
-#[cfg(feature = "rust-gpu-tools")]
+#[cfg(feature = "opencl3")]
 pub mod gpu;

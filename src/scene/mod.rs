@@ -13,4 +13,6 @@ pub mod default;
 pub mod scene01;
 pub mod scene02;
 pub mod scene03;
+pub mod scene04;
+pub mod scene05;
 pub mod two_squares;

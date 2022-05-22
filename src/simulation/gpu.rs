@@ -1,4 +1,4 @@
-#[cfg(feature = "rust-gpu-tools")]
+#[cfg(feature = "opencl3")]
 pub mod gpu {
     use glam::Vec2;
     use crate::simulation::{node::Node, cpu::{start_integrate_velocity_verlet, end_integrate_velocity_verlet}};

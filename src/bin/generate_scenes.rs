@@ -8,6 +8,8 @@ fn main() {
         (mylib::scene::scene01::generate(), "scene01".to_string()),
         (mylib::scene::scene02::generate(), "scene02".to_string()),
         (mylib::scene::scene03::generate(), "scene03".to_string()),
+        (mylib::scene::scene04::generate(), "scene04".to_string()),
+        (mylib::scene::scene05::generate(), "scene05".to_string()),
     ];
 
     let object_sizes = [3, 5, 9, 13, 15, 19, 21, 25, 30, 35, 40, 45, 50, 55, 60];
