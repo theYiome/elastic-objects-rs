@@ -100,37 +100,52 @@
     zamiast renderowania każdego obiektu w osobnym draw call, można renderować wszystkie obiekty w jednym draw call.
 
     % --------------------------------------------------------------------------------------------------------------
-    \section{Wybór technologii}
-    Rust jest szybkim kompilowanym językiem programowania, wielokrotnie wybieranym most beloved programming language
-    przez społeczność Stack Overflow. Cechuje się \dots
+    \section{Zastosowane technologie}
 
-    eGui to biblioteka do renderowania interfejsu graficznego, prosta i kompatybilna z Rust i OpenGL
+    Najważniejszym narzędziem wykorzystamy do stworzenia aplikacji jest \emph{rust}, szybki kompilowany 
+    język programowania zapewniający bezpieczeństwo pamięci i łatwe programowanie wielowątkowe. 
+    Język ten jest wybierany co roku zaczynając od roku 2015 w ankiecie społeczności \emph{Stack Overflow} jako 
+    \emph{``the most beloved programming language''}. O ile język ten jest bardzo wymagający, to jest 
+    on również wygodny, napisany kod jest prosty do zrozumienia a programy napisane z jego użyciem 
+    można łatwo kompilować na wielu systemach nawet jeżeli używają one zewnętrznych bibliotek, gdyż 
+    zależności są zarządzane przez narzędzie \emph{cargo}, będące nieodzowną częścią ekosystemu tego języka.
 
-    Rayon to biblioteka do programowania wielowątkowego w Rust, substytut OpenMP z środowiska C.
-    
-    OpenGL jest prosty, odpowiedni do tego typu projektu.
-    
-    CUDA jest bardzo wydajnym językiem programowania GPU, wykorzystywanym do obliczeń na GPU firmy Nvidia.
-    
-    OpenCL jest bardzo wydajnym językiem programowania wielowątkowego, 
-    działa na wielu platformach i sprzętach różnych producentów.
-    
-    % --------------------------------------------------------------------------------------------------------------
-    \section{Motywacje stojące za wybraniem tego tematu}
-    Motywacje osobiste.
-    Co jest innowacyjne i użyteczne.
-    
-    % --------------------------------------------------------------------------------------------------------------
-    \section{Język programowania Rust}
-    Do programowania wydajnych wielowątkowych symulacji komputerowych 
-    ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
+    Kompilator \emph{rustc} jest restrykcyjny, ponieważ wymusza on na kodzie programu bezpieczeństwo pamięci oraz
+    nie zezwala na kod generujący niezdefiniowane zachowanie, będące częstym problemem podczas tworzenia aplikacji
+    wielowątkowych. ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
     polished set of tools to help you along the way'' - \cite{rustbook} (strona 1)
+
+    Restrykciność kompilatora nie jest poważnym problemem prodczas towrzenia aplikacji, ponieważ 
+    kompilator dostarcza dokładnego opisu błędu wraz z referencją do dokumentacji a często również 
+    sugeruje sposób jego poprawiania. \\
+
+    Do wyświetlenia interfejsu graficznego, pozwalającego monitorowanie oraz kontrolowanie stanu symulacji  
+    wykorzystana została biblioteka \emph{eGui} \cite{egui}. Jest ona kompatybilna z językiem \emph{rust} 
+    i API \emph{OpenGL}, dostarcza możliwości wyświetlania okienek wraz z elementami wejścia (przyciski, suwaki). \\
+
+    Na potrzeby zrównoleglenia kodu symulacji wykorzystana została biblioteka \emph{rayon} \cite{rayon}, służąca
+    do programowania wielowątkowego w języku \emph{rust} z wykorzystaniem współdzielenia pamięci. 
+    Jest to odpowiednik API \emph{OpenMP} ze środowiska wykorzystywanego w 
+    programach napisanych w \emph{C} lub \emph{C++}. \\
+    
+    Do wyświetlania animacji wykorzystane zostało API \emph{OpenGL} w profilu rdzennym (core profile), w projekcie
+    udostępnione przez bibliotekę \emph{glium}. Nie jest ono już rozwijane, ostatnia stabilna wersja 
+    \emph{OpenGL 4.6} pojawiła się w roku 2017, jednak jego możliwości są w pełni wystarczające
+    na potrzeby projektu. Główne zasady tworzenia programu są takie same jak w nowocześniejszych rozwiązaniach 
+    takich jak \emph{Vulkan}, jednak samo API jest nieco łatwiejsze w użyciu i pozwala osiągnąć zamierzone 
+    dla tej aplikacji efekty w mniejszej liczbie linijek kodu. \\
+    
+    Do wykonania symulacji na procesorze graficznym wykorzystane zostało API \emph{OpenCL}, jest ono kompatybilne
+    z większością obecnie wykorzystywanych systemów operacyjnych i działa ono na sprzętach różnych producentów, 
+    w przeciwieństwie do technologii \emph{Cuda}, obsługującej jedynie procesory graficzne \emph{Nvidia}.
     
     % --------------------------------------------------------------------------------------------------------------
     \section{Architektura projektu}
-    Rust, eGui, OpenGL, CUDA, OpenCL.
+    Projekt posiada dwa pliki wykonywalne, jeden służy jako pomoc do generowania scen, które zapisywane są 
+    do plików. Drugi plik jest wykonywalny po podaniu ścieżki do pliku zawierającego scenę wyświetla ją, 
+    udostępnia interfejs i pozwala na wykonywanie i monitorowanie symulacji.
 
-    \subsection{Struktura plików}
+    \subsection{Struktura repozytorium}
     \dirtree{%
         .1 elastic-objects-rs.
         .2 data.
@@ -145,6 +160,20 @@
         .3 scene.
         .3 simulation.
     }
+
+    Folder \emph{src} zawiera główny kod źródłowy programu. 
+    
+    Znajduje się w nim folder \emph{bin} zawierający pliki wykonywalne, jeden służący do generowania scen, drugi do wykonywania symulacji. 
+    
+    Wygenerowane stany symulacji domyślnie zapisywane i czytane są z folderu \emph{scenes}. 
+    
+    W folderze \emph{kernels} znajduje się kod wykorzystywany przez \emph{OpenCL} do wykonywania symulacji na procesorze graficznym. 
+    
+    Pliki generowane przez symulację zapisywane są w folderze \emph{data}. Są to logi zawierające informacje o stanie energii
+    symulacji w danych chwilach czasowych.
+    
+    W folderze \emph{glsl} znajdują się kod shaderów wykorzystywanych do rysowania stanu symulacji.
+
     
     % --------------------------------------------------------------------------------------------------------------
     \section{Napotkane problemy i próby ich rozwiązania}
@@ -806,8 +835,20 @@
 
         \bibitem{rustbook}
         Steve Klabnik, Carol Nichols (2022)
-        \emph{The Rust Programming Language},
+        \emph{The Rust Programming Language} \\
         \url{https://doc.rust-lang.org/book}
+
+        \bibitem{rayon}
+        Dokumentacja online biblioteki \emph{rayon 1.5.1} \\
+        \url{https://docs.rs/rayon/1.5.1/rayon/}
+
+        \bibitem{glium}
+        Dokumentacja online biblioteki \emph{glium 0.30.2} \\
+        \url{https://docs.rs/glium/0.30.2/glium/}
+
+        \bibitem{egui}
+        Dokumentacja online biblioteki \emph{egui 0.15.0} \\
+        \url{https://docs.rs/egui/0.15.0/egui/}
 
     \end{thebibliography}
 
