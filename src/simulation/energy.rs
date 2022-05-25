@@ -1,14 +1,18 @@
 use crate::simulation::node::Node;
 use std::collections::HashMap;
+use rayon::prelude::*;
+
+const M_01: f32 = 1.12246204831;
 
 fn object_repulsion_energy(nodes: &[Node]) -> f32 {
     let v0 = super::general::OBJECT_REPULSION_V0;
-    let dx = super::general::WALL_REPULSION_DX;
-    let m01 = 1.12246204831;
-    let sigma = (1.0 / m01) * dx;
+    let dx = super::general::OBJECT_REPULSION_DX;
+    let sigma = (1.0 / M_01) * dx;
 
-    nodes.iter().fold(0.0, |acc_i, node_i| {
-        let energy_for_node_i = nodes.iter().fold(0.0, |acc_j, node_j| {
+    nodes.par_iter().enumerate().fold(||0.0, |acc_i, (i, node_i)| {
+        let energy_for_node_i = nodes.iter()
+        .enumerate().filter(|(j, _node_j)| i >= *j)
+        .fold(0.0, |acc_j, (_j, node_j)| {
             if node_i.object_id == node_j.object_id {
                 // no repulsion between the same object nodes
                 // takes care of counting node energy with itself
@@ -21,17 +25,15 @@ fn object_repulsion_energy(nodes: &[Node]) -> f32 {
         });
 
         acc_i + energy_for_node_i
-    })
+    }).sum()
 }
 
 fn bond_energy(nodes: &[Node], connections: &HashMap<(usize, usize), (f32, f32)>) -> f32 {
-    let m01 = 1.12246204831;
-
     connections.keys().copied().fold(0.0, |acc, (a, b)| {
         let dist = (nodes[b].position - nodes[a].position).length();
 
         let (dx, v0) = *connections.get(&(a, b)).unwrap();
-        let sigma = (1.0 / m01) * dx;
+        let sigma = (1.0 / M_01) * dx;
         let inner = sigma / dist;
 
         acc + v0 * (inner.powf(12.0) - inner.powf(6.0))
@@ -42,7 +44,7 @@ fn wall_repulsion_energy(nodes: &[Node]) -> f32 {
     let v0 = super::general::WALL_REPULSION_V0;
     let dx = super::general::WALL_REPULSION_DX;
     let m01 = 1.12246204831;
-    let sigma = (1.0 / m01) * dx;
+    let sigma = (1.0 / M_01) * dx;
 
     nodes.iter().fold(0.0, |acc, n| {
         let dist = (-1.0 - n.position.y).abs();

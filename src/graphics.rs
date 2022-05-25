@@ -136,7 +136,7 @@ pub fn draw_disks(
         .iter()
         .enumerate()
         .map(|(i, n)| {
-            let radius = 0.0045 + radius_from_area(n.mass) * 0.000;
+            let radius = simulation::general::OBJECT_REPULSION_DX * 0.45;
 
             NodeAttribute {
                 position: n.position.to_array(),
@@ -285,7 +285,7 @@ pub fn draw_connections(connections: &HashMap<(usize, usize), (f32, f32)>, nodes
             position_a: nodes[k.0].position.to_array(),
             position_b: nodes[k.1].position.to_array(),
             color: [0.1, 0.1, 0.1],
-            width: 0.0016
+            width: 0.0018
         }
     }).collect()
 }

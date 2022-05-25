@@ -37,5 +37,5 @@ name = "generate_scenes"
 path = "src/bin/generate_scenes.rs"
 
 [[bin]]
-name = "opencl"
-path = "src/bin/opencl.rs"
+name = "blank"
+path = "src/bin/blank.rs"

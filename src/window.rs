@@ -29,6 +29,8 @@ pub struct SimulationSettings {
     engine: SimulationEngine,
     pub use_grid: bool,
     pub cell_size: f32,
+    pub log_to_csv: bool,
+    pub log_interval: f32,
 }
 
 pub struct RenderingSettings {
@@ -50,7 +52,9 @@ pub fn run_with_gui(mut scene: Scene) {
         steps_per_frame: 5,
         engine: SimulationEngine::None,
         use_grid: USE_GRID,
-        cell_size: simulation::general::OBJECT_REPULSION_DX * 2.5
+        cell_size: simulation::general::OBJECT_REPULSION_DX * 2.5,
+        log_to_csv: false,
+        log_interval: 0.01,
     };
 
     let mut rendering_settings = RenderingSettings {
@@ -86,9 +90,12 @@ pub fn run_with_gui(mut scene: Scene) {
 
     let mut egui = egui_glium::EguiGlium::new(&display);
     let scene_renderer = rendering::SceneRenderer::new(&display);
-    // loging to csv file
-    // let log_path = "data/log.csv";
-    // let mut csv_writer = csv::Writer::from_path(log_path).unwrap();
+
+    // logging to csv file
+    let mut csv_writer = {
+        let log_path = "data/log.csv";
+        csv::Writer::from_path(log_path).unwrap()
+    };
 
     let mut total_symulation_time: f32 = 0.0;
     let mut current_log_dt = 0.0;
@@ -210,27 +217,28 @@ pub fn run_with_gui(mut scene: Scene) {
             }
     
             current_log_dt += last_frame_symulation_time;
-            // {
-            //     let log_dt = 0.01;
-            //     if current_log_dt > log_dt {
-            //         let (kinetic, gravity, lennjon, wallrep, objrepu) =
-            //             simulation::energy::calculate_total_energy(&nodes, &connections_map);
+            if simulation_settings.log_to_csv {
+                if current_log_dt > simulation_settings.log_interval {
+                    println!("{}", current_log_dt);
+
+                    let (kinetic, gravity, lennjon, wallrep, objrepu) =
+                        simulation::energy::calculate_total_energy(&scene.nodes, &scene.connections);
     
-            //         csv_writer
-            //             .write_record(&[
-            //                 total_symulation_time.to_string(),
-            //                 (current_fps * steps_per_frame).to_string(),
-            //                 kinetic.to_string(),
-            //                 gravity.to_string(),
-            //                 lennjon.to_string(),
-            //                 wallrep.to_string(),
-            //                 objrepu.to_string(),
-            //             ])
-            //             .unwrap();
+                    csv_writer
+                        .write_record(&[
+                            total_symulation_time.to_string(),
+                            (current_fps * simulation_settings.steps_per_frame).to_string(),
+                            kinetic.to_string(),
+                            gravity.to_string(),
+                            lennjon.to_string(),
+                            wallrep.to_string(),
+                            objrepu.to_string(),
+                        ])
+                        .unwrap();
     
-            //         current_log_dt = 0.0;
-            //     }
-            // }
+                    current_log_dt = 0.0;
+                }
+            }
         }
 
         //? drawing objects and gui
@@ -464,5 +472,13 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
         ui.horizontal(|ui| {
             ui.checkbox(&mut simulation_settings.use_grid, "Use grid");
         });
+        ui.separator();
+        ui.checkbox(&mut simulation_settings.log_to_csv, "Log to csv");
+        if simulation_settings.log_to_csv {
+            ui.add(egui::Slider::new(
+                &mut simulation_settings.log_interval,
+                RangeInclusive::new(0.001, 0.02),
+            ));
+        }
     });
 }
