@@ -1,16 +1,16 @@
-use crate::simulation::node::Node;
+use crate::{simulation::node::Node, scene::Scene};
 use std::collections::HashMap;
 use rayon::prelude::*;
 
 const M_01: f32 = 1.12246204831;
 
-fn object_repulsion_energy(nodes: &[Node]) -> f32 {
-    let v0 = super::general::OBJECT_REPULSION_V0;
-    let dx = super::general::OBJECT_REPULSION_DX;
+fn object_repulsion_energy(scene: &Scene) -> f32 {
+    let v0 = scene.object_repulsion_v0;
+    let dx = scene.object_repulsion_dx;
     let sigma = (1.0 / M_01) * dx;
 
-    nodes.par_iter().enumerate().fold(||0.0, |acc_i, (i, node_i)| {
-        let energy_for_node_i = nodes.iter()
+    scene.nodes.par_iter().enumerate().fold(||0.0, |acc_i, (i, node_i)| {
+        let energy_for_node_i = scene.nodes.iter()
         .enumerate().filter(|(j, _node_j)| i >= *j)
         .fold(0.0, |acc_j, (_j, node_j)| {
             if node_i.object_id == node_j.object_id {
@@ -67,15 +67,12 @@ fn kinetic_energy(nodes: &[Node]) -> f32 {
     })
 }
 
-pub fn calculate_total_energy(
-    nodes: &[Node],
-    connections: &HashMap<(usize, usize), (f32, f32)>,
-) -> (f32, f32, f32, f32, f32) {
-    let total_kinetic: f32 = kinetic_energy(nodes);
-    let total_gravity: f32 = gravity_energy(nodes);
-    let total_lennjon: f32 = bond_energy(nodes, connections);
-    let total_wallrep: f32 = wall_repulsion_energy(nodes);
-    let total_objrepu: f32 = object_repulsion_energy(nodes);
+pub fn calculate_total_energy(scene: &Scene) -> (f32, f32, f32, f32, f32) {
+    let total_kinetic: f32 = kinetic_energy(&scene.nodes);
+    let total_gravity: f32 = gravity_energy(&scene.nodes);
+    let total_lennjon: f32 = bond_energy(&scene.nodes, &scene.connections);
+    let total_wallrep: f32 = wall_repulsion_energy(&scene.nodes);
+    let total_objrepu: f32 = object_repulsion_energy(scene);
 
     (
         total_kinetic,

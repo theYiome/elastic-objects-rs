@@ -5,14 +5,14 @@ use super::objects;
 use super::Scene;
 
 pub fn generate() -> Scene {
-    let object1_sx = 720;
-    let object1_sy = 360;
-    let spacing1 = 0.003;
+    let object1_sx = 500;
+    let object1_sy = 250;
+    let spacing1 = 0.0035;
 
-    let object2_sx = 160;
-    let object2_sy = 320;
+    let object2_sx = 120;
+    let object2_sy = 240;
     let object2_m = 15.0;
-    let spacing2 = 0.003;
+    let spacing2 = 0.0035;
 
     let mut nodes1 = objects::build_rectangle(object1_sx, object1_sy, spacing1, -0.92, -0.925, 0.35, 0.8, 1);
     let connections_map_1 = objects::build_connections_map(&nodes1, spacing1 * 1.5, 30.0, 0);
@@ -30,6 +30,8 @@ pub fn generate() -> Scene {
 
     Scene {
         nodes: nodes,
-        connections: connections_map
+        connections: connections_map,
+        object_repulsion_dx: 0.0075,
+        object_repulsion_v0: 20.0,
     }
 }

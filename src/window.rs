@@ -14,7 +14,7 @@ use crate::scene::Scene;
 use crate::simulation;
 use crate::rendering;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 enum SimulationEngine {
     Cpu,
     CpuMultithread,
@@ -23,6 +23,7 @@ enum SimulationEngine {
     None,
 }
 
+#[derive(Clone, Copy)]
 pub struct SimulationSettings {
     pub dt: f32,
     pub steps_per_frame: u32,
@@ -33,6 +34,7 @@ pub struct SimulationSettings {
     pub log_interval: f32,
 }
 
+#[derive(Clone, Copy)]
 pub struct RenderingSettings {
     pub coloring_mode: graphics::ColoringMode,
     gui_active: bool,
@@ -52,7 +54,7 @@ pub fn run_with_gui(mut scene: Scene) {
         steps_per_frame: 5,
         engine: SimulationEngine::None,
         use_grid: USE_GRID,
-        cell_size: simulation::general::OBJECT_REPULSION_DX * 2.5,
+        cell_size: scene.object_repulsion_dx * 2.5,
         log_to_csv: false,
         log_interval: 0.01,
     };
@@ -162,8 +164,7 @@ pub fn run_with_gui(mut scene: Scene) {
                     for _i in 0..simulation_settings.steps_per_frame {
                         simulation::cpu::simulate_single_thread_cpu(
                             simulation_settings.dt,
-                            &mut scene.nodes,
-                            &scene.connections,
+                            &mut scene,
                             &collisions_structure
                         );
                     }
@@ -172,7 +173,7 @@ pub fn run_with_gui(mut scene: Scene) {
                     for _i in 0..simulation_settings.steps_per_frame {
                         simulation::cpu::simulate_multi_thread_cpu(
                             simulation_settings.dt,
-                            &mut scene.nodes,
+                            &mut scene,
                             &connections_structure,
                             &collisions_structure
                         );
@@ -182,7 +183,7 @@ pub fn run_with_gui(mut scene: Scene) {
                     for _i in 0..simulation_settings.steps_per_frame {
                         simulation::cpu::simulate_multi_thread_cpu_enchanced(
                             simulation_settings.dt,
-                            &mut scene.nodes,
+                            &mut scene,
                             &connections_structure,
                             &collisions_structure
                         );
@@ -219,11 +220,12 @@ pub fn run_with_gui(mut scene: Scene) {
             current_log_dt += last_frame_symulation_time;
             if simulation_settings.log_to_csv {
                 if current_log_dt > simulation_settings.log_interval {
-                    println!("{}", current_log_dt);
-
+                    
                     let (kinetic, gravity, lennjon, wallrep, objrepu) =
-                        simulation::energy::calculate_total_energy(&scene.nodes, &scene.connections);
+                        simulation::energy::calculate_total_energy(&scene);
     
+                    println!("{:.2}\t{:.2}\t{:.2}\t{:.2}\t{:.2}", kinetic, gravity, lennjon, wallrep, objrepu);
+
                     csv_writer
                         .write_record(&[
                             total_symulation_time.to_string(),

@@ -29,6 +29,8 @@ pub fn generate() -> Scene {
 
     Scene {
         nodes: nodes,
-        connections: connections_map
+        connections: connections_map,
+        object_repulsion_dx: 0.2,
+        object_repulsion_v0: 100.0,
     }
 }

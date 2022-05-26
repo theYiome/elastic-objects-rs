@@ -6,6 +6,7 @@ use glam::Vec2;
 use crate::simulation::general::Grid;
 use crate::simulation::node::Node;
 use crate::simulation;
+use crate::scene::Scene;
 
 #[derive(Copy, Clone)]
 pub struct Vertex {
@@ -109,7 +110,7 @@ pub fn radius_from_area(area: f32) -> f32 {
     (area / PI).sqrt()
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 pub enum ColoringMode {
     KineticEnergy,
     Temperature,
@@ -118,12 +119,13 @@ pub enum ColoringMode {
 }
 
 pub fn draw_disks(
-    nodes: &[Node],
+    scene: &Scene,
     connections_structure: &[Vec<(usize, f32, f32)>],
     coloring_mode: &ColoringMode,
     dt: f32
 ) -> Vec<NodeAttribute> {
 
+    let nodes = &scene.nodes;
     // let colors = color_from_kinetic_energy(nodes);
     let colors = match coloring_mode {
         ColoringMode::KineticEnergy => color_from_kinetic_energy(nodes),
@@ -136,7 +138,7 @@ pub fn draw_disks(
         .iter()
         .enumerate()
         .map(|(i, n)| {
-            let radius = simulation::general::OBJECT_REPULSION_DX * 0.45;
+            let radius = scene.object_repulsion_dx * 0.45;
 
             NodeAttribute {
                 position: n.position.to_array(),

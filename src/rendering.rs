@@ -137,7 +137,7 @@ impl SceneRenderer {
             let instance_buffer = glium::VertexBuffer::dynamic(
                 display,
                 &graphics::draw_disks(
-                    &scene.nodes,
+                    &scene,
                     &connections_structure,
                     &settings.coloring_mode,
                     last_frame_simulation_time,

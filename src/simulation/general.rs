@@ -4,9 +4,6 @@ use super::node::Node;
 use glam::Vec2;
 use rayon::prelude::*;
 
-pub const OBJECT_REPULSION_V0: f32 = 10.0;
-pub const OBJECT_REPULSION_DX: f32 = 0.015;
-
 pub const WALL_REPULSION_V0: f32 = 200.0;
 pub const WALL_REPULSION_DX: f32 = 0.05;
 
