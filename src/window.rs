@@ -113,7 +113,9 @@ pub fn run_with_gui(mut scene: Scene) {
         engine
     };
 
-    // let mut objects_interactions: HashMap<u32, Vec<usize>> = simulation::general::calculate_objects_interactions_structure(&mut scene.nodes);
+    // scene backup
+    let mut scene_backup = scene.clone();
+    let mut current_backup_dt = 0.0;
 
     let mut now = std::time::Instant::now();
     let mut redraw_clousure = move |display: &glium::Display,
@@ -134,7 +136,6 @@ pub fn run_with_gui(mut scene: Scene) {
 
             // check connection breaks
             if simulation::general::handle_connection_break(&mut scene.nodes, &mut scene.connections) {
-                // objects_interactions = simulation::general::calculate_objects_interactions_structure(&mut scene.nodes);
                 connections_structure = simulation::general::calculate_connections_structure(&scene.connections, &scene.nodes);
                 #[cfg(feature = "opencl3")]
                 if simulation_settings.engine == SimulationEngine::OpenCl {
@@ -202,6 +203,50 @@ pub fn run_with_gui(mut scene: Scene) {
             }
         };
         let last_frame_symulation_time = simulation_settings.dt * simulation_settings.steps_per_frame as f32;
+
+        //? verify if simulation isn't broken
+        {
+            current_backup_dt += last_frame_symulation_time;
+            if current_backup_dt > 0.05 {
+                current_backup_dt = 0.0;
+
+                let mut broken = false;
+
+                for node in &scene.nodes {
+                    if node.position.x.is_nan() || node.position.y.is_nan() {
+                        broken = true;
+                        break;
+                    }
+                }
+
+                if broken {
+                    println!("Error detected, restoring scene");
+                    scene = scene_backup.clone();
+                    connections_structure = simulation::general::calculate_connections_structure(&scene.connections, &scene.nodes);
+                    grid = simulation::general::Grid::new(&scene.nodes, simulation_settings.cell_size);
+                    collisions_structure = simulation::general::calculate_collisions_structure_simple(&scene.nodes);
+                    simulation_settings.dt = simulation_settings.dt * 0.5;
+                    #[cfg(feature = "opencl3")]
+                    if simulation_settings.engine == SimulationEngine::OpenCl {
+                        opencl_simulation_engine.update_connection_buffer(&connections_structure);
+                        opencl_simulation_engine.update_collision_buffer(&collisions_structure);
+                    }
+                }
+                else {
+                    println!("New backup");
+                    scene_backup = scene.clone();
+                    let max_dt = 0.00005;
+                    if simulation_settings.dt < max_dt {
+                        simulation_settings.dt *= 1.1;
+                        if simulation_settings.dt > max_dt {
+                            simulation_settings.dt = max_dt;
+                        }
+                    }
+                }
+            }
+
+        }                               
+        
 
         //? logging and analitics
         {
