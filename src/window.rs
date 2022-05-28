@@ -92,7 +92,7 @@ pub fn run_with_gui(mut scene: Scene) {
                 width: initial_window_width,
                 height: initial_window_height,
             })
-            .with_title("rover-controller-app-rs");
+            .with_title("rover-controller-app-rs (Press F1 for to hide/show GUI)");
 
         let cb = glutin::ContextBuilder::new().with_depth_buffer(24);
 
@@ -204,7 +204,7 @@ pub fn run_with_gui(mut scene: Scene) {
                     for _i in 0..simulation_settings.steps_per_frame {
                         opencl_simulation_engine.simulate_opencl(
                             simulation_settings.dt,
-                            &mut scene.nodes,
+                            &mut scene,
                         );
                     }
                 }
@@ -430,8 +430,6 @@ pub fn run_with_gui(mut scene: Scene) {
 
 fn draw_rendering_settings(egui: &mut egui_glium::EguiGlium, rendering_settings: &mut RenderingSettings) {
     egui::Window::new("Rendering settings").show(egui.ctx(), |ui| {
-        ui.label("Press F1 to hide/show this menu");
-        ui.separator();
         ui.horizontal(|ui| {
             ui.selectable_value(
                 &mut rendering_settings.coloring_mode,
@@ -469,27 +467,22 @@ fn draw_rendering_settings(egui: &mut egui_glium::EguiGlium, rendering_settings:
 
 fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, simulation_settings: &mut SimulationSettings) {
     egui::Window::new("Simulation settings").show(egui.ctx(), |ui| {
-        ui.label("Press F1 to hide/show this menu");
-        ui.separator();
         ui.label(format!("FPS: {}", current_fps));
+
         ui.separator();
         ui.label("dt");
         ui.add(egui::Slider::new(
             &mut simulation_settings.dt,
             RangeInclusive::new(0.0, MAX_DT),
         ));
-        ui.separator();
-        ui.label("Grid size");
-        ui.add(egui::Slider::new(
-            &mut simulation_settings.cell_size,
-            RangeInclusive::new(0.02, 0.3),
-        ));
+        
         ui.separator();
         ui.label("Symulation steps per frame");
         ui.add(egui::Slider::new(
             &mut simulation_settings.steps_per_frame,
             RangeInclusive::new(0, 100),
         ));
+
         ui.separator();
         ui.label("Simulation Engine");
         ui.selectable_value(
@@ -497,12 +490,14 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
             SimulationEngine::None,
             "Stop simulation",
         );
+        
         ui.label("CPU");
         ui.selectable_value(
             &mut simulation_settings.engine,
             SimulationEngine::Cpu,
             "Single threaded",
         );
+
         ui.label("Multi threaded");
         ui.horizontal(|ui| {
             ui.selectable_value(
@@ -522,10 +517,19 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
             ui.label("GPU");
             ui.selectable_value(&mut simulation_settings.engine, SimulationEngine::OpenCl, "OpenCL");
         }
+
         ui.separator();
         ui.horizontal(|ui| {
             ui.checkbox(&mut simulation_settings.use_grid, "Use grid");
         });
+        if simulation_settings.use_grid {
+            ui.label("Grid size");
+            ui.add(egui::Slider::new(
+                &mut simulation_settings.cell_size,
+                RangeInclusive::new(0.02, 0.3),
+            ));
+        }
+
         ui.separator();
         ui.checkbox(&mut simulation_settings.log_to_csv, "Log to csv");
         if simulation_settings.log_to_csv {
@@ -535,6 +539,7 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
                 RangeInclusive::new(0.001, 0.02),
             ));
         }
+
         ui.separator();
         ui.checkbox(&mut simulation_settings.use_backup, "Error correction");
         if simulation_settings.use_backup {

@@ -26,13 +26,12 @@ struct Node {
     bool is_boundary;
 };
 
-const float COLLISION_V0 = 10.0f;
-const float COLLISION_DX = 0.015f;
-
 const float WALL_V0 = 200.f;
 const float WALL_DX = 0.05f;
 
 KERNEL void main(
+    read_only const float collision_dx,
+    read_only const float collision_v0,
     read_only const ulong node_count,
     read_only const GLOBAL struct Node * const nodes, 
     read_only const GLOBAL ulong * const collisions_index, 
@@ -63,8 +62,8 @@ KERNEL void main(
 
                 float2 dir = nodes[j].position - nodes[i].position;
                 float l = length(dir);
-                float c = pown(COLLISION_DX / l, 13);
-                acceleration -= (normalize(dir) * 3.0f * (COLLISION_V0 / COLLISION_DX) * c);
+                float c = pown(collision_dx / l, 13);
+                acceleration -= (normalize(dir) * 3.0f * (collision_v0 / collision_dx) * c);
             }
         }
 

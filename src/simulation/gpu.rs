@@ -1,7 +1,7 @@
 #[cfg(feature = "opencl3")]
 pub mod gpu {
     use glam::Vec2;
-    use crate::simulation::{node::Node, cpu::{start_integrate_velocity_verlet, end_integrate_velocity_verlet}};
+    use crate::{simulation::{node::Node, cpu::{start_integrate_velocity_verlet, end_integrate_velocity_verlet}}, scene::Scene};
 
     pub fn flat_with_indexes<T: Copy>(nested_slice: &[Vec<T>]) -> (Vec<T>, Vec<usize>) {
         let flat: Vec<T> = nested_slice.iter().flatten().copied().collect();
@@ -204,11 +204,13 @@ pub mod gpu {
             self.command_queue.enqueue_write_buffer(&mut self.connection_index_buffer, WRITE_TYPE, 0, &index, &[]).unwrap();
         }
 
-        fn run_kernel(&self) -> Vec<Vec2> {
+        fn run_kernel(&self, collision_dx: f32, collision_v0: f32) -> Vec<Vec2> {
 
             self.command_queue.finish().unwrap();
 
             let kernel_event = ExecuteKernel::new(&self.kernel)
+                .set_arg(&collision_dx)
+                .set_arg(&collision_v0)
                 .set_arg(&self.node_count)
                 .set_arg(&self.node_buffer)
                 .set_arg(&self.collision_index_buffer)
@@ -245,23 +247,23 @@ pub mod gpu {
         pub fn simulate_opencl(
             &mut self,
             dt: f32,
-            nodes: &mut [Node],
+            scene: &mut Scene,
         ) {
     
-            start_integrate_velocity_verlet(dt, nodes);
+            start_integrate_velocity_verlet(dt, &mut scene.nodes);
 
             {
-                self.write_node_buffer(nodes);
+                self.write_node_buffer(&mut scene.nodes);
 
-                let result = self.run_kernel();
-                assert_eq!(result.len(), nodes.len());
+                let result = self.run_kernel(scene.object_repulsion_dx, scene.object_repulsion_v0);
+                assert_eq!(result.len(), scene.nodes.len());
 
-                nodes.iter_mut().enumerate().for_each(|(i, n)| {
+                scene.nodes.iter_mut().enumerate().for_each(|(i, n)| {
                     n.current_acceleration += result[i];
                 });
             }
     
-            end_integrate_velocity_verlet(dt, nodes);
+            end_integrate_velocity_verlet(dt, &mut scene.nodes);
         }
     }
 }
