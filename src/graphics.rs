@@ -192,8 +192,13 @@ fn color_from_pressure(
     let pressure_per_node = simulation::pressure::pressure_per_node(nodes, connections_structure);
 
     // calculate max and min pressure ignoring boundary nodes
-    let max_pressure = nodes.iter().enumerate().filter(|(_, n)| !n.is_boundary).map(|(i, _)| pressure_per_node[i]).max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
-    let min_pressure = nodes.iter().enumerate().filter(|(_, n)| !n.is_boundary).map(|(i, _)| pressure_per_node[i]).min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+    let max_pressure = nodes.iter().enumerate()
+        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| pressure_per_node[i])
+        .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
+
+    let min_pressure = nodes.iter().enumerate()
+        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| pressure_per_node[i])
+        .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
 
     pressure_per_node.iter()
         .map(|pressure| {
@@ -208,10 +213,20 @@ fn color_from_temperature(
     dt: f32
 ) -> Vec<[f32; 3]> {
 
-    simulation::temperature::cached_avg_temperature_per_node(nodes, connections_structure, dt)
-        .iter()
+    let temperature_per_node = simulation::temperature::cached_avg_temperature_per_node(nodes, connections_structure, dt);
+
+    // calculate max and min temperature ignoring boundary nodes
+    let max_temperature = nodes.iter().enumerate()
+        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| temperature_per_node[i])
+        .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
+    
+    let min_temperature = nodes.iter().enumerate()
+        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| temperature_per_node[i])
+        .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
+
+    temperature_per_node.iter()
         .map(|temperature| {
-            number_to_rgb(*temperature, -2000.0, 9000.0)
+            number_to_rgb(*temperature, min_temperature, max_temperature)
         })
         .collect()
 }
