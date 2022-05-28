@@ -189,10 +189,15 @@ fn color_from_pressure(
     connections_structure: &[Vec<(usize, f32, f32)>]
 ) -> Vec<[f32; 3]> {
 
-    simulation::pressure::pressure_per_node(nodes, connections_structure)
-        .iter()
+    let pressure_per_node = simulation::pressure::pressure_per_node(nodes, connections_structure);
+
+    // calculate max and min pressure ignoring boundary nodes
+    let max_pressure = nodes.iter().enumerate().filter(|(_, n)| !n.is_boundary).map(|(i, _)| pressure_per_node[i]).max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+    let min_pressure = nodes.iter().enumerate().filter(|(_, n)| !n.is_boundary).map(|(i, _)| pressure_per_node[i]).min_by(|a, b| a.partial_cmp(b).unwrap()).unwrap();
+
+    pressure_per_node.iter()
         .map(|pressure| {
-            number_to_rgb(*pressure, 83600.0, 86400.0)
+            number_to_rgb(*pressure, min_pressure, max_pressure)
         })
         .collect()
 }
@@ -224,7 +229,7 @@ fn color_from_kinetic_energy(
 }
 
 fn number_to_rgb(mut t: f32, min: f32, max: f32) -> [f32; 3] {
-    assert!(max > min);
+    // assert!(max > min);
 
     t = if t < min {
         min

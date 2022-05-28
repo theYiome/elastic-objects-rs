@@ -1,5 +1,5 @@
-use mylib::scene::blank;
+use mylib::scene;
 
 fn main() {
-    mylib::window::run_with_gui(blank::generate());
+    mylib::window::run_with_gui(scene::pressure::generate());
 }
