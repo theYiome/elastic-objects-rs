@@ -32,6 +32,10 @@ pub struct SimulationSettings {
     pub cell_size: f32,
     pub log_to_csv: bool,
     pub log_interval: f32,
+    pub use_backup: bool,
+    pub backup_interval: f32,
+    pub use_auto_dt: bool,
+    pub auto_dt_factor: f32,
 }
 
 #[derive(Clone, Copy)]
@@ -47,6 +51,7 @@ pub struct RenderingSettings {
 
 
 const USE_GRID: bool = false;
+const MAX_DT: f32 = 0.00005;
 
 pub fn run_with_gui(mut scene: Scene) {
     let mut simulation_settings = SimulationSettings {
@@ -57,6 +62,10 @@ pub fn run_with_gui(mut scene: Scene) {
         cell_size: scene.object_repulsion_dx * 2.5,
         log_to_csv: false,
         log_interval: 0.01,
+        use_backup: true,
+        backup_interval: 0.1,
+        use_auto_dt: true,
+        auto_dt_factor: 1.1,
     };
 
     let mut rendering_settings = RenderingSettings {
@@ -205,15 +214,15 @@ pub fn run_with_gui(mut scene: Scene) {
         let last_frame_symulation_time = simulation_settings.dt * simulation_settings.steps_per_frame as f32;
 
         //? verify if simulation isn't broken
-        {
+        if simulation_settings.use_backup {
             current_backup_dt += last_frame_symulation_time;
-            if current_backup_dt > 0.05 {
+            if current_backup_dt > simulation_settings.backup_interval {
                 current_backup_dt = 0.0;
 
                 let mut broken = false;
 
                 for node in &scene.nodes {
-                    if node.position.x.is_nan() || node.position.y.is_nan() {
+                    if !node.position.x.is_finite() || !node.position.y.is_finite() {
                         broken = true;
                         break;
                     }
@@ -233,13 +242,11 @@ pub fn run_with_gui(mut scene: Scene) {
                     }
                 }
                 else {
-                    println!("New backup");
                     scene_backup = scene.clone();
-                    let max_dt = 0.00005;
-                    if simulation_settings.dt < max_dt {
-                        simulation_settings.dt *= 1.1;
-                        if simulation_settings.dt > max_dt {
-                            simulation_settings.dt = max_dt;
+                    if simulation_settings.use_auto_dt {
+                        simulation_settings.dt *= simulation_settings.auto_dt_factor;
+                        if simulation_settings.dt > MAX_DT {
+                            simulation_settings.dt = MAX_DT;
                         }
                     }
                 }
@@ -469,7 +476,7 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
         ui.label("dt");
         ui.add(egui::Slider::new(
             &mut simulation_settings.dt,
-            RangeInclusive::new(0.0, 0.00005),
+            RangeInclusive::new(0.0, MAX_DT),
         ));
         ui.separator();
         ui.label("Grid size");
@@ -522,10 +529,28 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
         ui.separator();
         ui.checkbox(&mut simulation_settings.log_to_csv, "Log to csv");
         if simulation_settings.log_to_csv {
+            ui.label("Log interval");
             ui.add(egui::Slider::new(
                 &mut simulation_settings.log_interval,
                 RangeInclusive::new(0.001, 0.02),
             ));
+        }
+        ui.separator();
+        ui.checkbox(&mut simulation_settings.use_backup, "Error correction");
+        if simulation_settings.use_backup {
+            ui.label("Backup interval");
+            ui.add(egui::Slider::new(
+                &mut simulation_settings.backup_interval,
+                RangeInclusive::new(0.01, 1.0),
+            ));
+            ui.checkbox(&mut simulation_settings.use_auto_dt, "Automatic dt increase");
+            if simulation_settings.use_auto_dt {
+                ui.label("Multiplier");
+                ui.add(egui::Slider::new(
+                    &mut simulation_settings.auto_dt_factor,
+                    RangeInclusive::new(1.0, 2.0),
+                ));
+            }
         }
     });
 }
