@@ -761,6 +761,83 @@
     rozerwany. Częściowemu zniszczeniu ulega również obiekt $2 \times 2$, ze względu duży stosunek masy do wytrzymałości
     połączeń międzywęzłowych niektóre z tych połączeń zostały przerwane.
 
+    \newpage
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Test widoku ciśnienia dla jednego obiektu}
+    \subsection{Opis testu}
+    Jeden obiekt o wymiarach $50 \times 50$ węzłów umieszczony zostaje przy podłożu w polu grawitacyjnym.
+    Konsystencja obiektu przypomina galaretę, nie jest on sztywny. W czasie trwania symulacji 
+    aktywna jest siła oporu o wysokiej wartości proporcjonalna do prędkości węzła, co powoduję szybką 
+    utratę energii.
+
+    \subsection{Reprezentacja graficzna w czasie}
+
+    \begin{figure}[h]
+
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=4.5cm]{pressure_01.png} 
+            \caption{Stan początkowy}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=4.5cm]{pressure_02.png}
+            \caption{Fala ciśnienia}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=4.5cm]{pressure_03.png}
+            \caption{Stabilizacja}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=4.5cm]{pressure_04.png}
+            \caption{Stan stabilny}
+        \end{subfigure}
+        
+        \caption{Widok ciśnienia na obiekcie $50 \times 50$}
+    \end{figure}
+
+    Węzły na które oddziałuje najmniejsze ciśnieniu mają kolor ciemno-niebieski, natomiast węzły na które oddziałuje 
+    największe ciśnienie mają kolor czerwony. Ponieważ podczas obliczania ciśnienia bierzemy pod uwagę jedynie 
+    siły oddziaływania pomiędzy połączonymi sąsiadami a węzły brzegowe mają mniej sąsiadów niż węzły znajdujące
+    się w środku obiektu, to ciśnienie działające na węzły zewnętrzne będzie mniejsze niż to działające na
+    węzły wewnętrzne, z czego wynika widoczne ciemno-niebieskie obramowanie obiektu. \\
+
+    Na początku symulacji można zauważyć przemieszczającą się w górę obiektu falę ciśnienia. Wraz z czasem 
+    obiekt stał się również bardziej wypukły od strony prawej i lewej ścianki
+    oraz wklęsły od strony górnej ścianki. W stanie stabilnym jest on również niższy niż na początku symulacji 
+    Największe ciśnienie można zaobserwować przy środku podstawy obiektu a najmniejsze przy jego 
+    górnej ściance.
+
+    \subsection{Zmiana energii układu w czasie}
+    Energia całkowita układu na początku symulacji znormalizowana jest do zera. 
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=14cm]{pressure_energy_01}
+        \caption{
+            Zmiana energi układu w czasie dla pierwszych 0.5 sekundy
+        }
+    \end{figure}
+
+    Widoczna jest utrata energii całkowitej reprezentowanej przez linię o kolorze czarnym, która po około $0.3$ sekundy
+    stabilizuje się. Energia potencjalna grawitacji również spada, co odpowiada wcześniej zaobserwowanej 
+    zmniejszającej się wraz z czasem wysokości obiektu.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=14cm]{pressure_energy_02.png}
+        \caption{
+            Zmiana energi układu w czasie dla pierwszych 3.0 sekundy
+        }
+    \end{figure}
+
+    Gasnące oscylacje energi potencjalnej grawitacji oraz energi potencjalnej Lennarda-Jonesa wewnątrz obiektu
+    wynika z niewielkich drgań w które wpadł obiekt. Jego konsystencja przypomina galaretę, więc spodziewalibyśmy się
+    oscylacji energii tego typu, jednak ze względu na istnienie siły oporu po kilku sekundach drgania te wygaszają się.
+
+
 \chapter{Podsumowanie}
     \section{Wnioski}
     Zastosowanie metoda dynamiki molekularnej daje bardzo interesujące 
