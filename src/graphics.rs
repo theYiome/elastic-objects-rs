@@ -184,6 +184,24 @@ fn color_from_boundary(nodes: &[Node]) -> Vec<[f32; 3]> {
     }).collect()
 }
 
+fn min_max_value_per_node(nodes: &[Node], values: &[f32]) -> (f32, f32) {
+    assert_eq!(nodes.len(), values.len());
+
+    let mut max_value = nodes.iter().enumerate()
+        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| values[i])
+        .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
+
+    let min_value = nodes.iter().enumerate()
+        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| values[i])
+        .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
+    
+    if max_value - min_value < 1.0 {
+        max_value = min_value + 1.0;
+    }
+
+    (min_value, max_value)
+}
+
 fn color_from_pressure(
     nodes: &[Node],
     connections_structure: &[Vec<(usize, f32, f32)>]
@@ -192,13 +210,7 @@ fn color_from_pressure(
     let pressure_per_node = simulation::pressure::pressure_per_node(nodes, connections_structure);
 
     // calculate max and min pressure ignoring boundary nodes
-    let max_pressure = nodes.iter().enumerate()
-        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| pressure_per_node[i])
-        .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
-
-    let min_pressure = nodes.iter().enumerate()
-        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| pressure_per_node[i])
-        .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
+    let (min_pressure, max_pressure) = min_max_value_per_node(nodes, &pressure_per_node);
 
     pressure_per_node.iter()
         .map(|pressure| {
@@ -216,13 +228,7 @@ fn color_from_temperature(
     let temperature_per_node = simulation::temperature::cached_avg_temperature_per_node(nodes, connections_structure, dt);
 
     // calculate max and min temperature ignoring boundary nodes
-    let max_temperature = nodes.iter().enumerate()
-        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| temperature_per_node[i])
-        .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
-    
-    let min_temperature = nodes.iter().enumerate()
-        .filter(|(_, n)| !n.is_boundary).map(|(i, _)| temperature_per_node[i])
-        .min_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)).unwrap();
+    let (min_temperature, max_temperature) = min_max_value_per_node(nodes, &temperature_per_node);
 
     temperature_per_node.iter()
         .map(|temperature| {
