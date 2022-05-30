@@ -276,7 +276,7 @@ pub fn run_with_gui(mut scene: Scene) {
                     let (kinetic, gravity, lennjon, wallrep, objrepu) =
                         simulation::energy::calculate_total_energy(&scene);
     
-                    println!("{:.2}\t{:.2}\t{:.2}\t{:.2}\t{:.2}", kinetic, gravity, lennjon, wallrep, objrepu);
+                    println!("{:.2}\t{:.2}\t{:.2}\t{:.2}\t{:.2}\t{:.2}", total_symulation_time, kinetic, gravity, lennjon, wallrep, objrepu);
 
                     csv_writer
                         .write_record(&[

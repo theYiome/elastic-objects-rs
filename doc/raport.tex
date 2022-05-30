@@ -47,7 +47,7 @@
 \lstset{style=codelistingstyle}
 
 \title{
-    Raport z postępów pracy \\
+    Praca magisterska \\
     \large Modelowanie elastycznych i nieelastycznych
     zderzeń obiektów\\
     metodą dynamiki molekularnej na potrzeby animacji
@@ -795,7 +795,7 @@
             \caption{Stan stabilny}
         \end{subfigure}
         
-        \caption{Widok ciśnienia na obiekcie $50 \times 50$}
+        \caption{Widok ciśnienia w wybranych chwilach czasowych dla obiektu $50 \times 50$}
     \end{figure}
 
     Węzły na które oddziałuje najmniejsze ciśnieniu mają kolor ciemno-niebieski, natomiast węzły na które oddziałuje 
@@ -837,6 +837,98 @@
     wynika z niewielkich drgań w które wpadł obiekt. Jego konsystencja przypomina galaretę, więc spodziewalibyśmy się
     oscylacji energii tego typu, jednak ze względu na istnienie siły oporu po kilku sekundach drgania te wygaszają się.
 
+
+    \newpage
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Test widoku ciśnienia dla zderzenia dwóch obiektów}
+    \subsection{Opis testu}
+    Jeden obiekt o wymiarach $50 \times 50$ węzłów umieszczony zostaje przy podłożu w polu grawitacyjnym a
+    drugi obiekt o wymiarach $20 \times 20$ znajduje się nad obiektem pierwszym. Po krótkimi czasie pod wpływem
+    działania siły grawitacji obiekt drugi zderza się z obiektem pierwszym. Aktywna jest siła oporu 
+    proporcjonalna do prędkości węzła, co powoduje straty energii całkowitej układu i po pewnym czasie osiągnięcie
+    stanu stabilnego.
+
+    \subsection{Reprezentacja graficzna w czasie}
+
+    \begin{figure}[h]
+
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=5.5cm]{pressure02_01} 
+            \caption{Stan początkowy}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=5.5cm]{pressure02_02}
+            \caption{Przed zderzeniem}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=5.5cm]{pressure02_03}
+            \caption{Zderzenie}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm, height=5.5cm]{pressure02_04}
+            \caption{Stan stabilny}
+        \end{subfigure}
+        
+        \caption{Widok ciśnienia w wybranych chwilach czasowych dla zderzenia obiektów $50 \times 50$ i $20 \times 20$}
+    \end{figure}
+
+    Przed zderzeniem największe ciśnienie w obiekcie pierwszym znajduje się na węzłach przy jego podstawie 
+    a w obiekcie drugim nie występują żadne różnice ciśnień. Stan ten zmienia się w momencie zderzenia, 
+    gdzie największe ciśnienie można zaobserwować w miejscu kontaktu obiektów. W stanie stabilnym 
+    można zauważyć, że ze względu na niesymetryczne rozłożenie węzłów, ciśnienie przy podstawie 
+    obiektu $50 \times 50$ jest wyraźnie wyższe po jego lewej stronie w porównaniu do strony prawej. \\
+
+    Warto zwrócić uwagę że dany kolor nie jest jest bezpośrednio odwzorowywany na jedną wartość przez cały
+    czas trwania symulacji. Kolorem czerwonym zawsze oznaczony jest węzeł o największej wartości a 
+    kolorem ciemno-niebieskim węzeł o najmniejszej wartości. Z tego powodu na rysunku
+    przedstawiającym moment zderzenia kolor węzłów przy podstawie obiektu $50 \times 50$ zmienił się z 
+    czerwonego na żółty, pomimo iż wartość ciśnienia w tamtym miejscu wzrosła. Kolorem 
+    czerwonym oznaczone zostały w tej chwili czasowej węzły w miejscu kontaktu obiektów, gdzie wartość 
+    ciśnienia była większa niż przy podstawie obiektu $50 \times 50$.
+
+    \subsection{Zmiana energii układu w czasie}
+    Energia całkowita układu na początku symulacji znormalizowana jest do zera. 
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=16cm]{pressure_energy02_01}
+        \caption{
+            Zmiana energi układu w czasie dla pierwszych 0.35 sekundy
+        }
+    \end{figure}
+    
+    Energia potencjalna grawitacji zmniejsza się ze głownie ze względu na spadający obiekt $20 \times 20$
+    a ponieważ utrata energii układu jest proporcjonalna do prędkości węzłów, na początku symulacji gdy 
+    obiekty są nieruchome i dopiero nabierają prędkości energia całkowita zmniejsza się w wolniejszym tempie niż 
+    w późniejszym etapie symulacji, gdy węzły mają już znaczącą prędkość.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=16cm]{pressure_energy02_02}
+        \caption{
+            Zmiana energi układu w czasie dla pierwszych 1.6 sekundy
+        }
+    \end{figure}
+
+    Ponieważ w tym przypadku następuje zderzenie pomiędzy obiektami energia potencjalna Lennarda-Jonesa odpychająca
+    oznaczona linią o kolorze czerwonym nie jest stała i wzrasta w momencie zderzenia. W stanie spoczynku jej wartość
+    jest większa niż na początku symulacji, ponieważ w stanie stabilnym obiekt $20 \times 20$ leży nieruchomo na obiekcie
+    $50 \times 50$, a więc siła odpychająca między obiektami przeciwdziała sile grawitacji. 
+    Wzrasta też oznaczona kolorem pomarańczowym energia odpychająca węzły od podłoża, gdyż po momencie zderzenia na 
+    tym podłożu spoczywa również niebezpośrednio masa  obiektu $20 \times 20$. \\
+    
+    Zaobserwować można również wzrost oznaczonej linią zieloną energii międzywęzłowej wewnętrznej obiektu, wynikającej ze 
+    zmniejszenia odległości pomiędzy węzłami na wskutek zgniecenia obiektu. Energia wewnętrzna wzrasta w dwóch momentach: 
+    najpierw obiekt $50 \times 50$ zmienia swój kształt pod wpływem działania siły grawitacji, co powoduje zmniejszenie 
+    odległości pomiędzy węzłami znajdującymi sę w nim, ten etap widoczny jest w przedziale czasu $[0, 0.6] s$. 
+    Następnie w momencie $\approx 0.6 s$ następuje zderzenie powodujące wyraźne zgniecenie obiektu a zatem znaczny wzrost
+    energii wewnętrznej międzywęzłowej. Energia ta po momencie zderzenia zmniejsza się na wskutek częściowego rozprężenia
+    obiektów, jednak nie powraca do swojej poprzedniej wartości, ponieważ spoczywające na sobie obiekty nadal są 
+    częściowo zniekształcone.
 
 \chapter{Podsumowanie}
     \section{Wnioski}

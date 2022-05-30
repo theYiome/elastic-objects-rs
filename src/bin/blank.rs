@@ -1,5 +1,5 @@
 use mylib::scene;
 
 fn main() {
-    mylib::window::run_with_gui(scene::pressure::generate());
+    mylib::window::run_with_gui(scene::pressure02::generate());
 }
