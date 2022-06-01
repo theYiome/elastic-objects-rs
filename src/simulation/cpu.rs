@@ -153,7 +153,7 @@ fn wall_repulsion_force_y(nodes: &mut [Node]) {
 
 fn gravity_force(nodes: &mut [Node]) {
     nodes.iter_mut().for_each(|n| {
-        n.current_acceleration.y += -9.81;
+        n.current_acceleration.y += super::general::GRAVITY_CONSTANT;
     });
 }
 
@@ -244,7 +244,7 @@ pub fn simulate_multi_thread_cpu_enchanced(
         let mut result = (connections - repulsion - wall_repulsion) / n.mass;
         result -= drag;
         //gravity
-        result.y += -9.81;
+        result.y += super::general::GRAVITY_CONSTANT;
         
 
         result

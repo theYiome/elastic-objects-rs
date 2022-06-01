@@ -63,7 +63,7 @@
 \maketitle
 \tableofcontents
 
-\chapter{Wstęp}
+\chapter{Wprowadzenie}
     \section{Cele projektu}
     Jedną z popularnych metod wykorzystywanych w modelowaniu zderzeń obiektów w mikro- i makroskali jest 
     metoda dynamiki molekularnej. Mimo iż w pierwotnej postaci stosowana była do opisu własności gazów i 
@@ -173,17 +173,6 @@
     symulacji w danych chwilach czasowych.
     
     W folderze \emph{glsl} znajdują się kod shaderów wykorzystywanych do rysowania stanu symulacji.
-
-    
-    % --------------------------------------------------------------------------------------------------------------
-    \section{Napotkane problemy i próby ich rozwiązania}
-    Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
-    było zbyt wolne. Następnie przy użyciu instanced rendering problem ten został zlikwidowany po 
-    stronie interfejsu graficznego.
-    
-    Następnym problemem była wydajność symulacji,
-    
-    Wielowątkowość jest trudna do osiągnięcia, wymaga znacznej modyfikacji algorytmów.
     
     % --------------------------------------------------------------------------------------------------------------
     \section{Wielowątkowość}
@@ -198,6 +187,7 @@
     processor, to one where moving the data is the primary limiting factor'' - \cite{cuda} (strona 25)
     
     % --------------------------------------------------------------------------------------------------------------
+\chapter{Wstęp teoretyczny}
     \section{Model oddziaływań}
     Potencjał Lennarda-Jonesa został wykorzystany do symulacji przyciągania/odpychania 
     węzłów w jednym obiekcie, symulacji kolizji węzłów ze ścianami oraz symulacji
@@ -385,7 +375,7 @@
     Dodatkowo aby bardziej wygładzić wyniki kolor węzła ostateczna temperatura dla danego węzła 
     jest równa średniej z temperatur $4$ rzędów najbliższych węzłów.
 
-    \begin{figure}[h]
+    \begin{figure}[H]
         \centering
         \includegraphics[width=8cm]{avg.drawio}
         \caption{Węzły z których liczona jest średnia temperatura}
@@ -395,7 +385,7 @@
     wyraźnie łatwiejsza w implementacji, dlatego ta metoda będzie używana w dalszej części pracy.
 
     % --------------------------------------------------------------------------------------------------------------
-    \section{Wizualizacja ciśnienia}
+    \section{Obliczanie ciśnienia}
 
     \begin{figure}[h]
         \centering
@@ -446,23 +436,11 @@
     Dla każdego węzła trzeba policzyć pochodne siły w czterech punktach. 
     Pochodna eliminuje wpływ pola grawitacyjnego, ponieważ jest to wartość stała.
 
-    \subsection{Testy poprawność wzoru}
-    \begin{enumerate}
-        \item Przypadek statyczny z jednym obiektem: Obiekt stojący na podłożu w polu grawitacyjnym.
-        Większy nacisk będzie znajdować się przy podstawie obiektów.
-        
-        \item Przypadek dynamiczny: Uderzenie kulki w obiekt prostokątny. Największe ciśnienie 
-        znajdzie się w miejscu zderzenia dwóch obiektów.
-
-        \item Przypadek statyczny z dwoma obiektami: Dwa obiekty położone na sobie bez pola grawitacyjnego.
-        Ciśnienie w środku powinno być jednorodne i takie sam jak u góry obiektu. Brzegi powinny się deformować.
-    \end{enumerate}
-
 \chapter{Implementacja}
     \section{Węzły}
     \lstinputlisting[language=C]{code/node.rs}
 
-    \section{Algorytm Verleta}
+    \section{Algorytm prędkościowy Verleta}
     \lstinputlisting[language=C]{code/verlet.rs}
 
     \section{Struktury obliczeniowe}
@@ -471,6 +449,14 @@
     tworzy następujące struktury.
 
     \section{Obliczanie przyśpieszeń}
+    \lstinputlisting[language=C]{code/simulate_no_par.rs}
+    Wersja jednowątkowa wykonywania obliczeń, na początku pierwszy etap algorytmu verleta na podstawie 
+    obecnego stanu sceny obliczane jest zmiana przyspieszenia. 
+    Pod uwagę brane są siły pochodzące od połączeń między 
+    węzami znajdującymi się w tym samym obiekcie, odpychanie się węzłów znajdujących się w innych obiektach, 
+    grawitacja, odpychanie od ścianki dolnej oraz opór ruchu proporcjonalny do prędkości węzła.
+    Korzystając z tej informacji wykonujemy drugi etap prędkościowego algorytmu verleta.
+
     \lstinputlisting[language=C]{code/simulate_multiple.rs}
     Każda z funkcji dzieli swoje zadanie na wątki i na bieżąco aktualizuje węzły. Gdy funkcja 
     zakończy działanie następna rozpoczyna ponownie proces podziału na wątki.
@@ -480,10 +466,41 @@
     dla każdego z węzłów. W ten sposób podział zadania na wątki wykonywany jest tylko raz, co 
     znacznie zwiększa szybkość wykonania programu.
 
-
-    \subsection{Porównanie wydajności}
+    \subsection{Porównanie wydajności na CPU}
     Porównanie wersji algorytmu na CPU w postaci jednordzeniowej, zrównoleglonej z wieloma funkcjami 
     dzielącymi na wątki i jedną funkcją dzielącą na wątki.
+
+
+    \subsection{Siatka sąsiedztwa}
+    Siatka sąsiedztwa minimalizuje liczbę obliczeń kolizji pomiędzy węzłami należącymi do różnych obiektów.
+
+    \subsection{Porównanie wydajności z siatką sąsiedztwa}
+    Wykres prezenetujący wydajność dla najlepszej wersji wielodzeniwoej na CPU dla zwiększającej się liczby węzłów
+    z włączoną siatką sąiedztwa oraz z wyłączoną siatką sąsiedztawa.
+
+    \subsection{Implementacja OpenCL}
+    Jak przekazywane są danek, kernel.
+
+    \subsection{Porównanie wydajności wersji CPU i GPU}
+    Wykresy dla najlepszej wersji CPU i GPU z włączoną siatką sąsiedztwa.
+
+    \subsection{Korekta błędów}
+    Z powodu dobrania zbyt dużego kroku czasowego symulacja może być niestabilna.
+    Objawy niestabilności to między innymi destrukcja siatki, nadanie węzłów 
+    ogromnych prędkości powodujących wyjście poza obserwowalny obszar.
+    Zaczynają występować liczby zmiennoprzecinkowe o wartościach nan lub inf.
+    Gdy takie wartości się pojawią symulacja wraca do ostatniego zapisanego stanu w którym 
+    te wartości nie występowały. Co pewien czas tworzy nową kopię zapasową.
+
+    \subsubsection{Automatyczny dobór kroku czasowego}
+    Gdy korekta błędów jest włączona za każdym razem gdy zostanie wykryty bła i powrót do poprzedniego stanu
+    krok czasowy zostanie zmniejszony o połowę. Jeżeli użytkownik włączy funkcję automatycznego zwiększania
+    kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość np. 1.1 za 
+    każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd.
+
+    \section{Widok aplikacji}
+    Obrazy przedstawiające aplikacją. Opis funkcji związanych z wyświetlaniem. 
+    Dostępne kontrolki, skróty klawiszowe, obsługa kamery.
 
 \chapter{Testy}
     \section{Test poprawność działania algorytmów}
@@ -517,18 +534,18 @@
     \end{align*}
 
     \subsection{Wyniki}
-    \begin{figure}[h]
+    \begin{figure}[H]
         \centering
-        \includegraphics[width=13cm]{energy_test_0to2s}
+        \includegraphics[width=14cm]{energy_test_0to2s}
         \caption{Zmiana energii w czasie dla układu w ciągu pierwszych 1.2 sekund}
     \end{figure}
 
     Przy zderzeniach pomiędzy obiektami oraz pomiędzy obiektem i podłożem energia potencjalna
     odpychająca Lennarda-Jonesa oznaczona kolejno kolorami pomarańczowym i czerwonym
     wyraźnie wzrasta.
-    \begin{figure}[h]
+    \begin{figure}[H]
         \centering
-        \includegraphics[width=13cm]{energy_test_0to8s}
+        \includegraphics[width=14.6cm]{energy_test_0to8s}
         \caption{Zmiana energii w czasie dla układu w ciągu pierwszych 8 sekund}
     \end{figure}
     
@@ -958,6 +975,16 @@
     częściowo zniekształcone.
 
 \chapter{Podsumowanie}
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Napotkane problemy}
+    Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
+    było zbyt wolne. Następnie przy użyciu instanced rendering problem ten został zlikwidowany po 
+    stronie interfejsu graficznego.
+    
+    Następnym problemem była wydajność symulacji,
+    
+    Wielowątkowość jest trudna do osiągnięcia, wymaga znacznej modyfikacji algorytmów.
+
     \section{Wnioski}
     Zastosowanie metoda dynamiki molekularnej daje bardzo interesujące 
     wyniki podczas symulacji zderzeń obiektów. Zastosowanie dużej ilości węzłów pozwala na 
