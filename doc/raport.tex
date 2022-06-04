@@ -465,24 +465,12 @@
     W tym przypadku zdefiniowana została jedna funkcja jest w stanie obliczyć zmianę przyśpieszenia 
     dla każdego z węzłów. W ten sposób podział zadania na wątki wykonywany jest tylko raz, co 
     znacznie zwiększa szybkość wykonania programu.
-
-    \subsection{Porównanie wydajności na CPU}
-    Porównanie wersji algorytmu na CPU w postaci jednordzeniowej, zrównoleglonej z wieloma funkcjami 
-    dzielącymi na wątki i jedną funkcją dzielącą na wątki.
-
-
+    
     \subsection{Siatka sąsiedztwa}
     Siatka sąsiedztwa minimalizuje liczbę obliczeń kolizji pomiędzy węzłami należącymi do różnych obiektów.
 
-    \subsection{Porównanie wydajności z siatką sąsiedztwa}
-    Wykres prezenetujący wydajność dla najlepszej wersji wielodzeniwoej na CPU dla zwiększającej się liczby węzłów
-    z włączoną siatką sąiedztwa oraz z wyłączoną siatką sąsiedztawa.
-
     \subsection{Implementacja OpenCL}
     Jak przekazywane są danek, kernel.
-
-    \subsection{Porównanie wydajności wersji CPU i GPU}
-    Wykresy dla najlepszej wersji CPU i GPU z włączoną siatką sąsiedztwa.
 
     \subsection{Korekta błędów}
     Z powodu dobrania zbyt dużego kroku czasowego symulacja może być niestabilna.
@@ -493,7 +481,7 @@
     te wartości nie występowały. Co pewien czas tworzy nową kopię zapasową.
 
     \subsubsection{Automatyczny dobór kroku czasowego}
-    Gdy korekta błędów jest włączona za każdym razem gdy zostanie wykryty bła i powrót do poprzedniego stanu
+    Gdy korekta błędów jest włączona za każdym razem gdy zostanie wykryty błąd i powrót do poprzedniego stanu
     krok czasowy zostanie zmniejszony o połowę. Jeżeli użytkownik włączy funkcję automatycznego zwiększania
     kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość np. 1.1 za 
     każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd.
@@ -501,6 +489,48 @@
     \section{Widok aplikacji}
     Obrazy przedstawiające aplikacją. Opis funkcji związanych z wyświetlaniem. 
     Dostępne kontrolki, skróty klawiszowe, obsługa kamery.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=17cm]{app_view_full.png}
+        \caption{Okno aplikacji z widocznymi panelami ustawień}
+    \end{figure}
+
+    Aplikacja okienkowa, zdjęcie pochodzi z Windows ale aplikacja jest również kompatybilna z 
+    systemem Linux. Widoczne po lewej stronie panele można ukryć lub ponownie pokazać przy pomocy
+    przycisku \emph{F1} na klawiaturze.
+
+    \begin{figure}[H]
+        \centering
+        \begin{subfigure}[t]{0.4\textwidth}
+            \includegraphics[width=\textwidth]{render_settings.png} 
+            \caption{Panel ustawień rysowania}
+        \end{subfigure}
+        \begin{subfigure}[t]{0.4\textwidth}
+            \includegraphics[width=\textwidth]{simulation_settings.png}
+            \caption{Panel ustawień symulacji}
+        \end{subfigure}
+        \caption{Widok paneli ustawień dostępnych w aplikacji}
+    \end{figure}
+
+    Węzły można kolorować na następujące sposoby:
+    \begin{enumerate}
+        \item \emph{Energia kinetyczna} - kolorujemy węzły na podstawie ich energii kinetycznej 
+        gdzie kolor czarny to zerowa energia kinetyczna, wraz z jej zwiększaniem węzeł staje się czerwony.
+
+        \item \emph{Węzły brzegowe} - węzły brzegowe danego obiektu mają ten sam kolor,
+        każdy obiekt ma inny kolor węzłów brzegowych. Węzły wewnętrzne każdego z obiektów są koloru szarego.
+
+        \item \emph{Temperatura} - każdy węzeł otrzymuje kolor zależy od jego temperatury. 
+        Skala kolorów zaczyna się od ciemno-niebieskiego dla najniższych wartości, 
+        przechodzi w zielony, żółty, pomarańczowy a węzły o najwyższej temperaturze.
+
+        \item \emph{Ciśnienie} - każdy węzeł otrzymuje kolor zależy od jego ciśnienia. 
+        Skala kolorów jest taka sama jak w przypadku temperatury.
+    \end{enumerate}
+
+    Funkcja rysowania \emph{połączeń węzłowych}, \emph{węzłów} i \emph{siatki obliczeniowej} domyślnie 
+    jest włączone ale można w każdej chwili wyłączyć każdą z nich korzystając z panelu ustawień rysowania.
 
 \chapter{Testy}
     \section{Test poprawność działania algorytmów}
@@ -657,11 +687,25 @@
     obliczanie wpływu pola grawitacyjnego czy obliczanie wpływu sił oporu.
 
     % --------------------------------------------------------------------------------------------------------------
-    \section{Test rozrywania dwóch obiektów o małej ilości węzłów}
+    \section{Porównanie wydajności na CPU}
+    Porównanie wersji algorytmu na CPU w postaci jednordzeniowej, zrównoleglonej z wieloma funkcjami 
+    dzielącymi na wątki i jedną funkcją dzielącą na wątki.
+    
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Test wydajności z siatką sąsiedztwa}
+    Wykres prezentujący wydajność dla najlepszej wersji wielordzeniowej na CPU dla zwiększającej się liczby węzłów
+    z włączoną siatką sąsiedztwa oraz z wyłączoną siatką sąsiedztwa.
+    
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Porównanie wydajności wersji CPU i GPU}
+    Wykresy dla najlepszej wersji CPU i GPU z włączoną siatką sąsiedztwa.
+
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Test rozrywania dwóch obiektów}
     \subsection{Opis testu}
-    Dwa nieruchome obiekty, jeden zostaje umieszczony nieruchomo przy podłożu, 
-    drugi znajduje się na pewnej wysokości nad obiektem pierwszym. Siła grawitacji
-    jest aktywna, z tego powodu obiekt drugi zaczyna spadać na obiekt pierwszy i po chwili zderza się z nim. \\ 
+    Scena składa się z dwóch nieruchomych obiektów gdzie jeden o wymiarach $12 \times 24$ zostaje umieszczony nieruchomo 
+    przy podłożu a drugi o wymiarach $2 \times 2$ znajduje się nad obiektem pierwszym. Siła grawitacji jest aktywna co 
+    sprawia że obiekt drugi zaczyna spadać w kierunku obiektu pierwszego i po chwili następuje zderzenie. \\ 
 
     Jeżeli odległość między dwoma połączonymi węzłami zwiększy się powyżej $1.5$ odległości równowagi dla 
     tego połączenia ($d_x$), połączenie to zostaje zerwane, w ten sposób symulujemy rozrywanie obiektów pod dużym 
