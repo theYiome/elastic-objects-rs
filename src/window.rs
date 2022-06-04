@@ -13,35 +13,13 @@ use crate::graphics;
 use crate::scene::Scene;
 use crate::simulation;
 use crate::rendering;
-
-#[derive(PartialEq, Clone, Copy)]
-enum SimulationEngine {
-    Cpu,
-    CpuMultithread,
-    CpuMultithreadSingleKernel,
-    OpenCl,
-    None,
-}
-
-#[derive(Clone, Copy)]
-pub struct SimulationSettings {
-    pub dt: f32,
-    pub steps_per_frame: u32,
-    engine: SimulationEngine,
-    pub use_grid: bool,
-    pub cell_size: f32,
-    pub log_to_csv: bool,
-    pub log_interval: f32,
-    pub use_backup: bool,
-    pub backup_interval: f32,
-    pub use_auto_dt: bool,
-    pub auto_dt_factor: f32,
-}
+use crate::simulation::manager::SimulationEngineEnum;
+use crate::simulation::manager::SimulationSettings;
 
 #[derive(Clone, Copy)]
 pub struct RenderingSettings {
     pub coloring_mode: graphics::ColoringMode,
-    gui_active: bool,
+    pub gui_active: bool,
     pub draw_nodes: bool,
     pub draw_connections: bool,
     pub draw_grid: bool,
@@ -49,16 +27,12 @@ pub struct RenderingSettings {
     pub camera_position: Vec2,
 }
 
-
-const USE_GRID: bool = false;
-const MAX_DT: f32 = 0.00005;
-
-pub fn run_with_gui(mut scene: Scene) {
+pub fn run_with_gui(scene: Scene) {
     let mut simulation_settings = SimulationSettings {
         dt: 0.0,
         steps_per_frame: 5,
-        engine: SimulationEngine::None,
-        use_grid: USE_GRID,
+        engine: SimulationEngineEnum::None,
+        use_grid: false,
         cell_size: scene.object_repulsion_dx * 2.5,
         log_to_csv: false,
         log_interval: 0.01,
@@ -67,6 +41,8 @@ pub fn run_with_gui(mut scene: Scene) {
         use_auto_dt: true,
         auto_dt_factor: 1.1,
     };
+
+    let mut simulation_manager = simulation::manager::SimulationManager::new(simulation_settings, scene);
 
     let mut rendering_settings = RenderingSettings {
         coloring_mode: graphics::ColoringMode::KineticEnergy,
@@ -77,11 +53,6 @@ pub fn run_with_gui(mut scene: Scene) {
         zoom: 0.55,
         camera_position: Vec2::new(0.0, 0.0),
     };
-
-    let mut connections_structure = simulation::general::calculate_connections_structure(&scene.connections, &scene.nodes);
-    let mut grid = simulation::general::Grid::new(&scene.nodes, simulation_settings.cell_size);
-    // let mut collisions_structure = simulation::general::calculate_collisions_structure_with_grid(&scene.nodes, &grid);
-    let mut collisions_structure = simulation::general::calculate_collisions_structure_simple(&scene.nodes);
 
     let initial_window_width: u32 = 1280;
     let initial_window_height: u32 = 720;
@@ -108,23 +79,9 @@ pub fn run_with_gui(mut scene: Scene) {
         csv::Writer::from_path(log_path).unwrap()
     };
 
-    let mut total_symulation_time: f32 = 0.0;
     let mut current_log_dt = 0.0;
     let mut current_fps: u32 = 0;
     let mut fps_counter: u32 = 0;
-
-    #[cfg(feature = "opencl3")]
-    let mut opencl_simulation_engine =  {
-        let mut engine = simulation::gpu::gpu::SimulationEngine::new();
-        engine.update_node_buffer(&scene.nodes);
-        engine.update_connection_buffer(&connections_structure);
-        engine.update_collision_buffer(&collisions_structure);
-        engine
-    };
-
-    // scene backup
-    let mut scene_backup = scene.clone();
-    let mut current_backup_dt = 0.0;
 
     let mut now = std::time::Instant::now();
     let mut redraw_clousure = move |display: &glium::Display,
@@ -134,131 +91,14 @@ pub fn run_with_gui(mut scene: Scene) {
                                     simulation_settings: &mut SimulationSettings| {
         
         //? simulation calculations
-        {
-            unsafe {
-                static mut LAST_ITERATION_USE_GRID: bool = USE_GRID;
-                if simulation_settings.use_grid != LAST_ITERATION_USE_GRID && simulation_settings.use_grid == false {
-                    collisions_structure = simulation::general::calculate_collisions_structure_simple(&scene.nodes);
-                }
-                LAST_ITERATION_USE_GRID = simulation_settings.use_grid;
-            }
+        simulation_manager.settings = simulation_settings.clone();
+        simulation_manager.update();
 
-            // check connection breaks
-            if simulation::general::handle_connection_break(&mut scene.nodes, &mut scene.connections) {
-                connections_structure = simulation::general::calculate_connections_structure(&scene.connections, &scene.nodes);
-                #[cfg(feature = "opencl3")]
-                if simulation_settings.engine == SimulationEngine::OpenCl {
-                    opencl_simulation_engine.update_connection_buffer(&connections_structure);
-                }
-
-                if !simulation_settings.use_grid {
-                    collisions_structure = simulation::general::calculate_collisions_structure_simple(&scene.nodes);
-                    #[cfg(feature = "opencl3")]
-                    if simulation_settings.engine == SimulationEngine::OpenCl {
-                        opencl_simulation_engine.update_collision_buffer(&collisions_structure);
-                    }
-                }
-            }
-
-            if simulation_settings.use_grid {
-                grid = simulation::general::Grid::new(&scene.nodes, simulation_settings.cell_size);
-                collisions_structure = simulation::general::calculate_collisions_structure_with_grid(&scene.nodes, &grid);
-                #[cfg(feature = "opencl3")]
-                if simulation_settings.engine == SimulationEngine::OpenCl {
-                    opencl_simulation_engine.update_collision_buffer(&collisions_structure);
-                }
-            }
-    
-            match simulation_settings.engine {
-                SimulationEngine::Cpu => {
-                    for _i in 0..simulation_settings.steps_per_frame {
-                        simulation::cpu::simulate_single_thread_cpu(
-                            simulation_settings.dt,
-                            &mut scene,
-                            &collisions_structure
-                        );
-                    }
-                }
-                SimulationEngine::CpuMultithread => {
-                    for _i in 0..simulation_settings.steps_per_frame {
-                        simulation::cpu::simulate_multi_thread_cpu(
-                            simulation_settings.dt,
-                            &mut scene,
-                            &connections_structure,
-                            &collisions_structure
-                        );
-                    }
-                }
-                SimulationEngine::CpuMultithreadSingleKernel => {
-                    for _i in 0..simulation_settings.steps_per_frame {
-                        simulation::cpu::simulate_multi_thread_cpu_enchanced(
-                            simulation_settings.dt,
-                            &mut scene,
-                            &connections_structure,
-                            &collisions_structure
-                        );
-                    }
-                }
-                #[cfg(feature = "opencl3")]
-                SimulationEngine::OpenCl => {
-                    for _i in 0..simulation_settings.steps_per_frame {
-                        opencl_simulation_engine.simulate_opencl(
-                            simulation_settings.dt,
-                            &mut scene,
-                        );
-                    }
-                }
-                _ => {}
-            }
-        };
-        let last_frame_symulation_time = simulation_settings.dt * simulation_settings.steps_per_frame as f32;
-
-        //? verify if simulation isn't broken
-        if simulation_settings.use_backup {
-            current_backup_dt += last_frame_symulation_time;
-            if current_backup_dt > simulation_settings.backup_interval {
-                current_backup_dt = 0.0;
-
-                let mut broken = false;
-
-                for node in &scene.nodes {
-                    if !node.position.x.is_finite() || !node.position.y.is_finite() {
-                        broken = true;
-                        break;
-                    }
-                }
-
-                if broken {
-                    println!("Error detected, restoring scene");
-                    scene = scene_backup.clone();
-                    connections_structure = simulation::general::calculate_connections_structure(&scene.connections, &scene.nodes);
-                    grid = simulation::general::Grid::new(&scene.nodes, simulation_settings.cell_size);
-                    collisions_structure = simulation::general::calculate_collisions_structure_simple(&scene.nodes);
-                    simulation_settings.dt = simulation_settings.dt * 0.5;
-                    #[cfg(feature = "opencl3")]
-                    if simulation_settings.engine == SimulationEngine::OpenCl {
-                        opencl_simulation_engine.update_connection_buffer(&connections_structure);
-                        opencl_simulation_engine.update_collision_buffer(&collisions_structure);
-                    }
-                }
-                else {
-                    scene_backup = scene.clone();
-                    if simulation_settings.use_auto_dt {
-                        simulation_settings.dt *= simulation_settings.auto_dt_factor;
-                        if simulation_settings.dt > MAX_DT {
-                            simulation_settings.dt = MAX_DT;
-                        }
-                    }
-                }
-            }
-
-        }                               
+        //? verify if simulation isn't broken                           
         
 
         //? logging and analitics
         {
-            total_symulation_time += last_frame_symulation_time;
-    
             fps_counter += 1;
             {
                 let update_every_ms: u32 = 500;
@@ -269,18 +109,25 @@ pub fn run_with_gui(mut scene: Scene) {
                 }
             }
     
-            current_log_dt += last_frame_symulation_time;
+            current_log_dt += simulation_manager.last_step_dt();
             if simulation_settings.log_to_csv {
                 if current_log_dt > simulation_settings.log_interval {
                     
                     let (kinetic, gravity, lennjon, wallrep, objrepu) =
-                        simulation::energy::calculate_total_energy(&scene);
+                        simulation::energy::calculate_total_energy(&simulation_manager.scene);
     
-                    println!("{:.2}\t{:.2}\t{:.2}\t{:.2}\t{:.2}\t{:.2}", total_symulation_time, kinetic, gravity, lennjon, wallrep, objrepu);
+                    println!("{:.2}\t{:.2}\t{:.2}\t{:.2}\t{:.2}\t{:.2}", 
+                        simulation_manager.total_simulation_time, 
+                        kinetic, 
+                        gravity, 
+                        lennjon, 
+                        wallrep, 
+                        objrepu
+                    );
 
                     csv_writer
                         .write_record(&[
-                            total_symulation_time.to_string(),
+                            simulation_manager.total_simulation_time.to_string(),
                             (current_fps * simulation_settings.steps_per_frame).to_string(),
                             kinetic.to_string(),
                             gravity.to_string(),
@@ -308,7 +155,13 @@ pub fn run_with_gui(mut scene: Scene) {
             target.clear_color_and_depth((1.0, 1.0, 1.0, 1.0), 1.0);
             
             // draw scene
-            scene_renderer.render(&display, &mut target, &scene, &grid, &rendering_settings, &simulation_settings, screen_ratio, &connections_structure);
+            scene_renderer.render(
+                &display, 
+                &mut target, 
+                &rendering_settings,
+                screen_ratio,
+                &simulation_manager,
+            );
 
             // draw egui
             if rendering_settings.gui_active {
@@ -473,7 +326,7 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
         ui.label("dt");
         ui.add(egui::Slider::new(
             &mut simulation_settings.dt,
-            RangeInclusive::new(0.0, MAX_DT),
+            RangeInclusive::new(0.0, simulation::manager::MAX_DT),
         ));
         
         ui.separator();
@@ -487,14 +340,14 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
         ui.label("Simulation Engine");
         ui.selectable_value(
             &mut simulation_settings.engine,
-            SimulationEngine::None,
+            SimulationEngineEnum::None,
             "Stop simulation",
         );
         
         ui.label("CPU");
         ui.selectable_value(
             &mut simulation_settings.engine,
-            SimulationEngine::Cpu,
+            SimulationEngineEnum::Cpu,
             "Single threaded",
         );
 
@@ -502,12 +355,12 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
         ui.horizontal(|ui| {
             ui.selectable_value(
                 &mut simulation_settings.engine,
-                SimulationEngine::CpuMultithread,
+                SimulationEngineEnum::CpuMultithread,
                 "Multiple kernels",
             );
             ui.selectable_value(
                 &mut simulation_settings.engine,
-                SimulationEngine::CpuMultithreadSingleKernel,
+                SimulationEngineEnum::CpuMultithreadSingleKernel,
                 "Single kernel",
             );
         });
@@ -515,7 +368,7 @@ fn draw_simulation_settings(egui: &mut egui_glium::EguiGlium, current_fps: u32, 
         {
             ui.separator();
             ui.label("GPU");
-            ui.selectable_value(&mut simulation_settings.engine, SimulationEngine::OpenCl, "OpenCL");
+            ui.selectable_value(&mut simulation_settings.engine, SimulationEngineEnum::OpenCl, "OpenCL");
         }
 
         ui.separator();

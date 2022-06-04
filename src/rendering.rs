@@ -1,8 +1,7 @@
 use glium::{VertexBuffer, IndexBuffer, PolygonMode, Surface};
 use crate::graphics::{self, Vertex};
-use crate::scene::Scene;
-use crate::simulation::general::Grid;
-use crate::window::{RenderingSettings, SimulationSettings};
+use crate::simulation::manager::SimulationManager;
+use crate::window::{RenderingSettings};
 
 pub struct SceneRenderer {
     node_vertex_buffer: VertexBuffer<graphics::Vertex>,
@@ -26,9 +25,7 @@ impl SceneRenderer {
         }
     }
 
-    pub fn render(&self, display: &glium::Display, target: &mut glium::Frame, scene: &Scene, grid: &Grid, settings: &RenderingSettings, simulation_settings: &SimulationSettings, screen_ratio: f32, connections_structure: &Vec<Vec<(usize, f32, f32)>>) {
-        
-        let last_frame_simulation_time = simulation_settings.dt * simulation_settings.steps_per_frame as f32;
+    pub fn render(&self, display: &glium::Display, target: &mut glium::Frame, settings: &RenderingSettings, screen_ratio: f32, simulation_manager: &SimulationManager) {
         
         // draw floor
         {
@@ -72,7 +69,7 @@ impl SceneRenderer {
                 ..Default::default()
             };
 
-            let grid_verticies = graphics::draw_grid(&grid);
+            let grid_verticies = graphics::draw_grid(&simulation_manager.grid);
             let grid_vertex_buffer = glium::VertexBuffer::immutable(display, &grid_verticies).unwrap();
             target.draw(
                 &grid_vertex_buffer, 
@@ -112,8 +109,8 @@ impl SceneRenderer {
             let connections_vertex_buffer = glium::VertexBuffer::dynamic(
                 display,
                 &graphics::draw_connections_2(
-                    &scene.connections,
-                    &scene.nodes,
+                    &simulation_manager.scene.connections,
+                    &simulation_manager.scene.nodes,
                 ),
             )
             .unwrap();
@@ -137,10 +134,10 @@ impl SceneRenderer {
             let instance_buffer = glium::VertexBuffer::dynamic(
                 display,
                 &graphics::draw_disks(
-                    &scene,
-                    &connections_structure,
+                    &simulation_manager.scene,
+                    &simulation_manager.connections_structure,
                     &settings.coloring_mode,
-                    last_frame_simulation_time,
+                    simulation_manager.last_step_dt(),
                 ),
             )
             .unwrap();
