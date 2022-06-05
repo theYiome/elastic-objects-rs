@@ -91,11 +91,12 @@ pub fn run_with_gui(scene: Scene) {
                                     simulation_settings: &mut SimulationSettings| {
         
         //? simulation calculations
+        if current_fps < 5 {
+            simulation_manager.restore_if_broken();
+        }
+
         simulation_manager.settings = simulation_settings.clone();
         simulation_manager.update();
-
-        //? verify if simulation isn't broken                           
-        
 
         //? logging and analitics
         {

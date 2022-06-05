@@ -140,41 +140,6 @@
     w przeciwieństwie do technologii \emph{Cuda}, obsługującej jedynie procesory graficzne \emph{Nvidia}.
     
     % --------------------------------------------------------------------------------------------------------------
-    \section{Architektura projektu}
-    Projekt posiada dwa pliki wykonywalne, jeden służy jako pomoc do generowania scen, które zapisywane są 
-    do plików. Drugi plik jest wykonywalny po podaniu ścieżki do pliku zawierającego scenę wyświetla ją, 
-    udostępnia interfejs i pozwala na wykonywanie i monitorowanie symulacji.
-
-    \subsection{Struktura repozytorium}
-    \dirtree{%
-        .1 elastic-objects-rs.
-        .2 data.
-        .2 doc.
-        .3 code.
-        .3 images.
-        .2 glsl.
-        .2 scenes.
-        .2 src.
-        .3 bin.
-        .3 kernels.
-        .3 scene.
-        .3 simulation.
-    }
-
-    Folder \emph{src} zawiera główny kod źródłowy programu. 
-    
-    Znajduje się w nim folder \emph{bin} zawierający pliki wykonywalne, jeden służący do generowania scen, drugi do wykonywania symulacji. 
-    
-    Wygenerowane stany symulacji domyślnie zapisywane i czytane są z folderu \emph{scenes}. 
-    
-    W folderze \emph{kernels} znajduje się kod wykorzystywany przez \emph{OpenCL} do wykonywania symulacji na procesorze graficznym. 
-    
-    Pliki generowane przez symulację zapisywane są w folderze \emph{data}. Są to logi zawierające informacje o stanie energii
-    symulacji w danych chwilach czasowych.
-    
-    W folderze \emph{glsl} znajdują się kod shaderów wykorzystywanych do rysowania stanu symulacji.
-    
-    % --------------------------------------------------------------------------------------------------------------
     \section{Wielowątkowość}
     (OpenMP) Wątki charakteryzują się współdzieleniem pamięci operacyjnej, co może prowadzić to problemów, takich jak nadpisywanie.
     (MPI) Procesy posiadają swoją oddzielną pamięć, dlatego synchronizacja przebiega w inny sposób, taki jak message passing.
@@ -486,6 +451,48 @@
     kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość np. 1.1 za 
     każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd.
 
+    % --------------------------------------------------------------------------------------------------------------
+    \newpage
+    \section{Struktura projektu}
+    Projekt posiada dwa pliki wykonywalne, jeden służy jako pomoc do generowania scen, które zapisywane są 
+    do plików. Drugi plik jest wykonywalny po podaniu ścieżki do pliku zawierającego scenę wyświetla ją, 
+    udostępnia interfejs i pozwala na wykonywanie i monitorowanie symulacji. Struktura repozytorium
+    prezentuje się następująco: \\
+
+    \dirtree{%
+        .1 elastic-objects-rs.
+        .2 data.
+        .2 doc.
+        .3 code.
+        .3 images.
+        .2 glsl.
+        .2 scenes.
+        .2 src.
+        .3 bin.
+        .3 kernels.
+        .3 scene.
+        .3 simulation.
+    }
+
+    \begin{enumerate}
+        \item Folder \emph{src} zawiera główny kod źródłowy programu.
+        
+        \item Znajduje się w nim folder \emph{bin} zawierający pliki wykonywalne, 
+        jeden służący do generowania scen, drugi do wykonywania symulacji. 
+
+        \item Wygenerowane stany symulacji domyślnie zapisywane i czytane są z folderu \emph{scenes}.
+        
+        \item W folderze \emph{kernels} znajduje się kod wykorzystywany przez \emph{OpenCL} do 
+        wykonywania symulacji na procesorze graficznym.
+        
+        \item Pliki generowane przez symulację zapisywane są w folderze \emph{data}. 
+        Są to logi zawierające informacje o stanie energii symulacji w danych chwilach czasowych.
+
+        \item W folderze \emph{glsl} znajdują się kod shaderów wykorzystywanych do rysowania stanu symulacji.
+    \end{enumerate}
+
+    % --------------------------------------------------------------------------------------------------------------
+    \newpage
     \section{Widok aplikacji}
     Obrazy przedstawiające aplikacją. Opis funkcji związanych z wyświetlaniem. 
     Dostępne kontrolki, skróty klawiszowe, obsługa kamery.
@@ -513,7 +520,12 @@
         \caption{Widok paneli ustawień dostępnych w aplikacji}
     \end{figure}
 
+    \newpage
+    \subsection{Tryby rysowania symulacji}
+    Funkcja rysowania \emph{połączeń węzłowych}, \emph{węzłów} i \emph{siatki obliczeniowej} domyślnie 
+    jest włączone ale można w każdej chwili wyłączyć każdą z nich korzystając z panelu ustawień rysowania.
     Węzły można kolorować na następujące sposoby:
+
     \begin{enumerate}
         \item \emph{Energia kinetyczna} - kolorujemy węzły na podstawie ich energii kinetycznej 
         gdzie kolor czarny to zerowa energia kinetyczna, wraz z jej zwiększaniem węzeł staje się czerwony.
@@ -529,8 +541,31 @@
         Skala kolorów jest taka sama jak w przypadku temperatury.
     \end{enumerate}
 
-    Funkcja rysowania \emph{połączeń węzłowych}, \emph{węzłów} i \emph{siatki obliczeniowej} domyślnie 
-    jest włączone ale można w każdej chwili wyłączyć każdą z nich korzystając z panelu ustawień rysowania.
+    \begin{figure}[h]
+
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm]{app_kinetic_view.png} 
+            \caption{Energia kinetyczna}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm]{app_boundary_view.png}
+            \caption{Węzły brzegowe}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm]{app_temperature_view.png}
+            \caption{Temperatura}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm]{app_pressure_view.png}
+            \caption{Ciśnienie}
+        \end{subfigure}
+        
+        \caption{Porównanie widoków tej samej sceny w kilku trybach kolorowania węzłów}
+    \end{figure}
 
 \chapter{Testy}
     \section{Test poprawność działania algorytmów}
@@ -1023,11 +1058,10 @@
     \section{Napotkane problemy}
     Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
     było zbyt wolne. Następnie przy użyciu instanced rendering problem ten został zlikwidowany po 
-    stronie interfejsu graficznego.
-    
-    Następnym problemem była wydajność symulacji,
-    
-    Wielowątkowość jest trudna do osiągnięcia, wymaga znacznej modyfikacji algorytmów.
+    stronie interfejsu graficznego. Wydajność symulacji, jest dużym problem gdy ilość obiektów jest znacząca. 
+    Zrównoleglenie algorytmów jest trudne do osiągnięcia, wymaga znacznej modyfikacji programu oraz często 
+    wymaga pewnych ustępstw w celu zniwelowania niezdefiniowanego zachowania wynikającego z wyścigów 
+    (\emph{race conditions}) dostępu do pamięci.
 
     \section{Wnioski}
     Zastosowanie metoda dynamiki molekularnej daje bardzo interesujące 

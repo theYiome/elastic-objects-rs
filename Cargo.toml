@@ -39,3 +39,8 @@ path = "src/bin/generate_scenes.rs"
 [[bin]]
 name = "blank"
 path = "src/bin/blank.rs"
+
+
+[[bin]]
+name = "performance_test"
+path = "src/bin/performance_test.rs"

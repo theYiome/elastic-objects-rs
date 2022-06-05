@@ -160,41 +160,44 @@ impl SimulationManager {
             self.current_backup_dt += self.last_step_dt();
             if self.current_backup_dt > self.settings.backup_interval {
                 self.current_backup_dt = 0.0;
-
-                let mut broken = false;
-
-                for node in &self.scene.nodes {
-                    if !node.position.x.is_finite() || !node.position.y.is_finite() {
-                        broken = true;
-                        break;
-                    }
-                }
-
-                if broken {
-                    println!("Error detected, restoring scene");
-                    self.scene = self.scene_backup.clone();
-                    self.connections_structure = simulation::general::calculate_connections_structure(&self.scene.connections, &self.scene.nodes);
-                    self.grid = simulation::general::Grid::new(&self.scene.nodes, self.settings.cell_size);
-                    self.collisions_structure = simulation::general::calculate_collisions_structure_simple(&self.scene.nodes);
-                    self.settings.dt = self.settings.dt * 0.5;
-                    #[cfg(feature = "opencl3")]
-                    if self.settings.engine == SimulationEngineEnum::OpenCl {
-                        self.opencl_simulation_engine.update_connection_buffer(&self.connections_structure);
-                        self.opencl_simulation_engine.update_collision_buffer(&self.collisions_structure);
-                    }
-                }
-                else {
-                    self.scene_backup = self.scene.clone();
-                    if self.settings.use_auto_dt {
-                        self.settings.dt *= self.settings.auto_dt_factor;
-                        if self.settings.dt > MAX_DT {
-                            self.settings.dt = MAX_DT;
-                        }
-                    }
-                }
+                self.restore_if_broken();
             }
 
         }    
+    }
+
+    pub fn restore_if_broken(&mut self) {
+        let mut broken = false;
+
+        for node in &self.scene.nodes {
+            if !node.position.x.is_finite() || !node.position.y.is_finite() {
+                broken = true;
+                break;
+            }
+        }
+
+        if broken {
+            println!("Error detected, restoring scene");
+            self.scene = self.scene_backup.clone();
+            self.connections_structure = simulation::general::calculate_connections_structure(&self.scene.connections, &self.scene.nodes);
+            self.grid = simulation::general::Grid::new(&self.scene.nodes, self.settings.cell_size);
+            self.collisions_structure = simulation::general::calculate_collisions_structure_simple(&self.scene.nodes);
+            self.settings.dt *= 0.5;
+            #[cfg(feature = "opencl3")]
+            if self.settings.engine == SimulationEngineEnum::OpenCl {
+                self.opencl_simulation_engine.update_connection_buffer(&self.connections_structure);
+                self.opencl_simulation_engine.update_collision_buffer(&self.collisions_structure);
+            }
+        }
+        else {
+            self.scene_backup = self.scene.clone();
+            if self.settings.use_auto_dt {
+                self.settings.dt *= self.settings.auto_dt_factor;
+                if self.settings.dt > MAX_DT {
+                    self.settings.dt = MAX_DT;
+                }
+            }
+        }
     }
 
     pub fn last_step_dt(&self) -> f32 {
