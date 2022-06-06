@@ -166,7 +166,7 @@ impl SimulationManager {
         }    
     }
 
-    pub fn restore_if_broken(&mut self) {
+    pub fn is_broken(&self) -> bool {
         let mut broken = false;
 
         for node in &self.scene.nodes {
@@ -176,7 +176,11 @@ impl SimulationManager {
             }
         }
 
-        if broken {
+        broken
+    }
+
+    pub fn restore_if_broken(&mut self) {
+        if self.is_broken() {
             println!("Error detected, restoring scene");
             self.scene = self.scene_backup.clone();
             self.connections_structure = simulation::general::calculate_connections_structure(&self.scene.connections, &self.scene.nodes);

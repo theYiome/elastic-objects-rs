@@ -4,7 +4,7 @@ use mylib::{simulation::{manager::{SimulationSettings, SimulationEngineEnum}, se
 const SIMULATION_DT: f32 = 0.00002;
 const SIMULATION_DURATION: f32 = 0.5;
 
-const OBJECT_SIZES: [usize; 10] = [5, 10, 15, 25, 40, 50, 60, 75, 90, 100];
+const OBJECT_SIZES: [usize; 14] = [5, 10, 15, 25, 40, 50, 60, 75, 90, 100, 150, 200, 250, 300];
 
 fn main() {
 
@@ -23,9 +23,9 @@ fn main() {
         let simulation_settings = SimulationSettings {
             dt: SIMULATION_DT,
             steps_per_frame: 5,
-            engine: SimulationEngineEnum::Cpu,
+            engine: SimulationEngineEnum::CpuMultithreadSingleKernel,
             use_grid: true,
-            cell_size: scene.object_repulsion_dx * 2.5,
+            cell_size: scene.object_repulsion_dx * 2.0,
             log_to_csv: false,
             log_interval: 0.05,
             use_backup: false,
@@ -44,9 +44,13 @@ fn main() {
             simulation_manager.update();
         }
 
+        if simulation_manager.is_broken() {
+            println!("Error: {node_count}");
+        }
+
         let elapsed_ms = timer_start.elapsed().as_millis();
         let iterations_per_second: usize = ((iterations as f32) / (elapsed_ms as f32) * 1000.0) as usize;
-        println!("{}\t{}\t{}\t{:.0}", object_size, node_count, elapsed_ms, iterations_per_second);
+        println!("{object_size}\t{node_count}\t{elapsed_ms}\t{:.0}", iterations_per_second);
 
 
         csv_writer
