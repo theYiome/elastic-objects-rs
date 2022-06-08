@@ -445,7 +445,7 @@
     Gdy takie wartości się pojawią symulacja wraca do ostatniego zapisanego stanu w którym 
     te wartości nie występowały. Co pewien czas tworzy nową kopię zapasową.
 
-    \subsubsection{Automatyczny dobór kroku czasowego}
+    \subsection{Automatyczny dobór kroku czasowego}
     Gdy korekta błędów jest włączona za każdym razem gdy zostanie wykryty błąd i powrót do poprzedniego stanu
     krok czasowy zostanie zmniejszony o połowę. Jeżeli użytkownik włączy funkcję automatycznego zwiększania
     kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość np. 1.1 za 
@@ -657,7 +657,8 @@
     Test wydajności został wykonany na procesorze AMD Ryzen 5 5600X, 
     jest to jednowątkowa wersja algorytmu działająca na CPU.
     Ilość węzłów w bokach obiektów ustawiana jest kolejno na: 
-    3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60.
+    3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60. Parametry symulacji dobrane są 
+    w taki sposób, aby obiekty nie uległy uszkodzeniu/rozerwaniu.
     
     \subsection{Wyniki}
     Wyniki z przeprowadzonego testu prezentują się następująco:
@@ -720,25 +721,95 @@
     nieco ponad stukrotnie. Wynika to z faktu, że optymalizacja ta obejmuje jedynie etap obliczania
     kolizji między różnymi obiektami i nie wpływa na obliczanie interakcji w tym samym obiekcie,
     obliczanie wpływu pola grawitacyjnego czy obliczanie wpływu sił oporu.
+    
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Testy wydajności algorytmów z rozrywaniem obiektów}
+    \begin{wrapfigure}{r}{0.4\textwidth}
+        \includegraphics[width=0.9\linewidth]{app_boundary_performance_10x10_01.png} 
+        \caption{Stan początkowy dla sceny z obiektami $10\times10$}
+        \includegraphics[width=0.9\linewidth]{app_boundary_performance_10x10_02.png} 
+        \caption{Zderzenie i rozerwaniu obiektów $10\times10$}
+    \end{wrapfigure}
+    \subsection{Opis testu}
+    Scena składa się z trzech obiektów zawieszonych nad podłożem na różnych wysokościach. Siła grawitacji 
+    powoduje swobodny spadek tych obiektów a następnie zderzanie się i ich rozrywanie. Liczba węzłów jest
+    stopniowo zwiększana poprzez zwiększanie gęstości każdego z trzech obiektów. W układzie nie
+    występują żadne siły oporu ruchu.\\
+    
+    Ilość węzłów w boku 
+    każdego z tych obiektów wynosi kolejno 5, 10, 15, 25, 40, 50, 60, 75, 90, 100. Dla 
+    testów najwydajnejszych algorytmów dla CPU i GPU zostały wykonane dodatkowe testy z 
+    bardzo gęstymi obiektami, liczba węzłów w bokach tych obiektów wynosi kolejno 150, 200, 250, 300.
+    Przeprowadzenie rozszerzonych testów dla mało wydajnych algorytmów wiązała zajęła by wiele godzin i
+    nie dostarczyła by nowych informacji, dlatego nie zostały one wykonane. \\
+    
+    Krok czasowy symulacji wynosi
+    $2 \times 10^{-5}$ sekundy a czas trwania symulacji to $0.5$ sekundy, co 
+    daje $25000$ kroków symulacji dla każdego przypadku. \\
+
+    \clearpage
+    % --------------------------------------------------------------------------------------------------------------
+    \subsection{Test wydajności z węzłami brzegowymi}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=16cm]{performance_cpu_boundary_noboundary.png}
+        \caption{
+            Liczba iteracji na sekundę w zależności od ilości węzłów
+        }
+    \end{figure}
+    Porównanie wydajności obliczania kolizji pomiędzy wszystkimi węzłami należącymi do różnych obiektów
+    a jedynie węzłami brzegowymi danych obiektów.
 
     % --------------------------------------------------------------------------------------------------------------
-    \section{Porównanie wydajności na CPU}
-    Porównanie wersji algorytmu na CPU w postaci jednordzeniowej, zrównoleglonej z wieloma funkcjami 
-    dzielącymi na wątki i jedną funkcją dzielącą na wątki.
-    
-    % --------------------------------------------------------------------------------------------------------------
-    \section{Test wydajności z siatką sąsiedztwa}
+    \subsection{Test wydajności z siatką sąsiedztwa}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=16cm]{performance_cpu_grid_nogrid.png}
+        \caption{
+            Liczba iteracji na sekundę w zależności od ilości węzłów
+        }
+    \end{figure}
     Wykres prezentujący wydajność dla najlepszej wersji wielordzeniowej na CPU dla zwiększającej się liczby węzłów
     z włączoną siatką sąsiedztwa oraz z wyłączoną siatką sąsiedztwa.
-    
+
     % --------------------------------------------------------------------------------------------------------------
-    \section{Porównanie wydajności wersji CPU i GPU}
+    \subsection{Porównanie wydajności na CPU}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=16cm]{performance_cpu_best_worst.png}
+        \caption{
+            Liczba iteracji na sekundę w zależności od ilości węzłów
+        }
+    \end{figure}
+    Porównanie wersji algorytmu na CPU w postaci jednordzeniowej, zrównoleglonej z wieloma funkcjami 
+    dzielącymi na wątki i jedną funkcją dzielącą na wątki.
+
+    % --------------------------------------------------------------------------------------------------------------
+    \subsection{Porównanie wydajności wersji CPU i GPU}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=16cm]{performance_best_cpu_gpu.png}
+        \caption{
+            Liczba iteracji na sekundę w zależności od ilości węzłów
+        }
+    \end{figure}
     Wykresy dla najlepszej wersji CPU i GPU z włączoną siatką sąsiedztwa.
 
     % --------------------------------------------------------------------------------------------------------------
-    \section{Test rozrywania dwóch obiektów}
+    \subsection{Różnica pomiędzy najlepszą i najgorszą wydajnością}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=16cm]{performance_all_best_worst.png}
+        \caption{
+            Liczba iteracji na sekundę w zależności od ilości węzłów
+        }
+    \end{figure}
+    Wykresy dla najlepszej wersji CPU i GPU z włączoną siatką sąsiedztwa.
+
+    % --------------------------------------------------------------------------------------------------------------
+    \subsection{Test rozrywania dwóch obiektów}
     \subsection{Opis testu}
-    Scena składa się z dwóch nieruchomych obiektów gdzie jeden o wymiarach $12 \times 24$ zostaje umieszczony nieruchomo 
+    Scena składa się z dwóch nieruchomych obiektów, gdzie jeden o wymiarach $12 \times 24$ zostaje umieszczony nieruchomo 
     przy podłożu a drugi o wymiarach $2 \times 2$ znajduje się nad obiektem pierwszym. Siła grawitacji jest aktywna co 
     sprawia że obiekt drugi zaczyna spadać w kierunku obiektu pierwszego i po chwili następuje zderzenie. \\ 
 
