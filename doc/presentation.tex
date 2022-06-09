@@ -11,7 +11,7 @@
 
 \title{Modelowanie elastycznych i nieelastycznych zderzeń obiektów 
 metodą dynamiki molekularnej na potrzeby animacji komputerowych}
-    \subtitle{ Omówienie tematu pracy magisterskiej }
+    \subtitle{Prezentacja wybranych elementów}
     \author[Kamil Pasterczyk]{Kamil Pasterczyk \and \\ Promotor: dr hab. inż. Tomasz Chwiej}
     \institute[AGH]{AGH University of Science and Technology}
 \date{\today}
@@ -20,46 +20,10 @@ metodą dynamiki molekularnej na potrzeby animacji komputerowych}
 \begin{document}
 
 \section{Praca magisterska}
-\subsection{Omówienie tematu}
+\subsection{Prezentacja wybranych elementów}
 
 \begin{frame}
     \titlepage
-\end{frame}
-
-\begin{frame}
-    \frametitle{Cele}
-
-    \begin{block}{MD}
-        Jedną z popularnych metod wykorzystywanych w modelowaniu zderzeń obiektów jest
-        metoda dynamiki molekularnej. Pierwotnie stosowana do opisu własności gazów i
-        cieczy, pozwala również modelować obiekty makroskopowe zachowujące kształt
-        oraz modelować ich rozrywanie w trakcie zderzeń z innymi obiektami.
-    \end{block}
-
-    W pracy planowane jest opracowanie algorytmów numerycznych do 
-    symulacji zderzeń obiektów z możliwością ich rozrywania.
-    Implementacja musi być na tyle wydajna aby możliwa była wizualizacja 
-     w czasie rzeczywistym jako animacje komputerowe.
-\end{frame}
-
-\begin{frame}
-    \frametitle{Dlaczego ten temat?}
-    \begin{itemize}
-        \item Rozinięcie tematu pracy inżynierskiej, nowe możliwości
-        \item Przyśpieszenie poprzedniego projektu, optymalizacje
-        \item Możliwość rozwinięcia wiedzy odnośnie interesujących mnie technologii
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Wybrane technologie}
-    \begin{itemize}
-        \item Rust - wybierany jako \emph{most loved programming language} w ankiecie dla programistów
-              Stack Overflow w latach 2016, 2017, 2018, 2019, 2020, 2021.
-        \item egui - to prosta, szybka i przenośna biblioteka GUI \emph{immediate mode} dla Rust, odpowiednik biblioteki ImGui
-        \item OpenGL 4.6 - nie rozwijany ale za to jest nieco przystępniejszy niż Vulkan i bardziej stabilny niż WebGPU.
-        \item CUDA, OpenCL - wykorzystywane do przyśpieszenia obliczeń poprzez wykonywania ich części na karcie graficznej
-    \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -161,46 +125,180 @@ metodą dynamiki molekularnej na potrzeby animacji komputerowych}
 \end{frame}
 
 
+
 \begin{frame}
-    \frametitle{Optymalizacje i zrównoleglenie}
+    \frametitle{Test poprawności - zachowanie energii}
 
-    Obliczanie kolizji każdy węzłem z każdym węzłem wymaga znacznej ilości czasu - złożoność $O(n^2)$.
-    Jednym z głównych celów pracy jest optymalizacja np. sprawdzanie kolizji jedynie węzłów brzegowych.
-    Istotne jest również zrównoleglenie procesu obliczania kolizji.
-    Jaki będzie wpływ tych optymalizacji na dokładność?
+    Dwa obiekty o rozmiarach $8 \times 8$ i $6 \times 4$ znajdują się w polu grawitacyjnym, 
+    nie występują siły oporu/tarcia.
 
-    \begin{block}{Teoria chaosu}
-        Efekt motyla przedstawia, w jaki sposób niewielka zmiana w jednym stanie
-        deterministycznego układu może skutkować dużymi różnicami w późniejszym stanie.
-        Znana anegdota na temat tego efektu mówi że motyl trzepoczący skrzydłami w Brazylii może wywołać tornado w Teksasie.
-    \end{block}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=8.8cm]{energy_test_0to2s.png}
+        \caption{Zmiana energii w czasie dla układu w ciągu pierwszych 1.2 sekund}
+    \end{figure}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Tryby kolorowania węzłów}
+
+    \begin{figure}[h]
+
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.5cm]{app_kinetic_view.png} 
+            \caption{Energia kinetyczna}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.5cm]{app_boundary_view.png}
+            \caption{Węzły brzegowe}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.5cm]{app_temperature_view.png}
+            \caption{Temperatura}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.5cm]{app_pressure_view.png}
+            \caption{Ciśnienie}
+        \end{subfigure}
+        
+        \caption{Porównanie widoków tej samej sceny w kilku trybach kolorowania węzłów}
+    \end{figure}
+
 \end{frame}
 
 \begin{frame}
-    \frametitle{Potencjalne problemy}
+    \frametitle{Wizualizacja ciśnienia - przypadek statyczny}
 
-    \begin{itemize}
-        \item Do symulacji w czasie rzeczywistym potrzebna jest szybka metoda integracji, jak na przykład algorytm prędkościowy Verleta.
-              Algortym ten jest jednak mniej dokładny, możliwe anomalie w symulacji.
-        \item Potencjał Lennarda Jonesa jest bardzo wrażliwy ze względu na wysokie potęgi, może to prowadzić do
-              niestabilności symulacji dla niektórych kombinacji parametrów (masa, wartości potencjału, odległości, prędkość przy zderzeniu itp.).
-        \item Zbyt duży krok czasowy również może spowodować niestabilność symulacji, jednak zmniejszenie go zwiększa czas wykonywania.
-        \item Koszty zrównoleglenia dla mniejszych układów będą większe niż korzyści,
-              należy zbadać dla jakiej ilości węzłow warto obliczać wielowątkowo.
-    \end{itemize}
+    \begin{figure}[h]
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.5cm]{pressure_01.png} 
+            \caption{Stan początkowy}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.5cm]{pressure_02.png}
+            \caption{Przed zderzeniem}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.5cm]{pressure_03.png}
+            \caption{Zderzenie}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.5cm]{pressure_04.png}
+            \caption{Stan stabilny}
+        \end{subfigure}
+        
+        \caption{Widok ciśnienia w wybranych chwilach czasowych dla obiektu $50 \times 50$}
+    \end{figure}
+
 \end{frame}
 
 \begin{frame}
-    \frametitle{Co jest jeszcze planowane?}
-    \begin{itemize}
-        \item Wizualizacja temperatury
-        \item Wizualizacja ciśnienia
-        \item Testy zachowania energii w układzie bez sił oporu
-        \item Porównanie wydajności wersji jendo- i wielowątkowej
-        \item Inne optymalizacje, ich wpływ na wydajność i dokładność
-    \end{itemize}
+    \frametitle{Zmiana energii układu w czasie - przypadek statyczny}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=10.5cm]{pressure_energy_01}
+        \caption{
+            Zmiana energi układu w czasie dla pierwszych 0.5 sekundy
+        }
+    \end{figure}
 \end{frame}
 
+\begin{frame}
+    \frametitle{Wizualizacja ciśnienia - przypadek dynamiczny}
+
+    \begin{figure}[h]
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.3cm]{pressure02_01} 
+            \caption{Stan początkowy}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.3cm]{pressure02_02}
+            \caption{Przed zderzeniem}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.3cm]{pressure02_03}
+            \caption{Zderzenie}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=2.3cm]{pressure02_04}
+            \caption{Stan stabilny}
+        \end{subfigure}
+        
+        \caption{Widok ciśnienia w wybranych chwilach czasowych dla zderzenia obiektów $50 \times 50$ i $20 \times 20$}
+    \end{figure}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Zmiana energii układu w czasie - przypadek dynamiczny}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=10.5cm]{pressure_energy02_02}
+        \caption{
+            Zmiana energi układu w czasie dla pierwszych 1.6 sekundy
+        }
+    \end{figure}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{Testy wydajności algorytmów z rozrywaniem obiektów}
+    \begin{wrapfigure}{r}{0.3\textwidth}
+        \includegraphics[width=0.9\linewidth]{app_boundary_performance_10x10_02.png} 
+        \caption{Zderzenie i rozerwanie trzech obiektów $10\times10$}
+    \end{wrapfigure}
+    \subsection{Opis testu}
+    Scena składa się z trzech obiektów zawieszonych nad podłożem na różnych wysokościach. Siła grawitacji 
+    powoduje swobodny spadek tych obiektów a następnie zderzanie się i ich rozrywanie. Liczba węzłów jest
+    stopniowo zwiększana poprzez zwiększanie gęstości każdego z trzech obiektów. Ilość węzłów w boku każdego 
+    z tych obiektów wynosi kolejno 5, 10, 15, 25, 40, 50, 60, 75, 90, 100. \\
+    
+    Krok czasowy symulacji wynosi
+    $2 \times 10^{-5}$ sekundy a czas trwania symulacji to $0.5$ sekundy, co 
+    daje $25000$ kroków symulacji dla każdego przypadku. \\
+\end{frame}
+
+
+
+\begin{frame}
+    \frametitle{Porównanie wydajności CPU}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=10.5cm]{performance_all_best_worst.png}
+        \caption{
+            Liczba iteracji na sekundę w zależności od ilości węzłów
+        }
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Porównanie wydajności CPU i GPU}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=10.5cm]{performance_best_cpu_gpu.png}
+        \caption{
+            Liczba iteracji na sekundę w zależności od ilości węzłów
+        }
+    \end{figure}
+\end{frame}
 
 \begin{frame}
     \frametitle{Koniec prezentacji}
