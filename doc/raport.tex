@@ -325,11 +325,16 @@
         temperatura stało się mniejsze niż w otoczeniu obiektu.
     \end{enumerate}
 
-    \subsection{Algorytm obliczania}
+    \subsection{Algorytm obliczania temperatury}
+    \begin{wrapfigure}{R}{0.45\textwidth}
+        \includegraphics[width=0.9\linewidth]{avg.drawio}
+        \caption{Węzły z których liczona jest średnia temperatura}
+    \end{wrapfigure}
+
     $\tau = \Delta t \cdot j$ dla $j = 0, 1, ..., n-1$ gdzie $\tau$ to okres czas w którym uśredniamy wyniki. \\ 
     $t = \Delta t \cdot i$ dla $i = 0, 1, ..., N_{time}$ i $t >> \tau$\\ 
     $t_{max} = \Delta t \cdot N_{time}$ gdzie $t_{max}$ to czas trwania symulacji. \\
-    
+
     Dla każdej cząsteczki tworzymy rejestr w postaci tablicy. 
     Suma średnich energii $E_{kinetyczna}$ obliczana jest w każdej chwili czasowej.
     Aby ustabilizować rezultaty, energia kinetyczna dla węzła będzie obliczana jako 
@@ -338,34 +343,34 @@
     że nie wyjdziemy poza tablicę oraz stare wartości będą nadpisywana na bieżąco. \\
 
     Dodatkowo aby bardziej wygładzić wyniki kolor węzła ostateczna temperatura dla danego węzła 
-    jest równa średniej z temperatur $4$ rzędów najbliższych węzłów.
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=8cm]{avg.drawio}
-        \caption{Węzły z których liczona jest średnia temperatura}
-    \end{figure}
-
-    Obliczanie temperatury przy użyciu twierdzenia o wiriale okazało się być bardziej intuicyjne i
+    jest równa średniej z temperatur czterech rzędów najbliższych węzłów. Obliczanie temperatury przy 
+    użyciu twierdzenia o wiriale okazało się być bardziej intuicyjne i
     wyraźnie łatwiejsza w implementacji, dlatego ta metoda będzie używana w dalszej części pracy.
-
+    
     % --------------------------------------------------------------------------------------------------------------
-    \section{Obliczanie ciśnienia}
+    \section{Obliczanie ciśnienia na węźle}
 
-    \begin{figure}[h]
-        \centering
-        \includegraphics[width=8cm]{pressure_box}
+    \begin{wrapfigure}{l}{0.45\textwidth}
+        \includegraphics[width=0.9\linewidth]{pressure_box}
         \caption{Schemat komory przeznaczonej do obliczania ciśnienia na węźle}
-    \end{figure}
+    \end{wrapfigure}
 
-    Węzeł otaczamy w komorze o boku $\Delta = 2 dx$ gdzie $d_0 > 10 dx$. 
-    Obliczamy pochodną siły jaka oddziaływała by na węzeł gdyby został 
-    on przemieszczony o $dx$ w każdym z czterech kierunków. Pochodna z siły Lennarda-Jonesa:
+    W celu obliczenia ciśnienia działającego na węzeł, zamykamy go w komorze 
+    o boku $\Delta = 2 dx$. Wybór $dx$ pozostawia pewną dowolność jednak powinno być ono małe, najlepiej aby było wyraźnie 
+    mniejsze niż najmniejsza odległość równowagi pomiędzy dwoma połączonymi węzłami, na przykład $d_0 > 10 dx$. 
+    Obliczamy pochodną siły jaka oddziaływała 
+    by na węzeł gdyby został on przemieszczony o $dx$ w każdym z czterech kierunków. 
+    Będziemy w tym celu potrzebować pochodnej z siły Lennarda-Jonesa:
+    \begin{equation}
+        F_{LJ} = 
+        \frac{d}{dl} E_{LJ} = 
+        \frac{d}{dl} V_0 \left[ \left( \frac{\sigma}{l} \right)^{12} - \left( \frac{\sigma}{l} \right)^{6} \right]
+    \end{equation}
     \begin{equation}
         \frac{d}{dl} F_{LJ} = 3\frac{V_0}{(d_0)^2} \left[ -7 \left(\frac{d_0}{l}\right)^{8} + 13 \left(\frac{d_0}{l}\right)^{14} \right]
     \end{equation}
     
-    Zgodnie z definicją ciśnienie na ściankach można opisać wzorem:
+    Wykorzystując powyżej obliczoną pochodną możemy teraz opisać ciśnienie na ściankach za pomocą wzoru:
     \begin{equation}
         P_x (x \pm \frac{\Delta}{2}) = \frac{F_x (x \pm \frac{\Delta}{2})}{\Delta}
     \end{equation}
@@ -383,12 +388,12 @@
         \frac{\Delta}{2} \left[ \frac{\Delta F_x}{\partial x} |_{x + \frac{\Delta}{2}}  -
           \frac{\Delta F_x}{\partial x}|_{x - \frac{\Delta}{2}} \right] + O(\Delta^2)
     \end{equation}
-    Dzielimy równanie przez $\Delta$
+    Dzielimy równanie przez $\Delta$:
     \begin{equation}
         p_x = \frac{\Delta F_x}{\Delta} = \frac{1}{2} 
         \left[ \frac{\partial F_x}{\partial x} |_{x + \frac{\Delta}{2}} - \frac{\partial F_x}{\partial x} |_{x - \frac{\Delta}{2}} \right] + O(\Delta)
     \end{equation}
-    Podobnie liczymy dla kierunku $y$
+    Podobnie liczymy dla kierunku $y$:
     \begin{equation}
         p_y = \frac{\Delta F_y}{\Delta} = \frac{1}{2} 
         \left[ \frac{\partial F_y}{\partial y} |_{y + \frac{\Delta}{2}} - \frac{\partial F_y}{\partial y} |_{y - \frac{\Delta}{2}} \right] + O(\Delta)
@@ -397,9 +402,31 @@
     \begin{equation}
         p_{srednie} = \frac{1}{2} \left( -p_x - p_y \right)
     \end{equation}
-    Dodajemy minus ponieważ siła jest skierowana do środka komory a ciśnienie powinno być większe od zera. 
-    Dla każdego węzła trzeba policzyć pochodne siły w czterech punktach. 
-    Pochodna eliminuje wpływ pola grawitacyjnego, ponieważ jest to wartość stała.
+    Dodajemy ujemny znak do $p_x$ oraz $d_x$ ponieważ siła jest skierowana do środka komory a 
+    ciśnienie powinno być większe od zera. Dla każdego węzła należy policzyć pochodne siły w czterech punktach w celu 
+    uzyskania wartości działającego na niego ciśnienia. Warto zwrócić uwagę na eliminację wpływu 
+    pola grawitacyjnego na obliczone ciśnienie, ponieważ jest to wartość stała.
+
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Algorytm Verleta}
+    Do całkowania przyśpieszenia wybrany został algorytm prędkościowy \emph{Verleta}. Jest on dokładniejszy niż metoda 
+    \emph{Eulera} jednocześnie nie będąc od niego wyraźnie wolniejszym obliczeniowo, cechy te dobrze odpowiadają postawionym 
+    wymaganiom. Inne metody takie jak algorytm RK4 cechują  się lepszą dokładnością ale za 
+    to wymagany nakład obliczeniowy jest znacznie większy, co mogło by negatywnie wpłynąć na płynność animacji. \\
+
+    Kroki jakie należy wykonać w celu wykorzystania algorytmu Verleta na 
+    potrzeby symulacji fizycznej prezentują się następująco:
+    \begin{enumerate}
+        \item Obliczamy nowe pozycje pozycję dla każdego węzła: 
+        $\vec{x}(t + \Delta t) = \vec{x}(t) + \vec{v}(t) \Delta t + \frac{1}{2} \vec{a}(t) (\Delta t)^2$
+
+        \item Korzystając z nowych pozycji $\vec{x}(t + \Delta t)$ obliczamy nowe 
+        przyśpieszenie $\vec{a}(t + \Delta t)$ jednocześnie 
+        zachowując $\vec{a}(t)$ - jego poprzednią wartość.
+
+        \item Wykorzystując uzyskane w poprzednich krokach wartości wyznaczamy nową prędkość dla każdego z węzłów 
+        $\vec{v}(t + \Delta t) = \vec{v}(t) + \frac{1}{2} \left( \vec{a}(t) + \vec{a}(t + \Delta t) \right) \Delta t$
+    \end{enumerate}
 
 \chapter{Implementacja}
     \section{Węzły}
@@ -432,10 +459,54 @@
     znacznie zwiększa szybkość wykonania programu.
     
     \subsection{Siatka sąsiedztwa}
-    Siatka sąsiedztwa minimalizuje liczbę obliczeń kolizji pomiędzy węzłami należącymi do różnych obiektów.
+
+    \begin{wrapfigure}{R}{0.4\textwidth}
+        \includegraphics[width=0.99\linewidth]{neib_grid.drawio}
+        \caption{
+            Graficzna reprezentacja działania siatki sąsiedztwa.
+        }
+    \end{wrapfigure}
+
+    Siatka sąsiedztwa minimalizuje liczbę obliczeń kolizji pomiędzy węzłami 
+    należącymi do różnych obiektów. Jest on bardzo potrzebny do utrzymania 
+    pożądanej prędkości wykonywania symulacji w przypadkach gdy składa się ona 
+    z dużej liczy obiektów, które mogą ze sobą potencjalnie kolidować. \\
+    
+    Na podstawie znajdującego się po prawej stronie rysunku można łatwo opisać
+    działanie tego algorytmu. Z perspektywy czarnego węzła
+    potencjale kolizje między nim a innymi węzłami mogą wystąpić tylko 
+    jeżeli środek innego węzła znajduje się w tej 
+    samej komorze co on lub w komorze sąsiadującej z jego komorą. Na rysunku 
+    węzły z którymi sprawdzona będzie kolizja z węzłem czarnym oznaczone zostały
+    kolorem szarym. Węzły które nie znajdują się w branych pod uwagę komorach 
+    zostaną zignorowane podczas obliczeń, zostały one oznaczone kolorem białym. \\
+
+    Kroki jakie należy wykonać w celu wykorzystania siatki sąsiedztwa na 
+    potrzeby symulacji fizycznej prezentują się następująco:
+    \begin{enumerate}
+        \item Tworzymy tablicę pustych dynamicznych wektorów, jeden wektor dla każdej komórki siatki.
+
+        \item Iterujemy po wszystkich węzłach i mapujemy położenie węzła na komórkę. Wpisujemy indeks węzła 
+        do wektora zawartego w komórce. W tym kroku możemy również zastosować inne optymalizacje, jak na przykład 
+        ignorowanie węzłów które nie są węzłami brzegowymi danego obiektu.
+
+        \item Gdy chcemy obliczyć nowe przyśpieszenie dla węzła, bierzemy pod uwagę tylko węzły znajdujące 
+        się w tej samej lub sąsiadującej komórce.
+    \end{enumerate}
+
+    Siatka musi być często aktualizowana aby zapewnić odpowiednie wyniki. W raz z upływem czasu symulacji położenia
+    węzłów będą się zmieniać, nieodpowiednio utrzymywana siatka sąsiedztwa może doprowadzić do zignorowania 
+    oddziaływania pomiędzy węzłami znajdującymi się blisko siebie. W projekcie siatka budowana jest od nowa 
+    co kilka iteracji symulacji.
 
     \subsection{Implementacja OpenCL}
     Jak przekazywane są danek, kernel.
+    \lstinputlisting[language=C]{code/simulation_types.cl}
+    Definicja typów po stronie OpenCL.
+
+    \lstinputlisting[language=C]{code/simulation.cl}
+    W tym przypadku zdefiniowana została jedna funkcja jest w stanie obliczyć zmianę przyśpieszenia 
+    dla każdego z węzłów.
 
     \subsection{Korekta błędów}
     Z powodu dobrania zbyt dużego kroku czasowego symulacja może być niestabilna.
@@ -445,10 +516,14 @@
     Gdy takie wartości się pojawią symulacja wraca do ostatniego zapisanego stanu w którym 
     te wartości nie występowały. Co pewien czas tworzy nową kopię zapasową.
 
+    Jeżeli 
+    stan symulacji jest poprawny zapisuje go do pamięci, jeżeli nie jest on poprawny to symulacja 
+    przywracana jest do ostatniego poprawnego stanu a krok czasowy jest zmniejszany.
+
     \subsection{Automatyczny dobór kroku czasowego}
     Gdy korekta błędów jest włączona za każdym razem gdy zostanie wykryty błąd i powrót do poprzedniego stanu
     krok czasowy zostanie zmniejszony o połowę. Jeżeli użytkownik włączy funkcję automatycznego zwiększania
-    kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość np. 1.1 za 
+    kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość większą od $1.0$ za 
     każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd.
 
     % --------------------------------------------------------------------------------------------------------------
@@ -494,8 +569,9 @@
     % --------------------------------------------------------------------------------------------------------------
     \newpage
     \section{Widok aplikacji}
-    Obrazy przedstawiające aplikacją. Opis funkcji związanych z wyświetlaniem. 
-    Dostępne kontrolki, skróty klawiszowe, obsługa kamery.
+    Program ma formę aplikacji okienkowej. Na ekranie widoczny jest aktualny stan symulacji wraz z panelami ustawień
+    zawierającymi interaktywne kontrolki pozwalające zmieniać na bieżąco parametry symulacji i sposób 
+    jej wyświetlania.
 
     \begin{figure}[H]
         \centering
@@ -503,9 +579,37 @@
         \caption{Okno aplikacji z widocznymi panelami ustawień}
     \end{figure}
 
-    Aplikacja okienkowa, zdjęcie pochodzi z Windows ale aplikacja jest również kompatybilna z 
-    systemem Linux. Widoczne po lewej stronie panele można ukryć lub ponownie pokazać przy pomocy
-    przycisku \emph{F1} na klawiaturze.
+    Obrazek pochodzi z systemu operacyjnego Windows ale aplikacja jest również kompatybilna z 
+    systemem Linux. Widoczne po lewej stronie panele można ukryć lub ponownie wyświetlić klikając
+    przycisk funkcyjny \emph{F1} na klawiaturze.
+
+    \subsection{Opcje symulacji}
+    Użytkownik może w dowolnym momencie trwania symulacji zmienić niektóre z jej parametrów:
+    \begin{enumerate}
+        \item \emph{Krok czasowy} - wartość kroku czasowego można ustawić za pomocą suwaka lub też wpisać
+        ją ręcznie w dostępnym polu.
+
+        \item \emph{Ilość kroków symulacji na wyświetlaną klatkę} - wartość określa ilość kroków symulacji
+
+        \item \emph{Silnik symulacji} - pozwala zmieniać sposób w jaki obliczane są kolejne kroki symulacji.
+        Można wybrać pomiędzy symulowaniem za pomocą CPU jedno lub wielowątkowo, gdzie dostępne są dwa
+        tryby wielowątkowe. Można również wybrać tryb symulacji za pomocą GPU, gdzie wykorzystywane jest API OpenCL.
+
+        \item \emph{Siatka sąsiedztwa} - można wybrać czy obliczanie kolizji ma być przyśpieszone przez użycie
+        siatki sąsiedztwa.
+
+        \item \emph{Zapisywanie logów do pliku csv} - pozwala zapisywać logi zawierające informacje o stanie
+        energii symulacji w danych chwilach czasowych do pliku CSV. Można określić częstotliwość zapisywania
+        za pomocą suwaka. Opcja ta znacznie wpływa na wydajność, dlatego jest domyślnie wyłączona.
+
+        \item \emph{Korekcja błędów} - co pewien czas sprawdza czy symulacja nie uległa degradacji i 
+        w razie potrzeb przywraca ją do poprawnego stanu.
+
+        \item \emph{Automatyczny dobór kroku czasowego} - opcja dostępna jedynie gdy korekcja błędów jest włączona.
+        Za każdym razem gdy nie zostanie wykryty błąd podczas zapisywania stanu symulacji, krok czasowy zostaje
+        pomnożony przez wartość którą można dowolnie zmieniać za pomocą suwaka.
+        
+    \end{enumerate}
 
     \begin{figure}[H]
         \centering
@@ -758,7 +862,11 @@
         }
     \end{figure}
     Porównanie wydajności obliczania kolizji pomiędzy wszystkimi węzłami należącymi do różnych obiektów
-    a jedynie węzłami brzegowymi danych obiektów.
+    a jedynie węzłami brzegowymi danych obiektów. Ograniczenie się jedynie do sprawdzania kolizji pomiędzy
+    brzegami obiektów znacząco wpływa na wydajność. Możemy zauważyć ponad pięciokrotny wzrost iteracji
+    na sekundę dla liczby węzłów $>15000$ na korzyść wersji algorytmu szukającego jedynie kolizji między 
+    węzłami brzegowymi. Ze względu na wyraźną poprawę wyników w następnych prezentowanych algorytmach
+    pod uwagę będą jedynie węzły brzegowe podczas detekcji kolizji.
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Test wydajności z siatką sąsiedztwa}
@@ -769,8 +877,7 @@
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
     \end{figure}
-    Wykres prezentujący wydajność dla najlepszej wersji wielordzeniowej na CPU dla zwiększającej się liczby węzłów
-    z włączoną siatką sąsiedztwa oraz z wyłączoną siatką sąsiedztwa.
+    
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Porównanie wydajności na CPU}
@@ -781,8 +888,7 @@
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
     \end{figure}
-    Porównanie wersji algorytmu na CPU w postaci jednordzeniowej, zrównoleglonej z wieloma funkcjami 
-    dzielącymi na wątki i jedną funkcją dzielącą na wątki.
+    W tym przypadku możemy zaobserwować jeszcze większy skok wydajności.
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Porównanie wydajności wersji CPU i GPU}
@@ -806,8 +912,9 @@
     \end{figure}
     Wykresy dla najlepszej wersji CPU i GPU z włączoną siatką sąsiedztwa.
 
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
-    \subsection{Test rozrywania dwóch obiektów}
+    \section{Test rozrywania dwóch obiektów}
     \subsection{Opis testu}
     Scena składa się z dwóch nieruchomych obiektów, gdzie jeden o wymiarach $12 \times 24$ zostaje umieszczony nieruchomo 
     przy podłożu a drugi o wymiarach $2 \times 2$ znajduje się nad obiektem pierwszym. Siła grawitacji jest aktywna co 

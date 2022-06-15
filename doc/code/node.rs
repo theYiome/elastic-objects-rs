@@ -1,3 +1,4 @@
+#[repr(C)]
 pub struct Node {
     pub position: Vec2,
     pub velocity: Vec2,
