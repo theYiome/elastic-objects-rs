@@ -104,9 +104,26 @@
     rzeczywistym jako animacje komputerowe.
 
     \section{Generowanie grafiki}
-    Do generowania grafiki i animacji zostało wykorzystane API OpenGL w profilu rdzennym (core profile), 
-    pozwalającym samodzielnie programować shadery \cite{grafika3d} (strona 13). \\
+    Do generowania grafiki i animacji został wykorzystany OpenGL, wielojęzyczny i wieloplatformowy 
+    interfejs programowania aplikacji do renderowania grafiki wektorowej 2D i 3D, 
+    od 2006 roku zarządzany przez konsorcjum technologiczne non-profit Khronos Group. 
+    Interfejs API jest zwykle używany do interakcji 
+    z procesorem graficznym w celu uzyskania renderowania z przyspieszeniem sprzętowym. 
+    Specyfikacja OpenGL opisuje abstrakcyjne API do rysowania grafiki 2D i 3D. Chociaż możliwe jest 
+    zaimplementowanie API w całości programowo, jest ono zaprojektowane do implementacji głównie 
+    lub całkowicie sprzętowej.
 
+    API to jest zdefiniowane jako zestaw funkcji, które mogą być wywoływane przez program.
+    Chociaż definicje tych funkcji są podobne do tych z języka programowania C, to tak 
+    naprawdę są one niezależne od języka od jakiegokolwiek języka. 
+    OpenGL jest również wieloplatformowy przez co programy go wykorzystujące mogą 
+    działać poprawnie na systemie operacyjnym Windows jak i systemach z rodziny Linux. 
+    Specyfikacja nie mówi nic na temat uzyskiwania i zarządzania kontekstem OpenGL, 
+    pozostawiając to systemowi okien; OpenGL zajmuje się wyłącznie 
+    renderowaniem, nie dostarczając żadnych interfejsów API związanych z wejściem, dźwiękiem lub oknami. \\
+
+    Na cele aplikacji wykorzystane zostało API OpenGL w profilu rdzennym (core profile), 
+    pozwalającym samodzielnie programować shadery \cite{grafika3d} (strona 13).
     W nowoczesnym OpenGL potok renderowania składa się z \cite{grafika3d} (strona 72):
     \begin{enumerate}
         \item Stworzenia buforów na werteksy i indeksy.
@@ -129,9 +146,54 @@
     zamiast renderowania każdego obiektu w osobnym draw call, można renderować wszystkie obiekty w jednym draw call.
 
     % --------------------------------------------------------------------------------------------------------------
+    \section{Wielowątkowość}
+
+    W architekturze komputerowej wielowątkowość to zdolność procesora do 
+    jednoczesnego zapewniania wielu wątków wykonywania, obsługiwanych przez 
+    system operacyjny. W aplikacji wielowątkowej wątki współdzielą zasoby 
+    jednego lub wielu rdzeni, które obejmują jednostki obliczeniowe i pamięci 
+    podręczne procesora. Mimo że trudno jest przyspieszyć pojedynczy wątek, 
+    większość systemów komputerowych w rzeczywistości wykonuje wiele zadań jednocześnie i 
+    w ten sposób są w stanie przyśpieszyć działanie programów. Jeśli wątek nie może wykorzystać 
+    wszystkich zasobów obliczeniowych procesora, uruchomienie innego wątku może je wykorzystać i 
+    w ten sposób zapobiec marnowania tych zasobów, co jest istotną zaletą programowania wielowątkowego. \\
+
+    Do aplikacji stworzonej na potrzeby pracy dyplomowej zostało wykorzystane podejście 
+    tworzenia programów wielowątkowych z współdzieleniem pamięci operacyjnej, 
+    czy to pamięci zarządzanej przez CPU (biblioteka \emph{rayon} w języku \emph{Rust}) 
+    czy tej zarządzanej przez GPU (API \emph{OpenCL}).
+    Bibliotekę \emph{rayon} ma bardzo podobne zastosowanie 
+    i sposób działania jak interfejs programowania aplikacji 
+    OpenMP, powszechnie używany w programach pisanych w językach \emph{C} i \emph{C++}.
+
+    Częstym problemem podczas pisania programów z wykorzystaniem OpenMP jest to, że duża 
+    dowolność w czytaniu i pisaniu w 
+    współdzielonej pamięci operacyjnej może prowadzić to problemów, takich jak jej nadpisywanie.
+    Ponieważ język programowania Rust bardzo dokładnie kontroluje wszelkie operacje na pamięci 
+    współdzielonej, problemy tego typu są bardzo rzadkie podczas pisania wielowątkowego z
+    użyciem biblioteki rayon. Odbywa się to kosztem czasu programisty podczas tworzenia 
+    oprogramowanie, gdyż musi on zapewnić aby napisany kod spełniał wszystkie restrykcyjne 
+    wymagania jak np. "może istnieć tylko jedna mutowalna referencja do danego obiektu". \\
+
+    Jeżeli projektujemy algorytm mający działać na wielu wątkach warto jest pomyśleć o tym, jak
+    przedstawić pojedynczy wynik w postaci funkcji zależnej jedynie od danych wejściowych. Jest to 
+    możliwe gdy wyniki nie są zależne od siebie i jeżeli proces ten się powiedzie, każdy 
+    z wyników może zostać obliczony niezależnie przez jeden wątek.
+    ``If you can construct a formula where the output data points can be represented without 
+    relation to each other (...) be very happy'' - \cite{cuda} (strona 24) \\
+    
+    Gdy tworzymy algorytm mający działać na procesorze graficznym, bardzo istotnym aspektem jest 
+    koszt związany z przesyłem danych z pamięci głównej do pamięci karty graficznej. Sam proces kopiowania 
+    danych może poważnie wpłynąć na wydajność programu i w niektórych przypadkach może on zająć więcej
+    czasu niż samo wykonanie obliczeń.
+    ``Computing has (...) moved from one limited by computational throughput of the 
+    processor, to one where moving the data is the primary limiting factor'' - \cite{cuda} (strona 25)
+    
+
+    % --------------------------------------------------------------------------------------------------------------
     \section{Zastosowane technologie}
 
-    Najważniejszym narzędziem wykorzystamy do stworzenia aplikacji jest \emph{rust}, szybki kompilowany 
+    Głównym narzędziem wykorzystamy do stworzenia aplikacji jest \emph{rust}, szybki kompilowany 
     język programowania zapewniający bezpieczeństwo pamięci i łatwe programowanie wielowątkowe. 
     Język ten jest wybierany co roku zaczynając od roku 2015 w ankiecie społeczności \emph{Stack Overflow} jako 
     \emph{``the most beloved programming language''}. O ile jest on wymagający, to jest 
@@ -142,20 +204,17 @@
     Kompilator \emph{rustc} jest restrykcyjny, ponieważ wymusza on na kodzie programu bezpieczeństwo pamięci oraz
     nie zezwala na kod generujący niezdefiniowane zachowanie, będące częstym problemem podczas tworzenia aplikacji
     wielowątkowych. ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
-    polished set of tools to help you along the way'' - \cite{rustbook} (strona 1)
-
-    Restrykciność kompilatora nie jest poważnym problemem prodczas towrzenia aplikacji, ponieważ 
-    kompilator dostarcza dokładnego opisu błędu wraz z referencją do dokumentacji a często również 
-    sugeruje sposób jego poprawiania. \\
-
-    Do wyświetlenia interfejsu graficznego, pozwalającego monitorowanie oraz kontrolowanie stanu symulacji  
-    wykorzystana została biblioteka \emph{eGui} \cite{egui}. Jest ona kompatybilna z językiem \emph{rust} 
-    i API \emph{OpenGL}, dostarcza możliwości wyświetlania okienek wraz z elementami wejścia (przyciski, suwaki). \\
+    polished set of tools to help you along the way'' - \cite{rustbook} (strona 1). Restrykcyjność kompilatora 
+    nie jest poważnym problemem podczas tworzenia aplikacji, ponieważ kompilator dostarcza dokładnego opisu 
+    błędu wraz z referencją do dokumentacji a często również sugeruje sposób jego poprawiania. \\
 
     Na potrzeby zrównoleglenia kodu symulacji wykorzystana została biblioteka \emph{rayon} \cite{rayon}, służąca
     do programowania wielowątkowego w języku \emph{rust} z wykorzystaniem współdzielenia pamięci. 
     Jest to odpowiednik API \emph{OpenMP} ze środowiska wykorzystywanego w 
-    programach napisanych w \emph{C} lub \emph{C++}. \\
+    programach napisanych w \emph{C} lub \emph{C++}. 
+    Do wykonania symulacji na procesorze graficznym wykorzystane zostało API \emph{OpenCL}, jest ono kompatybilne
+    z większością obecnie wykorzystywanych systemów operacyjnych i działa ono na sprzętach różnych producentów, 
+    w przeciwieństwie do technologii \emph{CUDA}, obsługującej jedynie procesory graficzne \emph{Nvidia}. \\
     
     Do wyświetlania animacji wykorzystane zostało API \emph{OpenGL} w profilu rdzennym (core profile), w projekcie
     udostępnione przez bibliotekę \emph{glium}. Nie jest ono już rozwijane, ostatnia stabilna wersja 
@@ -163,24 +222,12 @@
     na potrzeby projektu. Główne zasady tworzenia programu są takie same jak w nowocześniejszych rozwiązaniach 
     takich jak \emph{Vulkan}, jednak samo API jest nieco łatwiejsze w użyciu i pozwala osiągnąć zamierzone 
     dla tej aplikacji efekty w mniejszej liczbie linijek kodu. \\
-    
-    Do wykonania symulacji na procesorze graficznym wykorzystane zostało API \emph{OpenCL}, jest ono kompatybilne
-    z większością obecnie wykorzystywanych systemów operacyjnych i działa ono na sprzętach różnych producentów, 
-    w przeciwieństwie do technologii \emph{Cuda}, obsługującej jedynie procesory graficzne \emph{Nvidia}.
-    
-    % --------------------------------------------------------------------------------------------------------------
-    \section{Wielowątkowość}
-    (OpenMP) Wątki charakteryzują się współdzieleniem pamięci operacyjnej, co może prowadzić to problemów, takich jak nadpisywanie.
-    (MPI) Procesy posiadają swoją oddzielną pamięć, dlatego synchronizacja przebiega w inny sposób, taki jak message passing.
-    (CUDA) To podejście hybrydowe (bloki, warps, wątki)  \cite{cuda} (strona 23)
 
-    ``If you can construct a formula where the output data points can be represented without 
-    relation to each other (...) be very happy'' - \cite{cuda} (strona 24)
+    Do wyświetlenia interfejsu graficznego, pozwalającego monitorowanie oraz kontrolowanie stanu symulacji  
+    wykorzystana została biblioteka \emph{eGui} \cite{egui}. Jest ona kompatybilna z językiem \emph{rust} 
+    i API \emph{OpenGL}, dostarcza możliwości wyświetlania okienek wraz z elementami wejścia (przyciski, suwaki). \\
+
     
-    ``Computing has (...) moved from one limited by computational throughput of the 
-    processor, to one where moving the data is the primary limiting factor'' - \cite{cuda} (strona 25)
-    
-    % --------------------------------------------------------------------------------------------------------------
 \chapter{Wstęp teoretyczny}
     \section{Model oddziaływań}
     Potencjał Lennarda-Jonesa został wykorzystany do symulacji przyciągania/odpychania 
@@ -438,6 +485,12 @@
 
     % --------------------------------------------------------------------------------------------------------------
     \section{Algorytm Verleta}
+    Integracja Verleta to metoda numeryczna stosowana do całkowania równań ruchu Newtona,
+    jest często używana do obliczania trajektorii cząstek w symulacjach dynamiki molekularnej i grafice komputerowej. 
+    Integrator Verleta zapewnia dobrą stabilność numeryczną, a także inne właściwości, które 
+    są ważne w układach fizycznych, takie jak odwracalność w czasie, bez znaczących dodatkowych kosztów 
+    obliczeniowych w porównaniu z prostą metodą Eulera.
+
     Do całkowania przyśpieszenia wybrany został algorytm prędkościowy \emph{Verleta}. Jest on dokładniejszy niż metoda 
     \emph{Eulera} jednocześnie nie będąc od niego wyraźnie wolniejszym obliczeniowo, cechy te dobrze odpowiadają postawionym 
     wymaganiom. Inne metody takie jak algorytm RK4 cechują  się lepszą dokładnością ale za 
@@ -761,11 +814,11 @@
     
     \begin{figure}[h]
         \centering
-        \begin{subfigure}[t]{0.45\textwidth}
+        \begin{subfigure}[t]{0.4\textwidth}
             \includegraphics[width=\textwidth, height=6cm]{objects_unoptimized} 
             \caption{Każdy węzeł jednego obiektu z każdym każdym węzłem drugiego obiektu}
         \end{subfigure}
-        \begin{subfigure}[t]{0.45\textwidth}
+        \begin{subfigure}[t]{0.4\textwidth}
             \includegraphics[width=\textwidth, height=6cm]{objects_optimized}
             \caption{Węzły zewnętrzne jednego obiektu z węzłami zewnętrznymi drugiego obiektu}
         \end{subfigure}
@@ -873,8 +926,8 @@
     każdego z tych obiektów wynosi kolejno 5, 10, 15, 25, 40, 50, 60, 75, 90, 100. Dla 
     testów najwydajnejszych algorytmów dla CPU i GPU zostały wykonane dodatkowe testy z 
     bardzo gęstymi obiektami, liczba węzłów w bokach tych obiektów wynosi kolejno 150, 200, 250, 300.
-    Przeprowadzenie rozszerzonych testów dla mało wydajnych algorytmów wiązała zajęła by wiele godzin i
-    nie dostarczyła by nowych informacji, dlatego nie zostały one wykonane. \\
+    Testy wydajności został wykonany na procesorze AMD Ryzen 5 5600X i
+    karcie graficznej Nvidia RTX 3060. \\
     
     Krok czasowy symulacji wynosi
     $2 \times 10^{-5}$ sekundy a czas trwania symulacji to $0.5$ sekundy, co 
@@ -903,10 +956,14 @@
         \centering
         \includegraphics[width=16cm]{performance_cpu_grid_nogrid.png}
         \caption{
-            Liczba iteracji na sekundę w zależności od ilości węzłów
+            Liczba iteracji na sekundę w zależności od ilości węzłów -
+            węzły brzegowe i węzły brzegowe + siatka sąsiedztwa
         }
     \end{figure}
-    
+    Połączenie metody optymalizującej poprzez odrzucenie węzłów niebrzegowych wraz z umieszczeniem każdego węzła
+    w siatce i branie pod uwagę jedynie węzły znajdującej się w tej samej lub w sąsiadującej komórce daje 
+    bardzo dużą poprawę wydajności. Dla liczby węzłów $>15000$ wzrost iteracji na sekundę jest ponad 
+    dziesięciokrotny na korzyść wersji algorytmu wykorzystującego obie metody optymalizacji.
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Porównanie wydajności na CPU}
@@ -917,7 +974,10 @@
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
     \end{figure}
-    W tym przypadku możemy zaobserwować jeszcze większy skok wydajności.
+    Następnym krokiem wykonanym w celu zwieszenia wydajności programu algorytmy zostały 
+    zrównoleglone, dzięki czemu możemy zaobserwować następny skok wydajności. Procesor na którym 
+    wykonywane były obliczenia posiada sześć rdzeni a uzyskane przyśpieszenie jest niemal pięciokrotne
+    dla liczby węzłów $>20000$ co oznacza, że większość obliczeń udało się skutecznie zrównoleglić.
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Porównanie wydajności wersji CPU i GPU}
@@ -928,7 +988,8 @@
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
     \end{figure}
-    Wykresy dla najlepszej wersji CPU i GPU z włączoną siatką sąsiedztwa.
+    Wersja wykonywana na CPU jest nieco szybsza niż ta wykonywana na GPU. Może to wynikać z 
+    dużej ilości danych które muszą zostać skopiowane do pamięci karty graficznej.
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Różnica pomiędzy najlepszą i najgorszą wydajnością}
@@ -939,7 +1000,9 @@
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
     \end{figure}
-    Wykresy dla najlepszej wersji CPU i GPU z włączoną siatką sąsiedztwa.
+    Ważniejszym aspektem podczas prób zwiększenia wydajności obliczeniowej algorytmów niż zrównoleglenie 
+    jest optymalizacja wykonywanych obliczeń na przykład poprzez odrzucenie elementów nie wpływających 
+    lub znikomo wpływających na wynik obliczeń.
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
@@ -1264,7 +1327,8 @@
     % --------------------------------------------------------------------------------------------------------------
     \section{Napotkane problemy}
     Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
-    było zbyt wolne. Następnie przy użyciu instanced rendering problem ten został zlikwidowany po 
+    było zbyt wolne. Następnie przy użyciu renderowania instancyjnego (instanced rendering) 
+    problem ten został zlikwidowany po 
     stronie interfejsu graficznego. Wydajność symulacji, jest dużym problem gdy ilość obiektów jest znacząca. 
     Zrównoleglenie algorytmów jest trudne do osiągnięcia, wymaga znacznej modyfikacji programu oraz często 
     wymaga pewnych ustępstw w celu zniwelowania niezdefiniowanego zachowania wynikającego z wyścigów 
