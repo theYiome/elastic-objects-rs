@@ -401,36 +401,43 @@
         temperatura stało się mniejsze niż w otoczeniu obiektu.
     \end{enumerate}
 
-    \subsection{Algorytm obliczania temperatury}
-    \begin{wrapfigure}{R}{0.45\textwidth}
-        \includegraphics[width=0.9\linewidth]{avg.drawio}
-        \caption{Węzły z których liczona jest średnia temperatura}
+    \subsection{Obliczanie temperatury}
+    \begin{wrapfigure}{R}{0.35\textwidth}
+        \includegraphics[width=0.95\linewidth]{avg.drawio}
+        \caption{
+            Obliczanie uśrednionej w przestrzeni temperatury.
+            Temperatura obliczana jest dla węzła o kolorze czarnym, 
+            natomiast węzły szare są jego sąsiadami.
+        }
     \end{wrapfigure}
 
-    $\tau = \Delta t \cdot j$ dla $j = 0, 1, ..., n-1$ gdzie $\tau$ to okres czas w którym uśredniamy wyniki. \\ 
-    $t = \Delta t \cdot i$ dla $i = 0, 1, ..., N_{time}$ i $t >> \tau$\\ 
-    $t_{max} = \Delta t \cdot N_{time}$ gdzie $t_{max}$ to czas trwania symulacji. \\
+    Obliczona za pomocą powyższych wzorów temperatura wykazywała się bardzo dużą zmiennością w czasie,
+    powodując bardzo szybką zmianę kolorów węzłów, co poważnie utrudniało analizę stanu symulacji. 
+    Z tego powodu ostateczny kolor węzła w widoku temperatury kalkulowany jest w następujący sposób:
+    \begin{enumerate}
+        \item Dla każdego węzła obliczamy temperaturę wedle wzoru i zapisujemy ją wraz z czasem w
+        symulacji do tablicy, każdy węzeł ma osobną tablicę.
+        \item Dla każdego węzła $n$ obliczamy średnią temperaturę w czasie, w ten sposób każdemu węzłowi
+        odpowiada jedna liczba.
+        \item Ostateczna temperatura jaka będzie wyświetlona w widoku temperatury dla węzła $n$
+        jest sumą uśrednionych w czasie temperatur z czterech rzędów węzłów sąsiadujących z
+        węzłem $n$.
+    \end{enumerate}
 
-    Dla każdej cząsteczki tworzymy rejestr w postaci tablicy. 
-    Suma średnich energii $E_{kinetyczna}$ obliczana jest w każdej chwili czasowej.
-    Aby ustabilizować rezultaty, energia kinetyczna dla węzła będzie obliczana jako 
-    średnia z $n$ ostatnich chwili czasowych a ostateczna temperatura jest uśredniana dla 
-    Do rejestru dostajemy się za pomocą dzielenia modulo $j = i \, \%  \, n$, które gwarantuje, 
-    że nie wyjdziemy poza tablicę oraz stare wartości będą nadpisywana na bieżąco. \\
+    % Dla każdej cząsteczki tworzymy rejestr w postaci tablicy. 
+    % Suma średnich energii $E_{kinetyczna}$ obliczana jest w każdej chwili czasowej.
+    % Aby ustabilizować rezultaty, energia kinetyczna dla węzła będzie obliczana jako 
+    % średnia z $n$ ostatnich chwili czasowych a ostateczna temperatura jest uśredniana dla 
+    % Do rejestru dostajemy się za pomocą dzielenia modulo $j = i \, \%  \, n$, które gwarantuje, 
+    % że nie wyjdziemy poza tablicę oraz stare wartości będą nadpisywana na bieżąco. \\
 
-    Dodatkowo aby bardziej wygładzić wyniki kolor węzła ostateczna temperatura dla danego węzła 
-    jest równa średniej z temperatur czterech rzędów najbliższych węzłów. Obliczanie temperatury przy 
-    użyciu twierdzenia o wiriale okazało się być bardziej intuicyjne i
-    wyraźnie łatwiejsza w implementacji, dlatego ta metoda będzie używana w dalszej części pracy.
+    Obliczanie temperatury przy użyciu twierdzenia o wiriale okazało się być bardziej intuicyjne i
+    wyraźnie łatwiejsza w implementacji, dlatego ta metoda została użyta w aplikacji do stworzenia widoku 
+    temperatury węzłów, przedstawionego w dalszej części pracy.
     
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Obliczanie ciśnienia na węźle}
-
-    \begin{wrapfigure}{l}{0.45\textwidth}
-        \includegraphics[width=0.9\linewidth]{pressure_box}
-        \caption{Schemat komory przeznaczonej do obliczania ciśnienia na węźle}
-    \end{wrapfigure}
-
     W celu obliczenia ciśnienia działającego na węzeł, zamykamy go w komorze 
     o boku $\Delta = 2 dx$. Wybór $dx$ pozostawia pewną dowolność jednak powinno być ono małe, najlepiej aby było wyraźnie 
     mniejsze niż najmniejsza odległość równowagi pomiędzy dwoma połączonymi węzłami, na przykład $d_0 > 10 dx$. 
@@ -446,7 +453,7 @@
         \frac{d}{dl} F_{LJ} = 3\frac{V_0}{(d_0)^2} \left[ -7 \left(\frac{d_0}{l}\right)^{8} + 13 \left(\frac{d_0}{l}\right)^{14} \right]
     \end{equation}
     
-    Wykorzystując powyżej obliczoną pochodną możemy teraz opisać ciśnienie na ściankach za pomocą wzoru:
+    Wykorzystując powyżej obliczoną pochodną jesteśmy teraz z stanie opisać ciśnienie na ściankach za pomocą wzoru:
     \begin{equation}
         P_x (x \pm \frac{\Delta}{2}) = \frac{F_x (x \pm \frac{\Delta}{2})}{\Delta}
     \end{equation}
@@ -464,16 +471,24 @@
         \frac{\Delta}{2} \left[ \frac{\Delta F_x}{\partial x} |_{x + \frac{\Delta}{2}}  -
           \frac{\Delta F_x}{\partial x}|_{x - \frac{\Delta}{2}} \right] + O(\Delta^2)
     \end{equation}
+
+    \begin{wrapfigure}{l}{0.45\textwidth}
+        \includegraphics[width=0.9\linewidth]{pressure_box}
+        \caption{Schemat komory przeznaczonej do obliczania ciśnienia na węźle}
+    \end{wrapfigure}
+
     Dzielimy równanie przez $\Delta$:
     \begin{equation}
         p_x = \frac{\Delta F_x}{\Delta} = \frac{1}{2} 
         \left[ \frac{\partial F_x}{\partial x} |_{x + \frac{\Delta}{2}} - \frac{\partial F_x}{\partial x} |_{x - \frac{\Delta}{2}} \right] + O(\Delta)
     \end{equation}
+
     Podobnie liczymy dla kierunku $y$:
     \begin{equation}
         p_y = \frac{\Delta F_y}{\Delta} = \frac{1}{2} 
         \left[ \frac{\partial F_y}{\partial y} |_{y + \frac{\Delta}{2}} - \frac{\partial F_y}{\partial y} |_{y - \frac{\Delta}{2}} \right] + O(\Delta)
     \end{equation}
+
     A następnie uśredniamy:
     \begin{equation}
         p_{srednie} = \frac{1}{2} \left( -p_x - p_y \right)
@@ -483,19 +498,14 @@
     uzyskania wartości działającego na niego ciśnienia. Warto zwrócić uwagę na eliminację wpływu 
     pola grawitacyjnego na obliczone ciśnienie, ponieważ jest to wartość stała.
 
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Algorytm Verleta}
-    Integracja Verleta to metoda numeryczna stosowana do całkowania równań ruchu Newtona,
-    jest często używana do obliczania trajektorii cząstek w symulacjach dynamiki molekularnej i grafice komputerowej. 
-    Integrator Verleta zapewnia dobrą stabilność numeryczną, a także inne właściwości, które 
-    są ważne w układach fizycznych, takie jak odwracalność w czasie, bez znaczących dodatkowych kosztów 
-    obliczeniowych w porównaniu z prostą metodą Eulera.
-
-    Do całkowania przyśpieszenia wybrany został algorytm prędkościowy \emph{Verleta}. Jest on dokładniejszy niż metoda 
-    \emph{Eulera} jednocześnie nie będąc od niego wyraźnie wolniejszym obliczeniowo, cechy te dobrze odpowiadają postawionym 
-    wymaganiom. Inne metody takie jak algorytm RK4 cechują  się lepszą dokładnością ale za 
-    to wymagany nakład obliczeniowy jest znacznie większy, co mogło by negatywnie wpłynąć na płynność animacji. \\
-
+    Do całkowania przyśpieszenia wybrany został algorytm prędkościowy \emph{Verleta}. 
+    Jest to metoda numeryczna stosowana do całkowania równań ruchu Newtona,
+    jest często używana do obliczania trajektorii cząstek w symulacjach 
+    dynamiki molekularnej i grafice komputerowej. \\
+    
     Kroki jakie należy wykonać w celu wykorzystania algorytmu Verleta na 
     potrzeby symulacji fizycznej prezentują się następująco:
     \begin{enumerate}
@@ -509,6 +519,13 @@
         \item Wykorzystując uzyskane w poprzednich krokach wartości wyznaczamy nową prędkość dla każdego z węzłów 
         $\vec{v}(t + \Delta t) = \vec{v}(t) + \frac{1}{2} \left( \vec{a}(t) + \vec{a}(t + \Delta t) \right) \Delta t$
     \end{enumerate}
+
+    Integracja Verleta zapewnia dobrą stabilność numeryczną a także posiada inne właściwości, które 
+    są ważne w układach fizycznych, jak na przykład odwracalność w czasie. Możliwości tej metody nie są 
+    okupione znaczącymi dodatkowymi kosztami obliczeniowymi w porównaniu z prostą metodą \emph{Eulera}. 
+    Inne metody takie jak algorytm \emph{RK4} cechują się lepszą dokładnością ale za 
+    to wymagany nakład obliczeniowy jest znacznie większy, co mogło by negatywnie wpłynąć na płynność animacji,
+    i z tego powodu nie został on zastosowany podczas tworzenia aplikacji.
 
 \chapter{Implementacja}
     \section{Węzły}
@@ -651,19 +668,25 @@
     % --------------------------------------------------------------------------------------------------------------
     \newpage
     \section{Widok aplikacji}
-    Program ma formę aplikacji okienkowej. Na ekranie widoczny jest aktualny stan symulacji wraz z panelami ustawień
-    zawierającymi interaktywne kontrolki pozwalające zmieniać na bieżąco parametry symulacji i sposób 
-    jej wyświetlania.
+    Program ma formę aplikacji okienkowej. Na ekranie widoczny jest aktualny stan symulacji wraz z 
+    panelami ustawień zawierającymi interaktywne kontrolki pozwalające zmieniać na 
+    bieżąco parametry symulacji i sposób jej wyświetlania. Aplikacja jest kompatybilna z
+    systemami operacyjnymi z rodzin Windows i Linux.
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=17cm]{app_view_full.png}
-        \caption{Okno aplikacji z widocznymi panelami ustawień}
+        \caption{
+            Okno aplikacji z widocznymi panelami ustawień
+            w systemie operacyjnym Windows.
+        }
     \end{figure}
-
-    Obrazek pochodzi z systemu operacyjnego Windows ale aplikacja jest również kompatybilna z 
-    systemem Linux. Widoczne po lewej stronie panele można ukryć lub ponownie wyświetlić klikając
-    przycisk funkcyjny \emph{F1} na klawiaturze.
+    
+    Widoczne po lewej stronie panele można ukryć lub ponownie wyświetlić klikając
+    przycisk funkcyjny \emph{F1} na klawiaturze. Za pomocą myszy można zmieniać położenie kamery, 
+    co pozwala na wybranie i obserwowanie konkretnego, interesującego nas obszaru symulacji.
+    Samo przybliżenie kamery również jest konfigurowalne; za pomocą rolki myszy możemy oddalać 
+    lub przybliżać kamerę, co daje nam dużą dowolność podczas analizy stanu symulacji.
 
     \subsection{Opcje symulacji}
     Użytkownik może w dowolnym momencie trwania symulacji zmienić niektóre z jej parametrów:
@@ -706,7 +729,11 @@
         \caption{Widok paneli ustawień dostępnych w aplikacji}
     \end{figure}
 
-    \newpage
+    Panele ustawień można ustawić w dowolnym miejscu w oknie aplikacji, przeciągając je za pomocą myszy.
+    Każdy z paneli można również zwinąć lub rozwinąć klikając na trójkąt znajdujący się po lewej 
+    stronie paska tytułowego każdego z paneli.
+
+    \clearpage
     \subsection{Tryby rysowania symulacji}
     Funkcja rysowania \emph{połączeń węzłowych}, \emph{węzłów} i \emph{siatki obliczeniowej} domyślnie 
     jest włączone ale można w każdej chwili wyłączyć każdą z nich korzystając z panelu ustawień rysowania.
@@ -750,7 +777,7 @@
             \caption{Ciśnienie}
         \end{subfigure}
         
-        \caption{Porównanie widoków tej samej sceny w kilku trybach kolorowania węzłów}
+        \caption{Porównanie widoków z tej samej sceny w czterech trybach kolorowania węzłów.}
     \end{figure}
 
 \chapter{Testy}
@@ -1002,7 +1029,16 @@
     \end{figure}
     Ważniejszym aspektem podczas prób zwiększenia wydajności obliczeniowej algorytmów niż zrównoleglenie 
     jest optymalizacja wykonywanych obliczeń na przykład poprzez odrzucenie elementów nie wpływających 
-    lub znikomo wpływających na wynik obliczeń.
+    lub znikomo wpływających na wynik obliczeń. Aspekt ten można zauważyć na podstawie powyższego wykresu
+    gdzie zmiany w algorytmie są w stanie przyśpieszyć działanie symulacji o ponad trzy rzędy wielkości w
+    wybranych sytuacjach, podczas gdy samo zrównoleglenie wykonywania obliczeń jest ograniczone przez
+    ilość dostępnych wątków obliczeniowych, przez co uzyskane w ten sposób przyśpieszenie działania 
+    programu jest znacznie mniej efektowne. \\
+    
+    Oczywiście nie oznacza to, że nie warto zrównoleglić obliczeń
+    jeżeli mamy taką możliwość, warto jednak pamiętać, że niezoptymalizowanych algorytm działający 
+    na wielu rdzeniach obliczeniowych w większości przypadków będzie wyraźnie wolniejszy niż dobrze
+    zoptymalizowany algorytm działający na jednym wątku obliczeniowym.
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
