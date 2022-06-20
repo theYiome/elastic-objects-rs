@@ -1,4 +1,4 @@
-pub fn simulate_multi_thread_cpu(
+pub fn simulate_single_thread_cpu(
     dt: f32,
     scene: &mut Scene,
     connections_structure: &[Vec<(usize, f32, f32)>],

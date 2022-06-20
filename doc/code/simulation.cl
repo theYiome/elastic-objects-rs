@@ -17,19 +17,14 @@ __kernel void main(
 
         // Collisions
         acceleration -= collision_force(i, nodes, collisions_index, collisions);
-
         // Connections
         acceleration += connection_force(i, nodes, connections_index, connections);
-
         // Wall
         acceleration -= wall_force(i, nodes);
-
         // acceleration from nodes interactions
         acceleration /= nodes[i].mass;
-
         // drag
         acceleration -= drag_force(i);
-        
         // gravity
         acceleration.y -= gravity_force(i);
 

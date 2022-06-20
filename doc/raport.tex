@@ -104,27 +104,31 @@
     rzeczywistym jako animacje komputerowe.
 
     \section{Generowanie grafiki}
-    Do generowania grafiki i animacji został wykorzystany OpenGL, wielojęzyczny i wieloplatformowy 
+    Do generowania grafiki i animacji został wykorzystany \emph{\emph{OpenGL}}, 
+    wielojęzyczny i wieloplatformowy 
     interfejs programowania aplikacji do renderowania grafiki wektorowej 2D i 3D, 
     od 2006 roku zarządzany przez konsorcjum technologiczne non-profit Khronos Group. 
     Interfejs API jest zwykle używany do interakcji 
     z procesorem graficznym w celu uzyskania renderowania z przyspieszeniem sprzętowym. 
-    Specyfikacja OpenGL opisuje abstrakcyjne API do rysowania grafiki 2D i 3D. Chociaż możliwe jest 
+    Specyfikacja \emph{OpenGL} opisuje abstrakcyjne API do rysowania grafiki 2D i 3D. Chociaż możliwe jest 
     zaimplementowanie API w całości programowo, jest ono zaprojektowane do implementacji głównie 
     lub całkowicie sprzętowej.
 
-    API to jest zdefiniowane jako zestaw funkcji, które mogą być wywoływane przez program.
-    Chociaż definicje tych funkcji są podobne do tych z języka programowania C, to tak 
+    Ten interfejs programowania zdefiniowany jako zestaw funkcji, które mogą być wywoływane przez program.
+    Chociaż definicje tych funkcji są podobne do tych z języka programowania \emph{C}, to tak 
     naprawdę są one niezależne od języka od jakiegokolwiek języka. 
-    OpenGL jest również wieloplatformowy przez co programy go wykorzystujące mogą 
+    \emph{OpenGL} jest również wieloplatformowy przez co programy go wykorzystujące mogą 
     działać poprawnie na systemie operacyjnym Windows jak i systemach z rodziny Linux. 
-    Specyfikacja nie mówi nic na temat uzyskiwania i zarządzania kontekstem OpenGL, 
-    pozostawiając to systemowi okien; OpenGL zajmuje się wyłącznie 
+    Specyfikacja nie mówi nic na temat uzyskiwania i zarządzania kontekstem \emph{OpenGL}, 
+    pozostawiając to systemowi okien; \emph{OpenGL} zajmuje się wyłącznie 
     renderowaniem, nie dostarczając żadnych interfejsów API związanych z wejściem, dźwiękiem lub oknami. \\
 
-    Na cele aplikacji wykorzystane zostało API OpenGL w profilu rdzennym (core profile), 
-    pozwalającym samodzielnie programować shadery \cite{grafika3d} (strona 13).
-    W nowoczesnym OpenGL potok renderowania składa się z \cite{grafika3d} (strona 72):
+    Na cele aplikacji wykorzystane zostało API \emph{OpenGL} w \emph{profilu rdzennym} (core profile), 
+    pozwalającym samodzielnie programować \emph{shadery} \cite{grafika3d} (strona 13), co 
+    w diametralny sposób zmienia w jaki sposób pisane są programy graficzne w porównaniu 
+    do starszych wersji \emph{OpenGL}, znacznie zwiększając możliwości programistów z niego 
+    korzystających. W nowoczesnym \emph{OpenGL} potok renderowania składa 
+    się z następujących kroków \cite{grafika3d} (strona 72):
     \begin{enumerate}
         \item Stworzenia buforów na werteksy i indeksy.
         \item W shaderze werteksów przekształcenia położeń werteksów 
@@ -135,15 +139,31 @@
         \item Test głębi, blending.
     \end{enumerate}
 
-    Macierz rzutowania odpowiada za transformację z układu współrzędnych kamery do układu przycinania 
-    (clip coordinate system) \cite{grafika3d} (strona 139). W aplikacji używana jest do zmiany położenia 
-    obecnie obserwowanego miejsca oraz przybliżanie i oddalanie kamery. Ponieważ przestrzeń po której porusza się
-    kamera jest dwuwymiarowa, macierz taka ma wymiary $3 \times 3$.
+    Macierz rzutowania odpowiada za transformację z układu współrzędnych kamery do \emph{układu przycinania}
+    (clip coordinate system) \cite{grafika3d} (strona 139). W aplikacji 
+    zaimplementowana została kamera która pozwala na przemieszczanie się po scenie i jest również w stanie 
+    przybliżać i oddalać obraz. 
+    Ponieważ przestrzeń po której porusza się
+    kamera jest dwuwymiarowa, macierz taka ma wymiary $3 \times 3$, o jeden wymiar więcej niż wymiarowość 
+    przestrzeni, aby poza zwykłymi transformacjami takimi jak rotacja czy skala, uwzględnić również
+    translację (przemieszczenie).
+    W ten sposób zaimplementowana kamera daje duże możliwości użytkownikowi programu, pozwalając 
+    mu na obserwowanie dowolnego miejsca w przestrzeni jednocześnie dając mu możliwość zwiększania
+    lub zmniejszania wielkości obserwowanych obiektów. \\
 
-    Istotną optymalizacją było instanced rendering, metoda pozwalająca na renderowanie wielu obiektów na raz 
-    przy użyciu jednego draw call. Najpierw należy zainicjalizować geometrię obiektu który będzie renderowany, 
-    następnie stworzyć tablicę zwierającą informację między innymi o położeniu każdego z tych obiektów. W ten sposób
-    zamiast renderowania każdego obiektu w osobnym draw call, można renderować wszystkie obiekty w jednym draw call.
+    Oczywiście podczas projektowania aplikacji graficznej należy również zadbać o
+    wydajność rysowania obiektów. Nawet proste użycie stałego bufora zamiast jego 
+    zmiennego odpowiednika może wyraźnie skrócić czas rysowania.
+    Inną istotną optymalizacją zastosowaną w aplikacji jest użycie 
+    metody \emph{renderowania instancjonowanego} (instanced rendering), 
+    metoda pozwalająca na renderowanie wielu obiektów na raz 
+    przy użyciu jednego wywołania funkcji rysującej (draw call). 
+    Najpierw należy zainicjalizować geometrię obiektu który będzie renderowany, 
+    następnie stworzyć tablicę zwierającą informację 
+    między innymi o położeniu każdego z tych obiektów. 
+    W ten sposób zamiast rysować każdy obiekt w osobnym wywołaniu, 
+    możemy narysować wszystkie obiekty jednocześnie, 
+    w ten sposób wyraźnie zwiększając wydajność programu.
 
     % --------------------------------------------------------------------------------------------------------------
     \section{Wielowątkowość}
@@ -165,10 +185,12 @@
     Bibliotekę \emph{rayon} ma bardzo podobne zastosowanie 
     i sposób działania jak interfejs programowania aplikacji 
     OpenMP, powszechnie używany w programach pisanych w językach \emph{C} i \emph{C++}.
-
     Częstym problemem podczas pisania programów z wykorzystaniem OpenMP jest to, że duża 
     dowolność w czytaniu i pisaniu w 
-    współdzielonej pamięci operacyjnej może prowadzić to problemów, takich jak jej nadpisywanie.
+    współdzielonej pamięci operacyjnej może doprowadzić do problemów, takich jak
+    zmiana wartości przez jeden wątek podczas gdy inny wątek próbuję ją odczytać, co 
+    przy nieprzemyślanej synchronizacji tychże wątków zapewne doprowadzi do niezdefiniowanego
+    zachowania się programu.
     Ponieważ język programowania Rust bardzo dokładnie kontroluje wszelkie operacje na pamięci 
     współdzielonej, problemy tego typu są bardzo rzadkie podczas pisania wielowątkowego z
     użyciem biblioteki rayon. Odbywa się to kosztem czasu programisty podczas tworzenia 
@@ -180,7 +202,11 @@
     możliwe gdy wyniki nie są zależne od siebie i jeżeli proces ten się powiedzie, każdy 
     z wyników może zostać obliczony niezależnie przez jeden wątek.
     ``If you can construct a formula where the output data points can be represented without 
-    relation to each other (...) be very happy'' - \cite{cuda} (strona 24) \\
+    relation to each other (...) be very happy'' - \cite{cuda} (strona 24).
+    Bardzo pomaga to z problemami synchronizacji,  
+    ``Warto rozważyć pisanie kodu wątków w taki sposób, aby każdy wątek działał we 
+    własnym świecie, nie współużytkując 
+    danych z pozostałymi wątkami.' \cite{cleancode} (strona 198) \\
     
     Gdy tworzymy algorytm mający działać na procesorze graficznym, bardzo istotnym aspektem jest 
     koszt związany z przesyłem danych z pamięci głównej do pamięci karty graficznej. Sam proces kopiowania 
@@ -200,7 +226,6 @@
     on również wygodny, kod jest prosty do zrozumienia a programy napisane z jego użyciem 
     można łatwo kompilować na wielu systemach nawet jeżeli używają one zewnętrznych bibliotek, gdyż 
     zależności są zarządzane przez narzędzie \emph{cargo}, będące nieodzowną częścią ekosystemu tego języka.
-
     Kompilator \emph{rustc} jest restrykcyjny, ponieważ wymusza on na kodzie programu bezpieczeństwo pamięci oraz
     nie zezwala na kod generujący niezdefiniowane zachowanie, będące częstym problemem podczas tworzenia aplikacji
     wielowątkowych. ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
@@ -216,16 +241,16 @@
     z większością obecnie wykorzystywanych systemów operacyjnych i działa ono na sprzętach różnych producentów, 
     w przeciwieństwie do technologii \emph{CUDA}, obsługującej jedynie procesory graficzne \emph{Nvidia}. \\
     
-    Do wyświetlania animacji wykorzystane zostało API \emph{OpenGL} w profilu rdzennym (core profile), w projekcie
+    Do wyświetlania animacji wykorzystane zostało API \emph{\emph{OpenGL}} w profilu rdzennym (core profile), w projekcie
     udostępnione przez bibliotekę \emph{glium}. Nie jest ono już rozwijane, ostatnia stabilna wersja 
-    \emph{OpenGL 4.6} pojawiła się w roku 2017, jednak jego możliwości są w pełni wystarczające
+    \emph{\emph{OpenGL} 4.6} pojawiła się w roku 2017, jednak jego możliwości są w pełni wystarczające
     na potrzeby projektu. Główne zasady tworzenia programu są takie same jak w nowocześniejszych rozwiązaniach 
     takich jak \emph{Vulkan}, jednak samo API jest nieco łatwiejsze w użyciu i pozwala osiągnąć zamierzone 
     dla tej aplikacji efekty w mniejszej liczbie linijek kodu. \\
 
     Do wyświetlenia interfejsu graficznego, pozwalającego monitorowanie oraz kontrolowanie stanu symulacji  
     wykorzystana została biblioteka \emph{eGui} \cite{egui}. Jest ona kompatybilna z językiem \emph{rust} 
-    i API \emph{OpenGL}, dostarcza możliwości wyświetlania okienek wraz z elementami wejścia (przyciski, suwaki). \\
+    i API \emph{\emph{OpenGL}}, dostarcza możliwości wyświetlania okienek wraz z elementami wejścia (przyciski, suwaki). \\
 
     
 \chapter{Wstęp teoretyczny}
@@ -530,9 +555,27 @@
 \chapter{Implementacja}
     \section{Węzły}
     \lstinputlisting[language=C]{code/node.rs}
+    Atrybut $repr(C)$.
+
+    Atrybut to ogólny, swobodny metadane, który jest interpretowany zgodnie z nazwą, konwencją, 
+    językiem i wersją kompilatora. Atrybuty są wzorowane na Atrybutach w ECMA-335, ze składnią 
+    pochodzącą z ECMA-334 (C\#).
+
+    Atrybuty wewnętrzne, napisane z hukiem (\!) po hashu (\#), dotyczą elementu, w którym zadeklarowany 
+    jest atrybut. Atrybuty zewnętrzne, napisane bez huku po hashu, odnoszą się do rzeczy następującej po atrybucie.
+
+    Atrybut składa się ze ścieżki do atrybutu, po której następuje opcjonalne rozdzielane drzewo tokenów, 
+    którego interpretacja jest zdefiniowana przez atrybut. Atrybuty inne niż atrybuty makr również pozwalają 
+    na to, aby dane wejściowe były znakiem równości (\=), po którym następuje wyrażenie. Zobacz składnię 
+    elementu meta poniżej, aby uzyskać więcej informacji.
 
     \section{Algorytm prędkościowy Verleta}
     \lstinputlisting[language=C]{code/verlet.rs}
+
+    \emph{Clousures} w języku Rust to anonimowe funkcje, które można zapisać w zmiennej lub przekazać 
+    jako argumenty do innych funkcji. Można utworzyć je w jednym miejscu, a następnie wywołać w innym.
+    W przeciwieństwie do zwykłych funkcji, mogą one przechwytywać wartości z miejsca, w 
+    którym zostały zdefiniowane.
 
     \section{Struktury obliczeniowe}
     W celu uproszczenia algorytmów wykonujących obliczenia przyśpieszeń i zjednolicenia 
@@ -548,15 +591,22 @@
     grawitacja, odpychanie od ścianki dolnej oraz opór ruchu proporcjonalny do prędkości węzła.
     Korzystając z tej informacji wykonujemy drugi etap prędkościowego algorytmu verleta.
 
-    \lstinputlisting[language=C]{code/simulate_multiple.rs}
-    Każda z funkcji dzieli swoje zadanie na wątki i na bieżąco aktualizuje węzły. Gdy funkcja 
-    zakończy działanie następna rozpoczyna ponownie proces podziału na wątki.
-
     \lstinputlisting[language=C]{code/simulate_single.rs}
-    W tym przypadku zdefiniowana została jedna funkcja jest w stanie obliczyć zmianę przyśpieszenia 
+    W tym przypadku zdefiniowana została jedna funkcja która mapuje każdy z węzłów na przyśpieszenie
+    w aktualnym 
+    jest w stanie obliczyć zmianę przyśpieszenia 
     dla każdego z węzłów. W ten sposób podział zadania na wątki wykonywany jest tylko raz, co 
     znacznie zwiększa szybkość wykonania programu.
-    
+
+    \subsection{Implementacja OpenCL}
+    Jak przekazywane są danek, kernel.
+    \lstinputlisting[language=C]{code/simulation_types.cl}
+    Definicja typów po stronie OpenCL.
+
+    \lstinputlisting[language=C]{code/simulation.cl}
+    W tym przypadku zdefiniowana została jedna funkcja jest w stanie obliczyć zmianę przyśpieszenia 
+    dla każdego z węzłów.
+
     \subsection{Siatka sąsiedztwa}
 
     \begin{wrapfigure}{R}{0.4\textwidth}
@@ -598,22 +648,22 @@
     oddziaływania pomiędzy węzłami znajdującymi się blisko siebie. W projekcie siatka budowana jest od nowa 
     co kilka iteracji symulacji.
 
-    \subsection{Implementacja OpenCL}
-    Jak przekazywane są danek, kernel.
-    \lstinputlisting[language=C]{code/simulation_types.cl}
-    Definicja typów po stronie OpenCL.
-
-    \lstinputlisting[language=C]{code/simulation.cl}
-    W tym przypadku zdefiniowana została jedna funkcja jest w stanie obliczyć zmianę przyśpieszenia 
-    dla każdego z węzłów.
+    \begin{wrapfigure}{R}{0.5\textwidth}
+        \includegraphics[width=0.95\linewidth]{error_correction.drawio.png}
+        \caption{
+            Schemat blokowy przedstawiający sposób działania
+            algorytmu sprawdzającego co klatkę
+            błędy w symulacji i zarządzającego wartością kroku czasowego
+        }
+    \end{wrapfigure}
 
     \subsection{Korekta błędów}
     Z powodu dobrania zbyt dużego kroku czasowego symulacja może być niestabilna.
     Objawy niestabilności to między innymi destrukcja siatki, nadanie węzłów 
     ogromnych prędkości powodujących wyjście poza obserwowalny obszar.
-    Zaczynają występować liczby zmiennoprzecinkowe o wartościach nan lub inf.
+    Zaczynają występować liczby zmiennoprzecinkowe o wartościach \emph{nan} lub \emph{inf}.
     Gdy takie wartości się pojawią symulacja wraca do ostatniego zapisanego stanu w którym 
-    te wartości nie występowały. Co pewien czas tworzy nową kopię zapasową.
+    te wartości nie występowały. Co pewien czas tworzy nową kopię zapasową. \\
 
     Jeżeli 
     stan symulacji jest poprawny zapisuje go do pamięci, jeżeli nie jest on poprawny to symulacja 
@@ -622,11 +672,16 @@
     \subsection{Automatyczny dobór kroku czasowego}
     Gdy korekta błędów jest włączona za każdym razem gdy zostanie wykryty błąd i powrót do poprzedniego stanu
     krok czasowy zostanie zmniejszony o połowę. Jeżeli użytkownik włączy funkcję automatycznego zwiększania
-    kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość większą od $1.0$ za 
-    każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd.
+    kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość większą od 
+    jeden za każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd. \\ \\
+    
+    Efektywnie działanie tego algorytmu jest bardzo proste, jeżeli wykryjemy błąd zmniejszamy krok czasowy
+    przez co symulacja wykonuje się dłużej i dokładniej, co znacząco zmniejsza ryzyko, że błąd
+    ten wystąpi ponownie. Jednocześnie jeżeli błąd nie został wykryty możemy spróbować zwiększyć 
+    krok czasowy, wykonując symulację mniej dokładnie ale za to skracając czas obliczeń.
 
     % --------------------------------------------------------------------------------------------------------------
-    \newpage
+    \clearpage
     \section{Struktura projektu}
     Projekt posiada dwa pliki wykonywalne, jeden służy jako pomoc do generowania scen, które zapisywane są 
     do plików. Drugi plik jest wykonywalny po podaniu ścieżki do pliku zawierającego scenę wyświetla ją, 
@@ -1433,13 +1488,18 @@
     \begin{thebibliography}{9}
         \bibitem{grafika3d}
         Jacek Matulewski (2014) 
-        \emph{Grafika 3D czasu rzeczywistego. Nowoczesny OpenGL}, 
+        \emph{Grafika 3D czasu rzeczywistego. Nowoczesny \emph{OpenGL}}, 
         Wydawnictwo Naukowe PWN SA, Wydanie I
 
         \bibitem{cuda}
         Shane Cook (2013) 
         \emph{CUDA Programming, a developer's guide to parallel computing with GPUs}, 
         Elsevier Inc., Morgan Kaufmann
+
+        \bibitem{cleancode}
+        Robert C. Martin (2014) 
+        \emph{Czysty Kod, podręcznik dobrego programisty}, 
+        Helion S.A.
 
         \bibitem{rustbook}
         Steve Klabnik, Carol Nichols (2022)
