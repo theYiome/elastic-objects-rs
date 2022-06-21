@@ -3,7 +3,7 @@ use crate::scene::Scene;
 use super::{general::Grid};
 use crate::simulation;
 #[cfg(feature = "opencl3")]
-use crate::gpu::gpu::SimulationEngine;
+use crate::simulation::gpu::gpu::SimulationEngine;
 
 #[derive(PartialEq, Clone, Copy)]
 pub enum SimulationEngineEnum {

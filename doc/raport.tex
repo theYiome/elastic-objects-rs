@@ -229,7 +229,7 @@
     Kompilator \emph{rustc} jest restrykcyjny, ponieważ wymusza on na kodzie programu bezpieczeństwo pamięci oraz
     nie zezwala na kod generujący niezdefiniowane zachowanie, będące częstym problemem podczas tworzenia aplikacji
     wielowątkowych. ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
-    polished set of tools to help you along the way'' - \cite{rustbook} (strona 1). Restrykcyjność kompilatora 
+    polished set of tools to help you along the way'' - \cite{rustbook} (strona 1). Surowość kompilatora 
     nie jest poważnym problemem podczas tworzenia aplikacji, ponieważ kompilator dostarcza dokładnego opisu 
     błędu wraz z referencją do dokumentacji a często również sugeruje sposób jego poprawiania. \\
 
@@ -1071,7 +1071,9 @@
         }
     \end{figure}
     Wersja wykonywana na CPU jest nieco szybsza niż ta wykonywana na GPU. Może to wynikać z 
-    dużej ilości danych które muszą zostać skopiowane do pamięci karty graficznej.
+    dużej ilości danych które muszą zostać skopiowane do pamięci karty graficznej, gdy 
+    raportowane przez menażer zadań systemu Windows zużycie procesora graficznego podczas testu
+    nie przekracza $30\%$ pomimo wy
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Różnica pomiędzy najlepszą i najgorszą wydajnością}

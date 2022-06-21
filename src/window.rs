@@ -43,6 +43,7 @@ pub fn run_with_gui(scene: Scene) {
     };
 
     let mut simulation_manager = simulation::manager::SimulationManager::new(simulation_settings, scene);
+    simulation_manager.settings = simulation_settings;
 
     let mut rendering_settings = RenderingSettings {
         coloring_mode: graphics::ColoringMode::KineticEnergy,
@@ -88,14 +89,13 @@ pub fn run_with_gui(scene: Scene) {
                                     egui: &mut egui_glium::EguiGlium,
                                     screen_ratio: f32,
                                     rendering_settings: &mut RenderingSettings,
-                                    simulation_settings: &mut SimulationSettings| {
+                                    | {
         
         //? simulation calculations
         if current_fps < 5 {
             simulation_manager.restore_if_broken();
         }
 
-        simulation_manager.settings = simulation_settings.clone();
         simulation_manager.update();
 
         //? logging and analitics
@@ -148,7 +148,7 @@ pub fn run_with_gui(scene: Scene) {
             // create egui interface
             egui.begin_frame(&display);
             draw_rendering_settings(egui, rendering_settings);
-            draw_simulation_settings(egui, current_fps, simulation_settings);
+            draw_simulation_settings(egui, current_fps, &mut simulation_manager.settings);
             let (_needs_repaint, egui_shapes) = egui.end_frame(&display);
     
             let mut target = display.draw();
@@ -186,7 +186,6 @@ pub fn run_with_gui(scene: Scene) {
                 &mut egui,
                 screen_ratio,
                 &mut rendering_settings,
-                &mut simulation_settings,
             )
         };
 
