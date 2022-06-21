@@ -27,6 +27,25 @@ metodą dynamiki molekularnej na potrzeby animacji komputerowych}
 \end{frame}
 
 \begin{frame}
+    \frametitle{Połączenia międzywęzłowe}
+
+    \begin{figure}[h]
+        \begin{subfigure}{0.45\textwidth}
+            \centering
+            \includegraphics[width=5.5cm]{12x24}
+        \end{subfigure}
+        \begin{subfigure}{0.45\textwidth}
+            \centering
+            \includegraphics[width=4.5cm]{connections.drawio}
+        \end{subfigure}
+    \end{figure}
+
+    Dla każdego węzła znajdujemy wszystkie węzły w odległości $s$, i dodajemy do listy połączeń wraz z informacją
+    w jakiej odległości od siebie się znajdują ($d_0$, $d_1$). W ten sposób możemy stworzyć elastyczny obiekt, kształt
+    zostanie zachowany.
+\end{frame}
+
+\begin{frame}
     \frametitle{Model}
     Potencjał Lennarda-Jonesa został wykorzystany do symulacji przyciągania/odpychania węzłów w jednym obiekcie,
     symulacji kolizji węzłów ze ścianami oraz symulacji kolizji węzłów z węzłami należącymi
@@ -40,27 +59,6 @@ metodą dynamiki molekularnej na potrzeby animacji komputerowych}
 \end{frame}
 
 \begin{frame}
-    \frametitle{Połączenia międzywęzłowe}
-
-    \begin{figure}[h]
-        \begin{subfigure}{0.45\textwidth}
-            \centering
-            \includegraphics[width=5.5cm]{12x24}
-            \caption{Stan początkowy}
-        \end{subfigure}
-        \begin{subfigure}{0.45\textwidth}
-            \centering
-            \includegraphics[width=4.5cm]{connections.drawio}
-            \caption{Zderzenie}
-        \end{subfigure}
-    \end{figure}
-
-    Dla każdego węzła znajdujemy wszystkie węzły w odległości $s$, i dodajemy do listy połączeń wraz z informacją
-    w jakiej odległości od siebie się znajdują ($d_0$, $d_1$). W ten sposób możemy stworzyć elastyczny obiekt, kształt
-    zostanie zachowany.
-\end{frame}
-
-\begin{frame}
     \frametitle{Widok aplikacji}
     \begin{figure}[H]
         \centering
@@ -69,37 +67,6 @@ metodą dynamiki molekularnej na potrzeby animacji komputerowych}
     \end{figure}
 \end{frame}
 
-
-\begin{frame}
-    \frametitle{Przykład zderzenia - bez zniszczeń}
-    \begin{figure}[h]
-
-        \begin{subfigure}{0.4\textwidth}
-            \centering
-            \includegraphics[width=1.7cm, height=1.7cm]{collision_2x2_24x12_mass30_1}
-            \caption{Stan początkowy}
-        \end{subfigure}
-        \begin{subfigure}{0.4\textwidth}
-            \centering
-            \includegraphics[width=1.7cm, height=1.7cm]{collision_2x2_24x12_mass30_2}
-            \caption{Zderzenie}
-        \end{subfigure}
-        \begin{subfigure}{0.4\textwidth}
-            \centering
-            \includegraphics[width=1.7cm, height=1.7cm]{collision_2x2_24x12_mass30_3}
-            \caption{Chwila po zderzeniu}
-        \end{subfigure}
-        \begin{subfigure}{0.4\textwidth}
-            \centering
-            \includegraphics[width=1.7cm, height=1.7cm]{collision_2x2_24x12_mass30_4}
-            \caption{Stan stabilny}
-        \end{subfigure}
-
-        \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 120 kg na obiekt $12 \times 24$ o masie 288 kg}
-    \end{figure}
-
-    Węzły zmieniają kolor z czarnego na czerwony wraz z wzrostem ich energii kinetycznej.
-\end{frame}
 
 \begin{frame}
     \frametitle{Przykład zderzenia - rozerwanie obiektów}
@@ -132,6 +99,36 @@ metodą dynamiki molekularnej na potrzeby animacji komputerowych}
     Widoczna jest fala energii kinetycznej a same obiekty zostają rozerwane.
 \end{frame}
 
+\begin{frame}
+    \frametitle{Przykład zderzenia - bez zniszczeń}
+    \begin{figure}[h]
+
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=1.7cm, height=1.7cm]{collision_2x2_24x12_mass30_1}
+            \caption{Stan początkowy}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=1.7cm, height=1.7cm]{collision_2x2_24x12_mass30_2}
+            \caption{Zderzenie}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=1.7cm, height=1.7cm]{collision_2x2_24x12_mass30_3}
+            \caption{Chwila po zderzeniu}
+        \end{subfigure}
+        \begin{subfigure}{0.4\textwidth}
+            \centering
+            \includegraphics[width=1.7cm, height=1.7cm]{collision_2x2_24x12_mass30_4}
+            \caption{Stan stabilny}
+        \end{subfigure}
+
+        \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 120 kg na obiekt $12 \times 24$ o masie 288 kg}
+    \end{figure}
+
+    Węzły zmieniają kolor z czarnego na czerwony wraz z wzrostem ich energii kinetycznej.
+\end{frame}
 
 
 \begin{frame}
