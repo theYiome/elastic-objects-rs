@@ -555,19 +555,10 @@
 \chapter{Implementacja}
     \section{Węzły}
     \lstinputlisting[language=C]{code/node.rs}
-    Atrybut $repr(C)$.
-
-    Atrybut to ogólny, swobodny metadane, który jest interpretowany zgodnie z nazwą, konwencją, 
-    językiem i wersją kompilatora. Atrybuty są wzorowane na Atrybutach w ECMA-335, ze składnią 
-    pochodzącą z ECMA-334 (C\#).
-
-    Atrybuty wewnętrzne, napisane z hukiem (\!) po hashu (\#), dotyczą elementu, w którym zadeklarowany 
-    jest atrybut. Atrybuty zewnętrzne, napisane bez huku po hashu, odnoszą się do rzeczy następującej po atrybucie.
-
-    Atrybut składa się ze ścieżki do atrybutu, po której następuje opcjonalne rozdzielane drzewo tokenów, 
-    którego interpretacja jest zdefiniowana przez atrybut. Atrybuty inne niż atrybuty makr również pozwalają 
-    na to, aby dane wejściowe były znakiem równości (\=), po którym następuje wyrażenie. Zobacz składnię 
-    elementu meta poniżej, aby uzyskać więcej informacji.
+    Atrybut $repr(C)$ zapewnia taką samą reprezentację obiektu w pamięci jak, gdyby była to
+    struktura w języku C. Jest to istotne podczas komunikacji z częściami programu nie napisanymi
+    w języku Rust jak kernel OpenCL, który oczekuje struktur ułożonych w pamięci wedle zasad 
+    języka C.
 
     \section{Algorytm prędkościowy Verleta}
     \lstinputlisting[language=C]{code/verlet.rs}
@@ -1070,10 +1061,11 @@
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
     \end{figure}
-    Wersja wykonywana na CPU jest nieco szybsza niż ta wykonywana na GPU. Może to wynikać z 
-    dużej ilości danych które muszą zostać skopiowane do pamięci karty graficznej, gdy 
-    raportowane przez menażer zadań systemu Windows zużycie procesora graficznego podczas testu
-    nie przekracza $30\%$ pomimo wy
+    Wersja wykonywana na CPU jest nieco szybsza niż ta wykonywana na GPU.
+    Raportowane przez menażer zadań systemu Windows zużycie procesora graficznego podczas testu
+    nie przekracza $30\%$ a zużycie CPU jest również niskie. Może to wynikać z 
+    dużej ilości danych które muszą zostać skopiowane do pamięci karty graficznej, dlatego 
+    duża część czasu obliczeniowego nie jest w pełni utylizowana.
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Różnica pomiędzy najlepszą i najgorszą wydajnością}
