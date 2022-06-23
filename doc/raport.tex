@@ -124,11 +124,11 @@
     renderowaniem, nie dostarczając żadnych interfejsów API związanych z wejściem, dźwiękiem lub oknami. \\
 
     Na cele aplikacji wykorzystane zostało API \emph{OpenGL} w \emph{profilu rdzennym} (core profile), 
-    pozwalającym samodzielnie programować \emph{shadery} \cite{grafika3d} (strona 13), co 
+    pozwalającym samodzielnie programować \emph{shadery} \cite{grafika3d}, co 
     w diametralny sposób zmienia w jaki sposób pisane są programy graficzne w porównaniu 
     do starszych wersji \emph{OpenGL}, znacznie zwiększając możliwości programistów z niego 
     korzystających. W nowoczesnym \emph{OpenGL} potok renderowania składa 
-    się z następujących kroków \cite{grafika3d} (strona 72):
+    się z następujących kroków \cite{grafika3d}:
     \begin{enumerate}
         \item Stworzenia buforów na werteksy i indeksy.
         \item W shaderze werteksów przekształcenia położeń werteksów 
@@ -140,7 +140,7 @@
     \end{enumerate}
 
     Macierz rzutowania odpowiada za transformację z układu współrzędnych kamery do \emph{układu przycinania}
-    (clip coordinate system) \cite{grafika3d} (strona 139). W aplikacji 
+    (clip coordinate system) \cite{grafika3d}. W aplikacji 
     zaimplementowana została kamera która pozwala na przemieszczanie się po scenie i jest również w stanie 
     przybliżać i oddalać obraz. 
     Ponieważ przestrzeń po której porusza się
@@ -202,18 +202,18 @@
     możliwe gdy wyniki nie są zależne od siebie i jeżeli proces ten się powiedzie, każdy 
     z wyników może zostać obliczony niezależnie przez jeden wątek.
     ``If you can construct a formula where the output data points can be represented without 
-    relation to each other (...) be very happy'' - \cite{cuda} (strona 24).
+    relation to each other (...) be very happy'' - \cite{cuda}.
     Bardzo pomaga to z problemami synchronizacji,  
     ``Warto rozważyć pisanie kodu wątków w taki sposób, aby każdy wątek działał we 
     własnym świecie, nie współużytkując 
-    danych z pozostałymi wątkami.' \cite{cleancode} (strona 198) \\
+    danych z pozostałymi wątkami.' \cite{cleancode} \\
     
     Gdy tworzymy algorytm mający działać na procesorze graficznym, bardzo istotnym aspektem jest 
     koszt związany z przesyłem danych z pamięci głównej do pamięci karty graficznej. Sam proces kopiowania 
     danych może poważnie wpłynąć na wydajność programu i w niektórych przypadkach może on zająć więcej
     czasu niż samo wykonanie obliczeń.
     ``Computing has (...) moved from one limited by computational throughput of the 
-    processor, to one where moving the data is the primary limiting factor'' - \cite{cuda} (strona 25)
+    processor, to one where moving the data is the primary limiting factor'' - \cite{cuda}
     
 
     % --------------------------------------------------------------------------------------------------------------
@@ -229,7 +229,7 @@
     Kompilator \emph{rustc} jest restrykcyjny, ponieważ wymusza on na kodzie programu bezpieczeństwo pamięci oraz
     nie zezwala na kod generujący niezdefiniowane zachowanie, będące częstym problemem podczas tworzenia aplikacji
     wielowątkowych. ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
-    polished set of tools to help you along the way'' - \cite{rustbook} (strona 1). Surowość kompilatora 
+    polished set of tools to help you along the way'' - \cite{rustbook}. Surowość kompilatora 
     nie jest poważnym problemem podczas tworzenia aplikacji, ponieważ kompilator dostarcza dokładnego opisu 
     błędu wraz z referencją do dokumentacji a często również sugeruje sposób jego poprawiania. \\
 
@@ -463,7 +463,7 @@
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Obliczanie ciśnienia na węźle}
-    W celu obliczenia ciśnienia działającego na węzeł, zamykamy go w komorze 
+    W celu obliczenia ciśnienia działającego na węzeł, zamykamy go w komórce 
     o boku $\Delta = 2 dx$. Wybór $dx$ pozostawia pewną dowolność jednak powinno być ono małe, najlepiej aby było wyraźnie 
     mniejsze niż najmniejsza odległość równowagi pomiędzy dwoma połączonymi węzłami, na przykład $d_0 > 10 dx$. 
     Obliczamy pochodną siły jaka oddziaływała 
@@ -499,7 +499,7 @@
 
     \begin{wrapfigure}{l}{0.45\textwidth}
         \includegraphics[width=0.9\linewidth]{pressure_box}
-        \caption{Schemat komory przeznaczonej do obliczania ciśnienia na węźle}
+        \caption{Schemat komórki przeznaczonej do obliczania ciśnienia na węźle}
     \end{wrapfigure}
 
     Dzielimy równanie przez $\Delta$:
@@ -518,7 +518,7 @@
     \begin{equation}
         p_{srednie} = \frac{1}{2} \left( -p_x - p_y \right)
     \end{equation}
-    Dodajemy ujemny znak do $p_x$ oraz $d_x$ ponieważ siła jest skierowana do środka komory a 
+    Dodajemy ujemny znak do $p_x$ oraz $d_x$ ponieważ siła jest skierowana do środka komórki a 
     ciśnienie powinno być większe od zera. Dla każdego węzła należy policzyć pochodne siły w czterech punktach w celu 
     uzyskania wartości działającego na niego ciśnienia. Warto zwrócić uwagę na eliminację wpływu 
     pola grawitacyjnego na obliczone ciśnienie, ponieważ jest to wartość stała.
@@ -616,9 +616,9 @@
     działanie tego algorytmu. Z perspektywy czarnego węzła
     potencjale kolizje między nim a innymi węzłami mogą wystąpić tylko 
     jeżeli środek innego węzła znajduje się w tej 
-    samej komorze co on lub w komorze sąsiadującej z jego komorą. Na rysunku 
+    samej komórce co on lub w komórce sąsiadującej z jego komórką. Na rysunku 
     węzły z którymi sprawdzona będzie kolizja z węzłem czarnym oznaczone zostały
-    kolorem szarym. Węzły które nie znajdują się w branych pod uwagę komorach 
+    kolorem szarym. Węzły które nie znajdują się w branych pod uwagę komórkach 
     zostaną zignorowane podczas obliczeń, zostały one oznaczone kolorem białym. \\
 
     Kroki jakie należy wykonać w celu wykorzystania siatki sąsiedztwa na 
@@ -1433,7 +1433,7 @@
 
     % --------------------------------------------------------------------------------------------------------------
     \section{Dodatek}
-    \subsection{Filmik prezentujące działanie aplikacji}
+    \subsection{Animacje prezentujące działanie aplikacji}
     
     \subsubsection{Przekazanie energii między dwoma sztywnimi obiektami}
     \url{https://youtu.be/nolLh6CSa-8} \\
@@ -1480,20 +1480,28 @@
     \url{https://github.com/theYiome/elastic-objects-rs}
 
     \begin{thebibliography}{9}
+
         \bibitem{grafika3d}
         Jacek Matulewski (2014) 
-        \emph{Grafika 3D czasu rzeczywistego. Nowoczesny \emph{OpenGL}}, 
+        \emph{Grafika 3D czasu rzeczywistego. Nowoczesny OpenGL},
         Wydawnictwo Naukowe PWN SA, Wydanie I
 
         \bibitem{cuda}
         Shane Cook (2013) 
-        \emph{CUDA Programming, a developer's guide to parallel computing with GPUs}, 
+        \emph{CUDA Programming, a developer's guide to parallel computing with GPUs},
         Elsevier Inc., Morgan Kaufmann
 
         \bibitem{cleancode}
         Robert C. Martin (2014) 
-        \emph{Czysty Kod, podręcznik dobrego programisty}, 
+        \emph{Czysty Kod, podręcznik dobrego programisty},
         Helion S.A.
+
+        \bibitem{moleculardynamics}
+        M. Greibel, S. Knapek, G. Zumbusch (2007)
+        \emph{
+            Numerical Simulation in Molecular Dynamics – 
+            numerics, algorithms, parallelization, applications},
+        SPRINGER
 
         \bibitem{rustbook}
         Steve Klabnik, Carol Nichols (2022)
