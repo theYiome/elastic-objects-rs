@@ -97,12 +97,37 @@
     Jedną z popularnych metod wykorzystywanych w modelowaniu zderzeń obiektów w mikro- i makroskali jest 
     metoda dynamiki molekularnej. Mimo iż w pierwotnej postaci stosowana była do opisu własności gazów i 
     cieczy, to dzięki swej wszechstronności pozwala modelować obiekty makroskopowe zachowujące kształt 
-    przy braku sił zewnętrznych oraz modelować ich rozrywanie w trakcie zderzeń z innymi obiektami. W pracy 
-    należy zaadoptować odpowiednio sparametryzowany model dynamiki molekularnej i na jego podstawie opracować 
-    algorytmy numeryczne do symulacji zderzeń obiektów z możliwością penetracji lub rozrywania jednego z nich. 
-    Algorytmy powinny być zaimplementowany na tyle wydajne aby możliwa była wizualizacja zderzeń w czasie 
-    rzeczywistym jako animacje komputerowe.
+    przy braku sił zewnętrznych oraz modelować ich rozrywanie w trakcie zderzeń z innymi obiektami.
 
+    Dynamika molekularna to metoda symulacji komputerowej służąca do analizy fizycznych ruchów cząsteczek. 
+    Cząsteczki oddziałują ze sobą przez określony czas, dając obraz dynamicznej ewolucji systemu. 
+    Trajektorie tych cząsteczek są określane przez numeryczne rozwiązanie równań ruchu Newtona. 
+    Ponieważ układy zazwyczaj składają się z bardzo dużej liczby cząstek, niemożliwe jest analityczne 
+    określenie właściwości takich złożonych układów. W takich właśnie sytuacjach wykorzystujemy 
+    symulacje komputerowe, które co prawda dają wyniki przybliżone, lecz przy dobrym doborze 
+    parametrów i dokładności obliczeń możliwe jest odwzorowanie właściwości badanego obiektu. 
+    Mimo, iż przeprowadzanie eksperymentów komputerowych obecnie staje się nieodzowne w wielu 
+    aspektach działalności naukowej i inżynieryjnej, to należy pamiętać o ich ograniczeniach. 
+    Jednym z problemów wykonywania symulacji komputerowych może być ich złe uwarunkowanie, które 
+    jest wynikiem kumulowania się błędów numerycznych np. podczas całkowania równań ruchu. 
+    Problem ten można starać się zminimalizować poprzez dobór odpowiednich algorytmów lub 
+    przez ich modyfikacje, uwzględniające charakterystykę rozwiązywanego zagadnienia. 
+    Przykładowo w dowolnym modelu dynamiki molekularnej krytycznym parametrem jest wielkość 
+    kroku czasowego. Zbyt duży krok może prowadzić do niestabilności, natomiast zbyt mały 
+    prowadzi do wydłużenia czasu wykonywanych symulacji. \\
+    
+    W pracy został zaadoptowany sparametryzowany model dynamiki molekularnej, który pozwala na 
+    symulowanie zderzeń obiektów elastycznych z możliwością ich penetracji i rozrywania. Kluczowym 
+    aspektem podczas implementacji algorytmów była wydajność obliczeniowa i dzięki odpowiednim 
+    optymalizacjom szybkość wykonywania symulacji pozwala na wizualizację zderzeń w czasie rzeczywistym 
+    pod postacią animacji komputerowych.
+
+    W projekcie rozważane były jedynie zderzenia obiektów dwuwymiarowych. Pozwala uzyskanie dużo lepszej
+    wydajności programu w porównaniu do wersji trójwymiarowej, w której liczba koniecznych obliczeń jest
+    znacznie większa. Nie ma różnic jeżeli chodzi o fizyczny aspekt zderzeń dwu i trzy-wymiarowych, gdyż 
+    równania ruchu mają taką samą strukturę a jedynie wartości wektorowe w nich zawarte mają jeden
+    dodatkowy wymiar.
+    
     \section{Generowanie grafiki}
     Do generowania grafiki i animacji został wykorzystany \emph{\emph{OpenGL}}, 
     wielojęzyczny i wieloplatformowy 
@@ -254,7 +279,37 @@
 
     
 \chapter{Wstęp teoretyczny}
+
+    Modelowanie zachowania obiektu elastycznego metodą dynamiki molekularnej wymaga określenia 
+    położenia jego elementów w przestrzeni. Taki rozkład przestrzenny uzyskuje się opisując 
+    obiekt przy pomocy \emph{n} punktów (inaczej nazywanych węzłami, cząsteczkami lub atomami), w 
+    których skupione są masy. Punkty te oddziałują ze sobą jak w rzeczywistym materiale, ich 
+    zbliżanie lub oddalanie się od siebie wymaga przyłożenia sił zewnętrznych.
+    ``In the natural sciences one strives to model the complex 
+        processes occurring in nature as accurately as possible. 
+        The first step in this direction is the description of nature. 
+        It serves to develop an appropriate system of concepts.'' - \cite{moleculardynamics}. 
+    Ważnym zadaniem modelu jest rzeczywiste odwzorowanie zachowania obiektów elastycznych.
+
+    \begin{equation}
+        E_{c} = E_{k} + E_{g} + E_{p} + E_{w} + E_{o}
+    \end{equation}
+
+    \begin{equation}
+        \frac{d^{2} \vec{r_i}}{dt} = \frac{\vec{F}}{m_i}
+    \end{equation}
+
+
+    \clearpage
     \section{Model oddziaływań}
+
+    \begin{wrapfigure}{l}{0.30\textwidth}
+        \includegraphics[width=0.95\linewidth]{four_nebiours.drawio.png} 
+        \caption{Połączenie obiektów używając sąsiedztwa von Neumanna}
+        \includegraphics[width=0.95\linewidth]{eight_nebiours.drawio.png} 
+        \caption{Połączenie obiektów używając sąsiedztwa Moore\'a}
+    \end{wrapfigure}
+
     Potencjał Lennarda-Jonesa został wykorzystany do symulacji przyciągania/odpychania 
     węzłów w jednym obiekcie, symulacji kolizji węzłów ze ścianami oraz symulacji
     kolizji węzłów z węzłami należącymi do innych obiektów. 
@@ -276,12 +331,8 @@
     \end{equation}
     \begin{align*}
         F_{LJ} &= \frac{d}{dl} V_0 \left[ \sigma^{12}l^{-12} - \sigma^{6}l^{-6} \right] =\\
-        &= V_0 \left[ \sigma^{12}(-12)l^{-13} - \sigma^{6}(-6)l^{-7} \right] =\\
         &= V_0 \left[ 6\sigma^{6}l^{-7} - 12\sigma^{12}l^{-13} \right] =\\
-        &= V_0 \left[ 6 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{6} l^{-7} - 12 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{12} l^{-13} \right] =\\
-        &= 3 V_0 \left[ 2 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{6} l^{-7} - 4 \left(\frac{d_0}{\sqrt[6]{2}}\right)^{12} l^{-13} \right] =\\
         &= 3 V_0 \left[ (d_{0})^{6} l^{-7} - (d_{0})^{12} l^{-13} \right] =\\
-        &= 3 \frac{V_0}{d_0} \left[ (d_{0})^{7} l^{-7} - (d_{0})^{13} l^{-13} \right] =\\
         &= 3\frac{V_0}{d_0} \left[ \left(\frac{d_0}{l}\right)^{7} - \left(\frac{d_0}{l}\right)^{13} \right]
     \end{align*}
     W ten sposób otrzymaliśmy wzór opisujący siłę wynikającą z potencjału Lennarda-Jonesa:
@@ -289,9 +340,18 @@
         F_{LJ} = 3\frac{V_0}{d_0} \left[ \left(\frac{d_0}{l}\right)^{7} - \left(\frac{d_0}{l}\right)^{13} \right]
     \end{equation}
 
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
-    \section{Temperatura z teorii gazów}
-    \subsection{Opis metody}
+    \section{Wielkości fizyczne wyznaczane używając metodę dynamiki molekularnej}
+    Korzystając z modelu można wyznaczyć i zaprezentować wartości fizyczne opisujące układ jak 
+    na przykład temperatura czy ciśnienie. Mając do dyspozycji takie metody obliczeniowe jak dynamika 
+    molekularna, możemy oprócz wizualizacji zderzeń obiektów, analizować również takie wielkości fizyczne rozkład
+    temperatury lub ciśnieni wewnątrz obiektów. Taka analiza jest istotna w przypadku generowania
+    realistycznych symulacji jak na przykład rozrywanie elastycznego materiału czy 
+    zderzenie meteorytu z powierzchnią planety. Takie dodatkowe informacje potrafią ukazać skalę 
+    zawartej w układzie energii.
+
+    \subsection{Temperatura z zasady ekwipartycji energii}
     Punktem wyjścia może być zasada ekwipartycji energii: średnia energia kinetyczna na jeden stopień swobody jest równa 
     $\frac{k_{B}T}{2}$ gdzie $k_{B}$ to stała Boltzmanna a $T$ to temperatura.
 
@@ -299,7 +359,7 @@
         \left< E_{k} \right> = s \frac{k_{B}T}{2}
     \end{equation}
 
-    W naszym przypadku liczba stopni swobody $s = 2$ (ruch translacyjny w dwóch osiach $x$ i $y$).
+    W naszym przypadku liczba stopni swobody $s = 2$ (ruch translacyjny w dwóch kierunkach $x$ i $y$).
 
     \begin{align*}
         \left< E_{k} \right> = \left< \frac{m v^{2}}{2} \right> = \frac{m}{2} \left< v^{2} \right> = T \frac{k_{B}}{2}
@@ -309,27 +369,33 @@
         T = \frac{m}{k_{B}} \left< v^{2} \right>
     \end{equation}
 
-    Wzór wzięty z teorii kinetyczno-molekularnej gazów.
+    Jest to najprostsze przybliżenie temperatury, dotyczące gazu doskonałego, w którym cząstki gazu 
+    wzajemnie ze sobą nie oddziałują. Wzór ten wymaga modyfikacji w celu uzyskania właściwego wyniku. \\
 
-    \subsection{Weryfikacja poprawności wzoru}
     Rozważmy przypadek gdy obiekt porusza się w przestrzeni jako całość: swobodny spadek w polu grawitacyjnym.
-    Węzły nie drgają i przemieszczają się z tą samą prędkością 
+    Węzły nie drgają i przemieszczają się z tą samą prędkością:
     $\vec{V_k} = \vec{V_0} + \vec{g}t$ dla $t > 0  \Rightarrow  |\vec{V_k}|^2  \Rightarrow  T > 0$ a 
     przecież swobodny spadek nie rozgrzewa ciał. 
-    Wniosek: ten wzór jest nieodpowiedni dla naszego modelu, należy go zmodyfikować.
+    Możemy zatem wnioskować, że powyższy wzór jest nieodpowiedni dla naszego modelu, 
+    należy go zmodyfikować wprowadzając odpowiednie poprawki.
     
     \subsection{Modyfikacja wzoru}
-    Należy przeskalować prędkość, to znaczy odjąć średnią prędkość z jaką porusza się obiekt jako całość, wówczas nie będzie
-    to prowadziło dodatkowego wzrostu temperatury. Def: $\left< v^{2} \right>  =  \frac{1}{T} \int_{0}^{T} v^2(t) dt$
-    uśredniony po krótkich odcinkach czasu. Estymator $\left< v^{2} \right>$ to średnia arytmetyczna: 
-    $t = t_i = i \cdot \Delta t$ dla $i = 0, 1, ..., n-1$.
+    Pierwszym wykonanym krokiem w celu poprawy wzoru jest przeskalowanie prędkości, co oznacza odjęcie 
+    średniej prędkość z jaką porusza się obiekt jako całość, wówczas nie będzie
+    to prowadziło dodatkowego wzrostu temperatury. 
+    \begin{equation}
+        \left< v^{2} \right> = \frac{1}{T} \int_{0}^{T} v^2(t) dt
+    \end{equation}
+    Estymator $\left< v^{2} \right>$ to średnia arytmetyczna: 
+    $t = t_i = i \cdot \Delta t$ dla $i = 0, 1, ..., n-1$. Przy czym \emph{n} musi być na tyle małe
+    abyśmy uśredniali jedynie po krótkim odcinku czasu.
 
     \begin{equation}
         \left< v^{2} \right>  \approx  \overline{v^2} = \frac{1}{n \cdot \Delta t} \sum_{i = 0}^{n} {v_i}^2 \Delta t
         = \frac{1}{n} \sum_{i = 0}^n {v_i}^2
     \end{equation}
 
-    Modyfikujemy wzór odejmując wartość średnią:
+    Modyfikujemy wzór odejmując wartość średnią (wariancję):
     \begin{align*}
         \left< \left( v - \left< v \right> \right)^2 \right>  &=  
         \frac{1}{T} \int_{0}^{T} \left( v(t) - \left< v \right> \right)^2 dt  \\
@@ -350,7 +416,7 @@
         {\delta_v}^2  \approx  \frac{1}{n} \sum_{i = 0}^{n - 1} {v_i}^2 - \left( \frac{1}{n} \sum_{i = 0}^{n - 1} {v_i} \right)^2
     \end{equation}
 
-    \subsection{Weryfikacja zmodyfikowanego wzoru}
+    Powyższy wzór zawiera już poprawkę eliminując z niego ruchu postępowego środka masy układu.
     Ponownie rozparzymy spadek swobodny dla jednego wymiaru: $v_k = v_0 + gt$ gdzie $v_0 = 0 = v_k = gt$
 
     \begin{align*}
@@ -365,17 +431,19 @@
         {\delta_v}^2  =  \frac{g^2 T^2}{12}
     \end{equation}
 
-    Z powyższych obliczeń wynikia, że temperatura wciąż wzrasta podczas swobodnego spadku. 
+    Z powyższych obliczeń wynika, że temperatura wciąż wzrasta podczas swobodnego spadku
+    ale jednak wzrost ten jest mniejszy o jeden rząd wielkości. 
     Jeżeli jednak $a >> g$ to wpływ na temperaturę jest niewielki a dla $T << 1$ oraz $a >> g$ 
-    np. $a = 5 \cdot g \Rightarrow {\delta_{v_a}}^2 = 25 \cdot {\delta_{v_g}}^2$ \\
-
-    Ze względu na powyżej przedstawione problemy oraz trudną implementację, metoda ta nie została wykorzystana
-    w dalszej części pracy.
+    na przykład dla $a = 5 \cdot g \Rightarrow {\delta_{v_a}}^2 = 25 \cdot {\delta_{v_g}}^2$.
+    Zastosowanie powyższej metody do wyznaczania temperatury jest problematyczne nawet po wprowadzeniu do niej poprawek i
+    ze względu na powyżej przedstawione problemy oraz trudną implementację nie została ona 
+    wykorzystana w dalszej części pracy. 
 
     % --------------------------------------------------------------------------------------------------------------
     \section{Temperatura z twierdzenia o wiriale}
-    \subsection{Opis metody}
-    Prędkości węzłów zmieniają się w czasie, więc będzie też zmieniać się średnia energia kinetyczna układu.
+    Kolejnym podejściem było uzyskanie energii potencjalnej i kinetycznej z twierdzeniu o wiriale.
+    Prędkości węzłów zmieniają się w czasie, więc będzie też zmieniać się średnia energia kinetyczna układu
+    a przez to i rozkład temperatury.
 
     \begin{equation}
         \left< E_{kinetyczna} \right>  =  \left< \sum_{k = 1}^{N_p} \frac{m_k}{2} {v_k}^2 \right>
@@ -393,12 +461,12 @@
     \begin{equation}
         \vec{F_k} = \sum_{j = 1}^{M} \vec{{F_k}_j}
     \end{equation}
-    Gdzie $M$ to liczba sąsiadów a $\vec{{F_k}_j}$ to siła oddziaływania z sąsiadem $j$-tym.
+    Gdzie $N_p$ to liczba węzłów w układzie, $M$ to liczba sąsiadów a $\vec{{F_k}_j}$ to siła oddziaływania z sąsiadem $j$-tym.
 
     \begin{equation}
         \left< E_{kinetyczna} \right> = 
-        \sum_{k = 1}^{N_p} -\frac{1}{2} \left< \vec{F_k} \cdot \vec{r_k} \right> =
-        \sum_{k = 1}^{N_p} \left< E_{kinetyczna} , k \right>
+        \sum_{k = 1}^{N_p} -\frac{1}{2} \left< \vec{F_k} \cdot \vec{r_k} \right>_t =
+        \sum_{k = 1}^{N_p} \left< E_{kinetyczna} , k \right>_t
     \end{equation}
     $\left< E_{kinetyczna} , k \right>$ to suma średnich energii kinetycznych węzłów. Dla każdego węzła $k$ możemy policzyć:
 
@@ -529,8 +597,12 @@
     Do całkowania przyśpieszenia wybrany został algorytm prędkościowy \emph{Verleta}. 
     Jest to metoda numeryczna stosowana do całkowania równań ruchu Newtona,
     jest często używana do obliczania trajektorii cząstek w symulacjach 
-    dynamiki molekularnej i grafice komputerowej. \\
-    
+    dynamiki molekularnej i grafice komputerowej.
+     
+    ``The velocity form of the Verlet algorithm is one in
+        which $v_{n}$ appears directly in the equations to be iterated.
+        These equations retain the superior numerical precision
+        of the summed form.'' - \cite{velocityverlet}.
     Kroki jakie należy wykonać w celu wykorzystania algorytmu Verleta na 
     potrzeby symulacji fizycznej prezentują się następująco:
     \begin{enumerate}
@@ -544,6 +616,10 @@
         \item Wykorzystując uzyskane w poprzednich krokach wartości wyznaczamy nową prędkość dla każdego z węzłów 
         $\vec{v}(t + \Delta t) = \vec{v}(t) + \frac{1}{2} \left( \vec{a}(t) + \vec{a}(t + \Delta t) \right) \Delta t$
     \end{enumerate}
+
+    ``Jego podstawową zaleta jest większa dokładność przy niewiele większym koszcie obliczeniowym 
+    [od algorytmu Eulera]. 
+    Jest przy tym łatwy w implementacji, dokładny i stabilny.'' - \cite{numerical}.
 
     Integracja Verleta zapewnia dobrą stabilność numeryczną a także posiada inne właściwości, które 
     są ważne w układach fizycznych, jak na przykład odwracalność w czasie. Możliwości tej metody nie są 
@@ -654,10 +730,9 @@
     ogromnych prędkości powodujących wyjście poza obserwowalny obszar.
     Zaczynają występować liczby zmiennoprzecinkowe o wartościach \emph{nan} lub \emph{inf}.
     Gdy takie wartości się pojawią symulacja wraca do ostatniego zapisanego stanu w którym 
-    te wartości nie występowały. Co pewien czas tworzy nową kopię zapasową. \\
+    te wartości nie występowały. Co pewien czas tworzy nową kopię zapasową.
 
-    Jeżeli 
-    stan symulacji jest poprawny zapisuje go do pamięci, jeżeli nie jest on poprawny to symulacja 
+    Jeżeli stan symulacji jest poprawny zapisuje go do pamięci, jeżeli nie jest on poprawny to symulacja 
     przywracana jest do ostatniego poprawnego stanu a krok czasowy jest zmniejszany.
 
     \subsection{Automatyczny dobór kroku czasowego}
@@ -1495,6 +1570,18 @@
         Robert C. Martin (2014) 
         \emph{Czysty Kod, podręcznik dobrego programisty},
         Helion S.A.
+
+        \bibitem{velocityverlet}
+        Swope, William C.; H. C. Andersen; P. H. Berens; K. R. Wilson (1982) 
+        \emph{A computer simulation method for the calculation of 
+            equilibrium constants for the formation of physical clusters 
+            of molecules: Application to small water clusters}, 
+        The Journal of Chemical Physics. 76, 637 (Appendix)
+
+        \bibitem{numerical}
+        Tomasz Dziubak, Jacek Matulewski, Radosław Płoszajczak, Marcin Sylwestrzak (2014)
+        \emph{Grafika Fizyka Metody Numeryczne - Symulacje fizyczne z wizualizacją 3D},
+        Wydawnictwo Naukowe PWN SA
 
         \bibitem{moleculardynamics}
         M. Greibel, S. Knapek, G. Zumbusch (2007)
