@@ -531,6 +531,13 @@
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Obliczanie ciśnienia na węźle}
+    Lokalne zmiany temperatury informują nas o dynamice zachodzących zmian w obiekcie.
+    Inne wielkości, które mogą dostarczać nam informacji o stanie układu jest ciśnienie.
+    W stanie o dużej dynamice, rozkład temperatury i ciśnienia są ze sobą połączone, gdyż 
+    pokazują rozchodzenie się energii zderzenia w obiekcie. Różnica ujawnia się w przypadku statycznym,
+    gdy $T_k = 0$, i węzły nie przemieszczać się względem siebie ale wywierają na siebie duży wpływ poprzez 
+    ciśnienie, dające obraz ilości zakumulowanej w obiekcie energii.
+
     W celu obliczenia ciśnienia działającego na węzeł, zamykamy go w komórce 
     o boku $\Delta = 2 dx$. Wybór $dx$ pozostawia pewną dowolność jednak powinno być ono małe, najlepiej aby było wyraźnie 
     mniejsze niż najmniejsza odległość równowagi pomiędzy dwoma połączonymi węzłami, na przykład $d_0 > 10 dx$. 
@@ -546,7 +553,8 @@
         \frac{d}{dl} F_{LJ} = 3\frac{V_0}{(d_0)^2} \left[ -7 \left(\frac{d_0}{l}\right)^{8} + 13 \left(\frac{d_0}{l}\right)^{14} \right]
     \end{equation}
     
-    Wykorzystując powyżej obliczoną pochodną jesteśmy teraz z stanie opisać ciśnienie na ściankach za pomocą wzoru:
+    Wykorzystując powyżej obliczoną pochodną jesteśmy teraz z stanie opisać ciśnienie 
+    na ściankach w dwuwymiarowym układzie za pomocą wzoru:
     \begin{equation}
         P_x (x \pm \frac{\Delta}{2}) = \frac{F_x (x \pm \frac{\Delta}{2})}{\Delta}
     \end{equation}
@@ -589,11 +597,27 @@
     Dodajemy ujemny znak do $p_x$ oraz $d_x$ ponieważ siła jest skierowana do środka komórki a 
     ciśnienie powinno być większe od zera. Dla każdego węzła należy policzyć pochodne siły w czterech punktach w celu 
     uzyskania wartości działającego na niego ciśnienia. Warto zwrócić uwagę na eliminację wpływu 
-    pola grawitacyjnego na obliczone ciśnienie, ponieważ jest to wartość stała.
+    pola grawitacyjnego na obliczone ciśnienie, ponieważ jest to wartość stała, której wkład znika po zróżnicowaniu.
+
+    Matematycznie wzór (2.26) odpowiada sumie elementów diagonalnych tensora ciśnienia, gdy dominującą rolę
+    odgdywają zdeżreznia (zmiana pędu). Zakładamy tu, że czynnik kinetycznych (prędkościowy) będzie w dużym stopniu
+    redukował na silne kwazipenloolyczne odziaływanie z siąsiadami.
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Algorytm Verleta}
+    Dysponując modelem matematycznym układu,
+    możemy ge opisać pod warunkiem że jesteśmy w stanie rozwiązać układ 2N równań różniczkowych 
+    drugiego rzędu jakie jakie otrzymujemy z równań ruchu dla całego układu złożonego z N węzłów siatki.
+    W ogólnym przypadku, rozwiązanie analityczne nie jest możliwe i jedynym sposobem jego rozwiązania 
+    jest użycie metod numerycznych a dokładniej jednej z metod dedykowanych dla problemów jednostkowych.
+    Spośród dostępnych metody jak np. metody Eulera, metody RK4, metody wielokrokowej (Adams-Baskjert, Adams-Moulibu)
+    lub wybrany na cele projektu metoda Verleta.
+
+    Rząd dokładności schematu verleta. Porównanie wersję prędkościową i położeniową algorytmu Verleta.
+    Schemat prędkościowy jest użyteczny ponieważ w niektórych tłumienie i tarcie w modelu zależą od prędkości. \\
+
+
     Do całkowania przyśpieszenia wybrany został algorytm prędkościowy \emph{Verleta}. 
     Jest to metoda numeryczna stosowana do całkowania równań ruchu Newtona,
     jest często używana do obliczania trajektorii cząstek w symulacjach 
@@ -1507,52 +1531,52 @@
     urządzeniach wielowątkowych takich jak procesory czy karty graficzne.
 
     % --------------------------------------------------------------------------------------------------------------
-    \section{Dodatek}
-    \subsection{Animacje prezentujące działanie aplikacji}
+    % \section{Dodatek}
+    % \subsection{Animacje prezentujące działanie aplikacji}
     
-    \subsubsection{Przekazanie energii między dwoma sztywnimi obiektami}
-    \url{https://youtu.be/nolLh6CSa-8} \\
+    % \subsubsection{Przekazanie energii między dwoma sztywnimi obiektami}
+    % \url{https://youtu.be/nolLh6CSa-8} \\
 
-    Mniejszy obiekt $3 \times 3$ po odbiciu od większego obiektu $8 \times  8$ 
-    znajdującego się  pod nim wznosi się na
-    wysokość o wiele większą, niż ta z której rozpoczął spadek swobodny.
-    Występuje tutaj przekazanie części energii z obiektu 
-    większego do mniejszego - sama zasada energii jest zachowana.
+    % Mniejszy obiekt $3 \times 3$ po odbiciu od większego obiektu $8 \times  8$ 
+    % znajdującego się  pod nim wznosi się na
+    % wysokość o wiele większą, niż ta z której rozpoczął spadek swobodny.
+    % Występuje tutaj przekazanie części energii z obiektu 
+    % większego do mniejszego - sama zasada energii jest zachowana.
 
-    \subsubsection{Przekazanie energii między dwoma miękkimi obiektami}
-    \url{https://youtu.be/q2uYx8uLl3w} \\
+    % \subsubsection{Przekazanie energii między dwoma miękkimi obiektami}
+    % \url{https://youtu.be/q2uYx8uLl3w} \\
 
-    W tym przypadku obiekty są mniej sztywne, obiekt $3 \times 3$ po odbiciu 
-    od obiektu $8 \times  8$ wznosi się na wyraźnie mniejszą wysokość niż w przypadku bardziej sztywnych obiektów
-    (jednak wciąż wyżej niż punkt z którego zaczął spadać). Można to wytłumaczyć tym,
-    że znaczna część energii która w poprzednim przypadku była częścią ruchu postępowego,
-    teraz stała się energią wewnętrzną obiektów (wibracje obiektów pochłaniają część energii).
+    % W tym przypadku obiekty są mniej sztywne, obiekt $3 \times 3$ po odbiciu 
+    % od obiektu $8 \times  8$ wznosi się na wyraźnie mniejszą wysokość niż w przypadku bardziej sztywnych obiektów
+    % (jednak wciąż wyżej niż punkt z którego zaczął spadać). Można to wytłumaczyć tym,
+    % że znaczna część energii która w poprzednim przypadku była częścią ruchu postępowego,
+    % teraz stała się energią wewnętrzną obiektów (wibracje obiektów pochłaniają część energii).
 
-    \subsubsection{Proste zderzenie dwóch obiektów}
-    \url{https://www.youtube.com/watch?v=4cGcL_5yUt4} \\ 
+    % \subsubsection{Proste zderzenie dwóch obiektów}
+    % \url{https://www.youtube.com/watch?v=4cGcL_5yUt4} \\ 
 
-    Przypadek pokazujący zderzenie dwóch obiektów nieznajdujących się w polu grawitacyjnym.
-    Jednemu z obiektów nadana jest prędkość początkowa, po chwili obiekty zderzają się i 
-    odbijają się od siebie.
+    % Przypadek pokazujący zderzenie dwóch obiektów nieznajdujących się w polu grawitacyjnym.
+    % Jednemu z obiektów nadana jest prędkość początkowa, po chwili obiekty zderzają się i 
+    % odbijają się od siebie.
 
-    \subsubsection{Zderzenie obiektów 120 kg z 288 kg}
-    \url{https://youtu.be/3dV6EpRacyA} \\
+    % \subsubsection{Zderzenie obiektów 120 kg z 288 kg}
+    % \url{https://youtu.be/3dV6EpRacyA} \\
 
-    Wolny spadek, brak zniszczeń obiektów.
+    % Wolny spadek, brak zniszczeń obiektów.
 
-    \subsubsection{Zderzenie obiektów 200 kg z 288 kg}
-    \url{https://youtu.be/lRGl7CJiqFU} \\
+    % \subsubsection{Zderzenie obiektów 200 kg z 288 kg}
+    % \url{https://youtu.be/lRGl7CJiqFU} \\
 
-    Wolny spadek, częściowe uszkodzenie jednego z obiektów.
+    % Wolny spadek, częściowe uszkodzenie jednego z obiektów.
 
-    \subsubsection{Zderzenie obiektów 320 kg z 288 kg}
-    \url{https://youtu.be/VYeCsaqNxAY} \\
+    % \subsubsection{Zderzenie obiektów 320 kg z 288 kg}
+    % \url{https://youtu.be/VYeCsaqNxAY} \\
 
-    Wolny spadek, pełne zniszczenie obydwóch obiektów.
+    % Wolny spadek, pełne zniszczenie obydwóch obiektów.
 
-    \subsection{Repozytorium}
-    \subsubsection{Link do repozytorium z kodem}
-    \url{https://github.com/theYiome/elastic-objects-rs}
+    % \subsection{Repozytorium}
+    % \subsubsection{Link do repozytorium z kodem}
+    % \url{https://github.com/theYiome/elastic-objects-rs}
 
     \begin{thebibliography}{9}
 
