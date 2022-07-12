@@ -138,7 +138,7 @@ pub fn draw_disks(
         .iter()
         .enumerate()
         .map(|(i, n)| {
-            let radius = scene.object_repulsion_dx * 0.6;
+            let radius = scene.object_repulsion_dx * 0.55;
 
             NodeAttribute {
                 position: n.position.to_array(),
@@ -177,7 +177,7 @@ fn color_from_boundary(nodes: &[Node]) -> Vec<[f32; 3]> {
     let min_id = nodes.iter().min_by(|x, y| x.object_id.cmp(&y.object_id)).unwrap().object_id;
     nodes.iter().map(|n| {
         if !n.is_boundary { 
-            [0.3, 0.3, 0.3] 
+            [0.6, 0.6, 0.6] 
         } else {
             number_to_rgb(n.object_id as f32 * 0.95, min_id as f32, max_id as f32)
         } 

@@ -641,8 +641,8 @@
         $\vec{v}(t + \Delta t) = \vec{v}(t) + \frac{1}{2} \left( \vec{a}(t) + \vec{a}(t + \Delta t) \right) \Delta t$
     \end{enumerate}
 
-    ``Jego podstawową zaleta jest większa dokładność przy niewiele większym koszcie obliczeniowym 
-    [od algorytmu Eulera]. 
+    ``Jego podstawową zaleta jest większa dokładność przy 
+    niewiele większym (od algorytmu Eulera) koszcie obliczeniowym. 
     Jest przy tym łatwy w implementacji, dokładny i stabilny.'' - \cite{numerical}.
 
     Integracja Verleta zapewnia dobrą stabilność numeryczną a także posiada inne właściwości, które 
@@ -654,11 +654,36 @@
 
 \chapter{Implementacja}
     \section{Węzły}
+
+    Informacje o węzłach znajdujących się w symulacji są przechowywane w strukturze \emph{Node}.
+
     \lstinputlisting[language=C]{code/node.rs}
     Atrybut $repr(C)$ zapewnia taką samą reprezentację obiektu w pamięci jak, gdyby była to
-    struktura w języku C. Jest to istotne podczas komunikacji z częściami programu nie napisanymi
-    w języku Rust jak kernel OpenCL, który oczekuje struktur ułożonych w pamięci wedle zasad 
-    języka C.
+    struktura w języku \emph{C}. Jest to istotne podczas komunikacji z częściami programu napisanymi
+    w innym języku niż \emph{Rust} jak kernel \emph{OpenCL}, który oczekuje struktur ułożonych w pamięci wedle zasad 
+    języka \emph{C}.
+
+    \begin{enumerate}
+        \item \emph{Wektor pozycji} - przechowuje obecną pozycję węzła. Wektory składają się z dwóch $32$ bitowych 
+        liczb zmiennoprzecinkowych.
+
+        \item \emph{Wektor prędkości} - przechowuje obecną prędkość węzła.
+
+        \item \emph{Poprzedni i obecny wektor przyśpieszenia} - wartości przyśpieszenia wykorzystywane są
+        podczas wyznaczania nowej prędkości i pozycji węzłów.
+
+        \item \emph{Masa węzła} - przechowuje masę danego węzła, każdy węzeł może mieć inną masę.
+
+        \item \emph{Współczynnik oporu} - wartość zero odpowiada braku jakiegokolwiek oporu ruchu dla danego
+        węzła, większe wartości wprowadzają dyssypację energii do układu.
+
+        \item \emph{Identyfikator obiektu} - każdy węzeł otrzymuje kolor zależy od jego ciśnienia. 
+        Skala kolorów jest taka sama jak w przypadku temperatury.
+
+        \item \emph{Węzeł na brzegu obiektu} - binarna flaga oznaczająca czy węzeł jest węzłem brzegowym.
+        Wartość \emph{false} oznacza, że węzeł jest węzłem wewnętrznym, 
+        natomiast \emph{true} oznacza, że znajduje się na brzegu obiektu.
+    \end{enumerate}
 
     \section{Algorytm prędkościowy Verleta}
     \lstinputlisting[language=C]{code/verlet.rs}
@@ -698,6 +723,8 @@
     W tym przypadku zdefiniowana została jedna funkcja jest w stanie obliczyć zmianę przyśpieszenia 
     dla każdego z węzłów.
 
+    \clearpage
+    % --------------------------------------------------------------------------------------------------
     \subsection{Siatka sąsiedztwa}
 
     \begin{wrapfigure}{R}{0.4\textwidth}
@@ -738,7 +765,8 @@
     węzłów będą się zmieniać, nieodpowiednio utrzymywana siatka sąsiedztwa może doprowadzić do zignorowania 
     oddziaływania pomiędzy węzłami znajdującymi się blisko siebie. W projekcie siatka budowana jest od nowa 
     co kilka iteracji symulacji.
-
+    
+    \clearpage
     \begin{wrapfigure}{R}{0.5\textwidth}
         \includegraphics[width=0.95\linewidth]{error_correction.drawio.png}
         \caption{
@@ -879,9 +907,9 @@
     stronie paska tytułowego każdego z paneli.
 
     \clearpage
-    \subsection{Tryby rysowania symulacji}
-    Funkcja rysowania \emph{połączeń węzłowych}, \emph{węzłów} i \emph{siatki obliczeniowej} domyślnie 
-    jest włączone ale można w każdej chwili wyłączyć każdą z nich korzystając z panelu ustawień rysowania.
+    \subsection{Dostępne tryby rysowania}
+    Funkcje rysowania \emph{połączeń węzłowych}, \emph{węzłów} i \emph{siatki obliczeniowej} domyślnie 
+    jest włączone ale można w każdej chwili wyłączyć dowolną z nich korzystając z panelu ustawień rysowania.
     Węzły można kolorować na następujące sposoby:
 
     \begin{enumerate}
@@ -893,10 +921,11 @@
 
         \item \emph{Temperatura} - każdy węzeł otrzymuje kolor zależy od jego temperatury. 
         Skala kolorów zaczyna się od ciemno-niebieskiego dla najniższych wartości, 
-        przechodzi w zielony, żółty, pomarańczowy a węzły o najwyższej temperaturze.
+        przechodzi w zielony, żółty, pomarańczowy a węzły o kolorze czerwonym
+        cechują się najwyższą wartością temperatury.
 
         \item \emph{Ciśnienie} - każdy węzeł otrzymuje kolor zależy od jego ciśnienia. 
-        Skala kolorów jest taka sama jak w przypadku temperatury.
+        Skala kolorów jest analogiczna do tej występującej przy wyświetlaniu temperatury.
     \end{enumerate}
 
     \begin{figure}[h]
@@ -926,7 +955,7 @@
     \end{figure}
 
 \chapter{Testy}
-    \section{Test poprawność działania algorytmów}
+    \section{Test poprawności działania algorytmów}
     \subsection{Opis testu}
     
     \begin{wrapfigure}{r}{0.45\textwidth}
@@ -953,7 +982,8 @@
     \begin{align*}
         g &= 9.81 [\frac{m}{s^2}] \\
         dt &= 10^{-5} [s] \\
-        t_{max} &= 8 [s]
+        t_{max} &= 8 [s] \\
+        n = \frac{t_{max}}{dt} &= 8 \times 10^{5}
     \end{align*}
 
     \subsection{Wyniki}
@@ -963,21 +993,59 @@
         \caption{Zmiana energii w czasie dla układu w ciągu pierwszych 1.2 sekund}
     \end{figure}
 
+
+    W początkowej fazie testu wyżej zawieszony obiekt zaczyna spadać
+    pod wpływem siły ciążenia na stacjonarny drugi obiekt znajdujący
+    się przy podłożu. Po nieco ponad $0.2 [s]$ dochodzi do pierwszego kontaktu.
     Przy zderzeniach pomiędzy obiektami oraz pomiędzy obiektem i podłożem energia potencjalna
     odpychająca Lennarda-Jonesa oznaczona kolejno kolorami pomarańczowym i czerwonym
-    wyraźnie wzrasta.
+    wyraźnie wzrasta. Zaraz po zderzeniu możemy obserwować ponowny wzrosty energii potencjalnej grawitacji,
+    gdyż obiekt $6 \times 4$ wykorzystując obiekt $8 \times 8$ jako trampolinę ponownie wznosi się na 
+    pewną wysokość, która jest jednak wyraźnie niższa od poprzedniej.
+
     \begin{figure}[H]
         \centering
-        \includegraphics[width=14.6cm]{energy_test_0to8s}
+        \includegraphics[width=14cm]{energy_test_0to8s}
         \caption{Zmiana energii w czasie dla układu w ciągu pierwszych 8 sekund}
     \end{figure}
     
+    Obiekt $6 \times 4$ odbija się jeszcze kilkukrotnie od obiektu $8 \times 8$, za każdym 
+    razem na nieco mniejszą wysokość, przez co następuje utrata energi potencjalnej grawitacji 
+    na rzecz energii wewnętrznych obydwóch obiektów. Po nieco ponad $3.0 [s]$ obiekt 
+    $6 \times 4$ zsuwa sie z drugiego obiektu i spada na podłoże
+
+    \begin{figure}[H]
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=5.5cm]{app_correctness_01.png} 
+            \caption{Stan początkowy}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm]{app_correctness_02.png}
+            \caption{Pierwsze zderzenie}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6cm]{app_correctness_03.png}
+            \caption{Kilkukrotne odbijanie się obiektów}
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=6.3cm]{app_correctness_04.png}
+            \caption{Zsunięcie się z siebie obiektów}
+        \end{subfigure}
+        
+        \caption{Widok aplikacji podczas wykonywania testu poprawności działania algorytmów.}
+    \end{figure}
+
     Po upłynięciu kilku sekund obiekty zostają przy podłożu, energia będąca początkowo energią
     potencjalną grawitacji została w większości zamieniona na energię kinetyczną oraz energię
     wewnętrzną. Obiekty nie odbijają się one już między sobą.
     Zmiana energii całkowitej w czasie działania całej symulacji była mniejsza niż $1\%$. Na tej
     podstawie można uznać, że algorytmy zostały zaimplementowane poprawnie.
 
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Test wydajności dla dwóch algorytmów obsługi zderzeń między obiektami}
     \subsection{Opis algorytmów}
@@ -1007,12 +1075,14 @@
     rozpatrywanych węzłów ta liczba jest zmniejszona do zaledwie $4(n-1)$ węzłów.
     Należy zwrócić uwagę, że metoda ta nie będzie poprawnie odwzorowywać oddziaływań dla
     obiektów zagnieżdżonych w sobie. Przykładowa sytuacja, w której algorytm nie zadziała poprawnie
-    to symulacja penetracji/rozrywania obiektów.
+    to symulacja penetracji/rozrywania obiektów - poprawna obsługa tego przypadku wymagała by odpowiedniej
+    modyfikacji brzegów obiektów.
 
+    \clearpage
     \subsection{Opis testu}
     Rozpatrujemy scenariusz z dwoma obiektami, sprawdzamy liczbę iteracji symulacji na sekundę stopniowo
     zwiększając liczbę węzłów w obydwóch obiektach.
-    Test wydajności został wykonany na procesorze AMD Ryzen 5 5600X, 
+    Test wydajności został wykonany na procesorze \emph{AMD Ryzen 5 5600X}, 
     jest to jednowątkowa wersja algorytmu działająca na CPU.
     Ilość węzłów w bokach obiektów ustawiana jest kolejno na: 
     3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60. Parametry symulacji dobrane są 
@@ -1022,7 +1092,7 @@
     Wyniki z przeprowadzonego testu prezentują się następująco:
     \begin{figure}[H]
         \centering
-        \includegraphics[width=15cm]{performance_side_size}
+        \includegraphics[width=18cm]{performance_side_size}
         \caption{
             Liczba iteracji na sekundę w zależności od 
             ilości węzłów w bokach obiektów dla dwóch metod obsługi zderzeń
@@ -1065,21 +1135,22 @@
         \caption{ Porównanie wydajności przypadku niezoptymalizowanego (a) i zoptymalizowanego (b) }
     \end{table}
     Dla większych obiektów zyski z zastosowanej optymalizacji są bardzo duże, w przypadku dwóch obiektów
-    $60 \times 60$ ilość iteracji dla algorytmu zoptymalizowanego jest ponad $100$ razy większa. \\
+    $60 \times 60$ ilość iteracji dla algorytmu zoptymalizowanego jest ponad $100$ razy większa.
 
-    Duży wzrost wydajności można zrozumieć rozpatrując jeden z przypadków, na warsztat weźmy dwa 
-    obiekty kwadratowe $60 \times 60$ co daje $3600$ węzłów na obiekt.
+    Wzrost wydajności można łatwo zobrazować rozpatrując jeden z przypadków. Gdy rozważymy dwa 
+    obiekty kwadratowe $60 \times 60$ daje nam to $3600$ węzłów na obiekt.
     Dla wersji niezoptymalizowanej mamy $3600 \times 3600 = 12960000$ operacji, natomiast wersja druga to zaledwie
     $4(n - 1) \times 4(n - 1) = 4(60 - 1) \times 4(60 - 1) = 236 \times 236 = 55696$ operacji. Oznacza to, że 
     w wersji każdy węzeł z każdym węzłem dla tego konkretnego przypadku musimy wykonać ponad $232$ razy więcej obliczeń
     kolizji między obiektami, gdzie zdecydowana większość z nich ma zaniedbywalny efekt na działanie symulacji. \\
 
     Warto zwrócić uwagę na to, że pomimo redukcji ponad $232$ razy obliczeń dla kolizji, 
-    ilość iteracji symulacji na sekundę dla przypadku dwóch obiektów $60 \time 60$ wzrosła jedynie
+    liczba wykonanych iteracji na sekundę dla przypadku dwóch obiektów $60 \time 60$ wzrosła jedynie
     nieco ponad stukrotnie. Wynika to z faktu, że optymalizacja ta obejmuje jedynie etap obliczania
     kolizji między różnymi obiektami i nie wpływa na obliczanie interakcji w tym samym obiekcie,
     obliczanie wpływu pola grawitacyjnego czy obliczanie wpływu sił oporu.
     
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Testy wydajności algorytmów z rozrywaniem obiektów}
     \begin{wrapfigure}{r}{0.4\textwidth}
@@ -1098,7 +1169,7 @@
     każdego z tych obiektów wynosi kolejno 5, 10, 15, 25, 40, 50, 60, 75, 90, 100. Dla 
     testów najwydajnejszych algorytmów dla CPU i GPU zostały wykonane dodatkowe testy z 
     bardzo gęstymi obiektami, liczba węzłów w bokach tych obiektów wynosi kolejno 150, 200, 250, 300.
-    Testy wydajności został wykonany na procesorze AMD Ryzen 5 5600X i
+    Testy wydajności został wykonany na procesorze \emph{AMD Ryzen 5 5600X} i
     karcie graficznej Nvidia RTX 3060. \\
     
     Krok czasowy symulacji wynosi
@@ -1110,7 +1181,7 @@
     \subsection{Test wydajności z węzłami brzegowymi}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{performance_cpu_boundary_noboundary.png}
+        \includegraphics[width=18cm]{performance_cpu_boundary_noboundary.png}
         \caption{
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
@@ -1126,7 +1197,7 @@
     \subsection{Test wydajności z siatką sąsiedztwa}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{performance_cpu_grid_nogrid.png}
+        \includegraphics[width=18cm]{performance_cpu_grid_nogrid.png}
         \caption{
             Liczba iteracji na sekundę w zależności od ilości węzłów -
             węzły brzegowe i węzły brzegowe + siatka sąsiedztwa
@@ -1141,7 +1212,7 @@
     \subsection{Porównanie wydajności na CPU}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{performance_cpu_best_worst.png}
+        \includegraphics[width=18cm]{performance_cpu_best_worst.png}
         \caption{
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
@@ -1155,7 +1226,7 @@
     \subsection{Porównanie wydajności wersji CPU i GPU}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{performance_best_cpu_gpu.png}
+        \includegraphics[width=18cm]{performance_best_cpu_gpu.png}
         \caption{
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
@@ -1170,7 +1241,7 @@
     \subsection{Różnica pomiędzy najlepszą i najgorszą wydajnością}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{performance_all_best_worst.png}
+        \includegraphics[width=18cm]{performance_all_best_worst.png}
         \caption{
             Liczba iteracji na sekundę w zależności od ilości węzłów
         }
@@ -1194,22 +1265,28 @@
     \subsection{Opis testu}
     Scena składa się z dwóch nieruchomych obiektów, gdzie jeden o wymiarach $12 \times 24$ zostaje umieszczony nieruchomo 
     przy podłożu a drugi o wymiarach $2 \times 2$ znajduje się nad obiektem pierwszym. Siła grawitacji jest aktywna co 
-    sprawia że obiekt drugi zaczyna spadać w kierunku obiektu pierwszego i po chwili następuje zderzenie. \\ 
+    sprawia że obiekt drugi zaczyna spadać w kierunku obiektu pierwszego i po chwili następuje zderzenie. 
+    Symulacja jest wykonywana dopóki układ nie znajduje się w stanie równowagi rozumianym jako wygaśnięcie ruchu
+    węzłów.\\ 
 
     Jeżeli odległość między dwoma połączonymi węzłami zwiększy się powyżej $1.5$ odległości równowagi dla 
-    tego połączenia ($d_x$), połączenie to zostaje zerwane, w ten sposób symulujemy rozrywanie obiektów pod dużym 
+    tego połączenia ($d_x$), połączenie to zostaje zerwane - w ten sposób symulujemy rozrywanie obiektów pod dużym 
     obciążeniem. Do obsługi kolizji została użyta wersja algorytmu każdy węzeł z każdym węzłem, ponieważ
     działa on poprawnie dla przenikających się obiektów a przy relatywnie niewielkiej liczbie 
     węzłów ($4$ i $288$) wciąż zapewnia bardzo dobrą płynność działania animacji.
 
-    \subsection{Parametry symulacji}
-    Do symulacji zostały wykorzystane poniższe parametry:
-    \begin{multicols*}{2}
+
+    \begin{multicols}{2}
+        [
+            \subsection{Parametry symulacji}
+            Do symulacji zostały wykorzystane poniższe parametry:
+        ]
+
         \begin{itemize}
             \item $g = 9.81$
             \item $dt = 10^{-5}$
         \end{itemize}
-        Odpychanie międzyobiektowe:
+        Odpychanie międzyobiektowe (parametry potencjału Lennarda-Jonesa dla dwóch zderzających się obiektów):
         \begin{itemize}
             \item $V_{0} = 20$
             \item $d_{0} = 0.07$
@@ -1220,7 +1297,7 @@
             \item $m_{1} = 1.0$
             \item $d_{1} = 0.08$
             \item $V_{1} = 70.0$
-            \item $p_{1} = [-0.92, -0.925]$
+            \item $r_{1} = [-0.92, -0.925]$
         \end{itemize}
         Parametry obiektu $2 \times 2$:
         \begin{itemize}
@@ -1228,17 +1305,19 @@
             \item $m_{2} = 30.0, 50.0, 80.0$
             \item $d_{2} = 0.15$
             \item $V_{2} = 500.0$
-            \item $p_{2} = [-0.12, 0.8]$
+            \item $r_{2} = [-0.12, 0.8]$
         \end{itemize}
-    \end{multicols*}
+    \end{multicols}
 
-    Parametry $p_x$ oznaczają pozycję początkową obiektu, $m_x$ masę węzłów w obiekcie, 
+    Parametry $r_x$ oznaczają pozycję początkową obiektu, $m_x$ masę węzłów w obiekcie, 
     $d_x$ pozycję równowagi przyciągania/odpychania pomiędzy dwoma węzłami dla tego
     samego obiektu lub jedynie odpychania dla oddziaływań międzywęzłowych,
     $V_x$ współczynnik oddziaływania międzywęzłowego, $g$ przyśpieszenie grawitacyjne, 
-    $c_x$ współczynnik oporu powietrza dla węzłów w obiekcie.
+    $c_x$ współczynnik oporu dla każdego z węzłów w danym obiekcie.
 
-    \subsection{Wolny spadek obiektu o masie 120 kg}
+    \clearpage
+    \subsection{Wyniki}
+    \subsubsection{Spadek obiektu o masie 120 kg w polu grawitacyjnym}
     \begin{figure}[h]
 
         \begin{subfigure}{0.5\textwidth}
@@ -1259,7 +1338,7 @@
         \begin{subfigure}{0.5\textwidth}
             \centering
             \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass30_4}
-            \caption{Stan stabilny}
+            \caption{Stan równowagi}
         \end{subfigure}
         
         \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 120 kg na obiekt $12 \times 24$ o masie 288 kg}
@@ -1272,8 +1351,8 @@
     po kilku sekundach układ stabilizuje się, obiekt $2 \times 2$ leży nieruchomo na obiekcie $12 \times 24$. 
     Żadne z połączeń międzywęzłowych nie zostało przerwane ze względu na zbyt niską energię zderzenia.
 
-    \newpage
-    \subsection{Wolny spadek obiektu o masie 200 kg}
+    \clearpage
+    \subsubsection{Spadek spadek obiektu o masie 200 kg w polu grawitacyjnym}
     \begin{figure}[h]
 
         \begin{subfigure}{0.5\textwidth}
@@ -1294,7 +1373,7 @@
         \begin{subfigure}{0.5\textwidth}
             \centering
             \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass50_4}
-            \caption{Stan stabilny}
+            \caption{Stan równowagi}
         \end{subfigure}
         
         \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 200 kg na obiekt $12 \times 24$ o masie 288 kg}
@@ -1303,10 +1382,10 @@
     Zwiększamy masę węzłów w obiekcie $2 \times 2$ z 30 kg do 50 kg. Ponieważ w reprezentacja wizualnej węzła jego pole 
     jest proporcjonalne do jego masy, tym razem obiekt $2 \times 2$ jest większy.
     Większa energia kinetyczna przy zderzeniu powoduje przerwanie kilku połączeń międzywęzłowych, a obiekt $2 \times 2$ 
-    utyka w wytworzonej dziurze. Część pierwotnego obiektu $12 \times 24$ oderwała się i utknęła w obiekcie $2 \times 2$.
+    utyka w wytworzonej wnęce. Część pierwotnego obiektu $12 \times 24$ oderwała się i utknęła w obiekcie $2 \times 2$.
 
-    \newpage
-    \subsection{Wolny spadek obiektu o masie 320 kg}
+    \clearpage
+    \subsubsection{Spadek spadek obiektu o masie 320 kg w polu grawitacyjnym}
     \begin{figure}[h]
 
         \begin{subfigure}{0.5\textwidth}
@@ -1327,7 +1406,7 @@
         \begin{subfigure}{0.5\textwidth}
             \centering
             \includegraphics[width=6cm, height=6cm]{collision_2x2_24x12_mass80_4}
-            \caption{Stan stabilny}
+            \caption{Stan równowagi}
         \end{subfigure}
         
         \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 320 kg na obiekt $12 \times 24$ o masie 288 kg}
@@ -1338,8 +1417,8 @@
     rozerwany. Częściowemu zniszczeniu ulega również obiekt $2 \times 2$, ze względu duży stosunek masy do wytrzymałości
     połączeń międzywęzłowych niektóre z tych połączeń zostały przerwane.
 
-    \newpage
     % --------------------------------------------------------------------------------------------------------------
+    \clearpage
     \section{Test widoku ciśnienia dla jednego obiektu}
     \subsection{Opis testu}
     Jeden obiekt o wymiarach $50 \times 50$ węzłów umieszczony zostaje przy podłożu w polu grawitacyjnym.
@@ -1388,7 +1467,8 @@
     górnej ściance.
 
     \subsection{Zmiana energii układu w czasie}
-    Energia całkowita układu na początku symulacji znormalizowana jest do zera. 
+    Pomiar energii pozwala na głębsze zrozumienie zmian zachodzących w układu podczas
+    wykonywania testu.
 
     \begin{figure}[H]
         \centering
@@ -1447,7 +1527,7 @@
         \begin{subfigure}{0.5\textwidth}
             \centering
             \includegraphics[width=6cm, height=5.5cm]{pressure02_04}
-            \caption{Stan stabilny}
+            \caption{Stan równowagi}
         \end{subfigure}
         
         \caption{Widok ciśnienia w wybranych chwilach czasowych dla zderzenia obiektów $50 \times 50$ i $20 \times 20$}
@@ -1468,8 +1548,6 @@
     ciśnienia była większa niż przy podstawie obiektu $50 \times 50$.
 
     \subsection{Zmiana energii układu w czasie}
-    Energia całkowita układu na początku symulacji znormalizowana jest do zera. 
-
     \begin{figure}[H]
         \centering
         \includegraphics[width=16cm]{pressure_energy02_01}
