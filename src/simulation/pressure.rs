@@ -1,4 +1,6 @@
 use glam::Vec2;
+use crate::scene::Scene;
+
 use super::node::Node;
 
 fn force_derivative_near_node(nodes: &[Node], connections_structure: &[(usize, f32, f32)], point: Vec2) -> Vec2 {
@@ -35,4 +37,11 @@ pub fn pressure_per_node(
         let pressure = -0.25 * (-(right - left) - (top - bottom));
         pressure
     }).collect()
+}
+
+pub fn max_pressure(
+    nodes: &[Node],
+    connections_structure: &[Vec<(usize, f32, f32)>]
+) -> f32 {
+    pressure_per_node(nodes, connections_structure).iter().fold(f32::NEG_INFINITY, |a, &b| a.max(b))
 }

@@ -11,7 +11,7 @@ use glutin::{
 
 use crate::graphics;
 use crate::scene::Scene;
-use crate::simulation;
+use crate::simulation::{self, pressure};
 use crate::rendering;
 use crate::simulation::manager::SimulationEngineEnum;
 use crate::simulation::manager::SimulationSettings;
@@ -28,22 +28,25 @@ pub struct RenderingSettings {
 }
 
 pub fn run_with_gui(scene: Scene) {
-    let mut simulation_settings = SimulationSettings {
-        dt: 0.0,
-        steps_per_frame: 5,
-        engine: SimulationEngineEnum::None,
-        use_grid: false,
-        cell_size: scene.object_repulsion_dx * 2.5,
-        log_to_csv: false,
-        log_interval: 0.01,
-        use_backup: true,
-        backup_interval: 0.1,
-        use_auto_dt: true,
-        auto_dt_factor: 1.1,
-    };
 
-    let mut simulation_manager = simulation::manager::SimulationManager::new(simulation_settings, scene);
-    simulation_manager.settings = simulation_settings;
+    let mut simulation_manager = {
+    
+        let simulation_settings = SimulationSettings {
+            dt: 0.0,
+            steps_per_frame: 5,
+            engine: SimulationEngineEnum::None,
+            use_grid: false,
+            cell_size: scene.object_repulsion_dx * 2.5,
+            log_to_csv: true,
+            log_interval: 0.01,
+            use_backup: true,
+            backup_interval: 0.1,
+            use_auto_dt: true,
+            auto_dt_factor: 1.1,
+        };
+    
+        simulation::manager::SimulationManager::new(simulation_settings, scene)
+    };
 
     let mut rendering_settings = RenderingSettings {
         coloring_mode: graphics::ColoringMode::KineticEnergy,
@@ -111,8 +114,10 @@ pub fn run_with_gui(scene: Scene) {
             }
     
             current_log_dt += simulation_manager.last_step_dt();
-            if simulation_settings.log_to_csv {
-                if current_log_dt > simulation_settings.log_interval {
+
+            if simulation_manager.settings.log_to_csv {
+
+                if current_log_dt > simulation_manager.settings.log_interval {
                     
                     let (kinetic, gravity, lennjon, wallrep, objrepu) =
                         simulation::energy::calculate_total_energy(&simulation_manager.scene);
@@ -126,15 +131,18 @@ pub fn run_with_gui(scene: Scene) {
                         objrepu
                     );
 
+                    let max_pressure = pressure::max_pressure(&simulation_manager.scene.nodes, &simulation_manager.connections_structure);
+
                     csv_writer
                         .write_record(&[
                             simulation_manager.total_simulation_time.to_string(),
-                            (current_fps * simulation_settings.steps_per_frame).to_string(),
+                            (current_fps * simulation_manager.settings.steps_per_frame).to_string(),
                             kinetic.to_string(),
                             gravity.to_string(),
                             lennjon.to_string(),
                             wallrep.to_string(),
                             objrepu.to_string(),
+                            max_pressure.to_string(),
                         ])
                         .unwrap();
     

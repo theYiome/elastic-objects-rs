@@ -15,10 +15,10 @@ pub fn generate() -> Scene {
     let spacing2 = 0.04;
 
     let mut nodes1 = objects::build_rectangle(object1_sx, object1_sy, spacing1, -1.0, -0.9, 0.01, 100.0, 1);
-    let connections_map_1 = objects::build_connections_map(&nodes1, spacing1 * 1.5, 0.2, 0);
+    let connections_map_1 = objects::build_connections_map(&nodes1, spacing1 * 1.5, 0.1, 0);
 
-    let mut nodes2 = objects::build_rectangle(object2_sx, object2_sy, spacing2, -0.5, 1.4, 0.2, 20.0, 2);
-    let connections_map_2 = objects::build_connections_map(&nodes2, spacing2 * 1.5, 0.3, object1_sx * object1_sy);
+    let mut nodes2 = objects::build_rectangle(object2_sx, object2_sy, spacing2, -0.75, 1.4, 0.02, 20.0, 2);
+    let connections_map_2 = objects::build_connections_map(&nodes2, spacing2 * 1.5, 0.1, object1_sx * object1_sy);
 
     let mut connections_map: HashMap<(usize, usize), (f32, f32)> = HashMap::new();
     connections_map.extend(connections_map_1);

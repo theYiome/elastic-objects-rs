@@ -138,7 +138,7 @@ pub fn draw_disks(
         .iter()
         .enumerate()
         .map(|(i, n)| {
-            let radius = scene.object_repulsion_dx * 0.55;
+            let radius = scene.object_repulsion_dx * 0.45;
 
             NodeAttribute {
                 position: n.position.to_array(),
