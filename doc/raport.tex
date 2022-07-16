@@ -120,77 +120,54 @@
     symulowanie zderzeń obiektów elastycznych z możliwością ich penetracji i rozrywania. Kluczowym 
     aspektem podczas implementacji algorytmów była wydajność obliczeniowa i dzięki odpowiednim 
     optymalizacjom szybkość wykonywania symulacji pozwala na wizualizację zderzeń w czasie rzeczywistym 
-    pod postacią animacji komputerowych.
+    pod postacią animacji komputerowych. \\
 
     W projekcie rozważane były jedynie zderzenia obiektów dwuwymiarowych. Pozwala uzyskanie dużo lepszej
-    wydajności programu w porównaniu do wersji trójwymiarowej, w której liczba koniecznych obliczeń jest
-    znacznie większa. Nie ma różnic jeżeli chodzi o fizyczny aspekt zderzeń dwu i trzy-wymiarowych, gdyż 
-    równania ruchu mają taką samą strukturę a jedynie wartości wektorowe w nich zawarte mają jeden
-    dodatkowy wymiar.
-    
-    \section{Generowanie grafiki}
-    Do generowania grafiki i animacji został wykorzystany \emph{\emph{OpenGL}}, 
-    wielojęzyczny i wieloplatformowy 
-    interfejs programowania aplikacji do renderowania grafiki wektorowej 2D i 3D, 
-    od 2006 roku zarządzany przez konsorcjum technologiczne non-profit Khronos Group. 
-    Interfejs API jest zwykle używany do interakcji 
-    z procesorem graficznym w celu uzyskania renderowania z przyspieszeniem sprzętowym. 
-    Specyfikacja \emph{OpenGL} opisuje abstrakcyjne API do rysowania grafiki 2D i 3D. Chociaż możliwe jest 
-    zaimplementowanie API w całości programowo, jest ono zaprojektowane do implementacji głównie 
-    lub całkowicie sprzętowej.
+    wydajności programu w porównaniu do wersji z trójwymiarowymi obiektami, w której liczba koniecznych obliczeń jest
+    znacznie większa. Nie ma jednak istotnych różnic jeżeli chodzi o fizyczny aspekt zderzeń dwu i trzy-wymiarowych, gdyż 
+    równania ruchu mają taką samą strukturę a jedynie wartości wektorowe w nich zawarte mają jeden dodatkowy wymiar.
 
-    Ten interfejs programowania zdefiniowany jako zestaw funkcji, które mogą być wywoływane przez program.
-    Chociaż definicje tych funkcji są podobne do tych z języka programowania \emph{C}, to tak 
-    naprawdę są one niezależne od języka od jakiegokolwiek języka. 
-    \emph{OpenGL} jest również wieloplatformowy przez co programy go wykorzystujące mogą 
-    działać poprawnie na systemie operacyjnym Windows jak i systemach z rodziny Linux. 
-    Specyfikacja nie mówi nic na temat uzyskiwania i zarządzania kontekstem \emph{OpenGL}, 
-    pozostawiając to systemowi okien; \emph{OpenGL} zajmuje się wyłącznie 
-    renderowaniem, nie dostarczając żadnych interfejsów API związanych z wejściem, dźwiękiem lub oknami. \\
-
-    Na cele aplikacji wykorzystane zostało API \emph{OpenGL} w \emph{profilu rdzennym} (core profile), 
-    pozwalającym samodzielnie programować \emph{shadery} \cite{grafika3d}, co 
-    w diametralny sposób zmienia w jaki sposób pisane są programy graficzne w porównaniu 
-    do starszych wersji \emph{OpenGL}, znacznie zwiększając możliwości programistów z niego 
-    korzystających. W nowoczesnym \emph{OpenGL} potok renderowania składa 
-    się z następujących kroków \cite{grafika3d}:
-    \begin{enumerate}
-        \item Stworzenia buforów na werteksy i indeksy.
-        \item W shaderze werteksów przekształcenia położeń werteksów 
-        za pomocą macierzy rzutowania i ustalenia koloru dla każdego werteksu.
-        \item Przycinanie i rasteryzacja.
-        \item Shader fragmentów wykonuje operacje na pikselach mających na celu 
-        ustalenie ostatecznego koloru dla każdego piksela.
-        \item Test głębi, blending.
-    \end{enumerate}
-
-    Macierz rzutowania odpowiada za transformację z układu współrzędnych kamery do \emph{układu przycinania}
-    (clip coordinate system) \cite{grafika3d}. W aplikacji 
-    zaimplementowana została kamera która pozwala na przemieszczanie się po scenie i jest również w stanie 
-    przybliżać i oddalać obraz. 
-    Ponieważ przestrzeń po której porusza się
-    kamera jest dwuwymiarowa, macierz taka ma wymiary $3 \times 3$, o jeden wymiar więcej niż wymiarowość 
-    przestrzeni, aby poza zwykłymi transformacjami takimi jak rotacja czy skala, uwzględnić również
-    translację (przemieszczenie).
-    W ten sposób zaimplementowana kamera daje duże możliwości użytkownikowi programu, pozwalając 
-    mu na obserwowanie dowolnego miejsca w przestrzeni jednocześnie dając mu możliwość zwiększania
-    lub zmniejszania wielkości obserwowanych obiektów. \\
-
-    Oczywiście podczas projektowania aplikacji graficznej należy również zadbać o
-    wydajność rysowania obiektów. Nawet proste użycie stałego bufora zamiast jego 
-    zmiennego odpowiednika może wyraźnie skrócić czas rysowania.
-    Inną istotną optymalizacją zastosowaną w aplikacji jest użycie 
-    metody \emph{renderowania instancjonowanego} (instanced rendering), 
-    metoda pozwalająca na renderowanie wielu obiektów na raz 
-    przy użyciu jednego wywołania funkcji rysującej (draw call). 
-    Najpierw należy zainicjalizować geometrię obiektu który będzie renderowany, 
-    następnie stworzyć tablicę zwierającą informację 
-    między innymi o położeniu każdego z tych obiektów. 
-    W ten sposób zamiast rysować każdy obiekt w osobnym wywołaniu, 
-    możemy narysować wszystkie obiekty jednocześnie, 
-    w ten sposób wyraźnie zwiększając wydajność programu.
 
     % --------------------------------------------------------------------------------------------------------------
+    \clearpage
+    \section{Zastosowane technologie}
+
+    Głównym narzędziem wykorzystamy do stworzenia aplikacji jest \emph{rust}, szybki kompilowany 
+    język programowania zapewniający bezpieczeństwo pamięci i łatwe programowanie wielowątkowe. 
+    Język ten jest wybierany co roku zaczynając od roku 2015 w ankiecie społeczności \emph{Stack Overflow} jako 
+    \emph{``the most beloved programming language''}. O ile jest on wymagający, to jest 
+    on również wygodny, kod jest prosty do zrozumienia a programy napisane z jego użyciem 
+    można łatwo kompilować na wielu systemach nawet jeżeli używają one zewnętrznych bibliotek, gdyż 
+    zależności są zarządzane przez narzędzie \emph{cargo}, będące nieodzowną częścią ekosystemu tego języka.
+    Kompilator \emph{rustc} jest restrykcyjny, ponieważ wymusza on na kodzie programu bezpieczeństwo pamięci oraz
+    nie zezwala na kod generujący niezdefiniowane zachowanie, będące częstym problemem podczas tworzenia aplikacji
+    wielowątkowych. ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
+    polished set of tools to help you along the way'' - \cite{rustbook}. Surowość kompilatora 
+    nie jest poważnym problemem podczas tworzenia aplikacji, ponieważ kompilator dostarcza dokładnego opisu 
+    błędu wraz z referencją do dokumentacji a często również sugeruje sposób jego poprawiania. \\
+
+    Na potrzeby zrównoleglenia kodu symulacji wykorzystana została biblioteka \emph{rayon} \cite{rayon}, służąca
+    do programowania wielowątkowego w języku \emph{rust} z wykorzystaniem współdzielenia pamięci. 
+    Jest to odpowiednik API \emph{OpenMP} ze środowiska wykorzystywanego w 
+    programach napisanych w \emph{C} lub \emph{C++}. 
+    Do wykonania symulacji na procesorze graficznym wykorzystane zostało API \emph{OpenCL}, jest ono kompatybilne
+    z większością obecnie wykorzystywanych systemów operacyjnych i działa ono na sprzętach różnych producentów, 
+    w przeciwieństwie do technologii \emph{CUDA}, obsługującej jedynie procesory graficzne \emph{Nvidia}. \\
+    
+    Do wyświetlania animacji wykorzystane zostało API \emph{\emph{OpenGL}} w profilu rdzennym (core profile), w projekcie
+    udostępnione przez bibliotekę \emph{glium}. Nie jest ono już rozwijane, ostatnia stabilna wersja 
+    \emph{\emph{OpenGL} 4.6} pojawiła się w roku 2017, jednak jego możliwości są w pełni wystarczające
+    na potrzeby projektu. Główne zasady tworzenia programu są takie same jak w nowocześniejszych rozwiązaniach 
+    takich jak \emph{Vulkan}, jednak samo API jest nieco łatwiejsze w użyciu i pozwala osiągnąć zamierzone 
+    dla tej aplikacji efekty w mniejszej liczbie linijek kodu. \\
+
+    Do wyświetlenia interfejsu graficznego, pozwalającego monitorowanie oraz kontrolowanie stanu symulacji  
+    wykorzystana została biblioteka \emph{eGui} \cite{egui}. Jest ona kompatybilna z językiem \emph{Rust} 
+    i API \emph{\emph{OpenGL}}, dostarcza możliwości wyświetlania okienek wraz z elementami wejścia (przyciski, suwaki). \\
+
+
+    % --------------------------------------------------------------------------------------------------------------
+    \clearpage
     \section{Wielowątkowość}
 
     W architekturze komputerowej wielowątkowość to zdolność procesora do 
@@ -239,43 +216,6 @@
     czasu niż samo wykonanie obliczeń.
     ``Computing has (...) moved from one limited by computational throughput of the 
     processor, to one where moving the data is the primary limiting factor'' - \cite{cuda}
-    
-
-    % --------------------------------------------------------------------------------------------------------------
-    \section{Zastosowane technologie}
-
-    Głównym narzędziem wykorzystamy do stworzenia aplikacji jest \emph{rust}, szybki kompilowany 
-    język programowania zapewniający bezpieczeństwo pamięci i łatwe programowanie wielowątkowe. 
-    Język ten jest wybierany co roku zaczynając od roku 2015 w ankiecie społeczności \emph{Stack Overflow} jako 
-    \emph{``the most beloved programming language''}. O ile jest on wymagający, to jest 
-    on również wygodny, kod jest prosty do zrozumienia a programy napisane z jego użyciem 
-    można łatwo kompilować na wielu systemach nawet jeżeli używają one zewnętrznych bibliotek, gdyż 
-    zależności są zarządzane przez narzędzie \emph{cargo}, będące nieodzowną częścią ekosystemu tego języka.
-    Kompilator \emph{rustc} jest restrykcyjny, ponieważ wymusza on na kodzie programu bezpieczeństwo pamięci oraz
-    nie zezwala na kod generujący niezdefiniowane zachowanie, będące częstym problemem podczas tworzenia aplikacji
-    wielowątkowych. ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
-    polished set of tools to help you along the way'' - \cite{rustbook}. Surowość kompilatora 
-    nie jest poważnym problemem podczas tworzenia aplikacji, ponieważ kompilator dostarcza dokładnego opisu 
-    błędu wraz z referencją do dokumentacji a często również sugeruje sposób jego poprawiania. \\
-
-    Na potrzeby zrównoleglenia kodu symulacji wykorzystana została biblioteka \emph{rayon} \cite{rayon}, służąca
-    do programowania wielowątkowego w języku \emph{rust} z wykorzystaniem współdzielenia pamięci. 
-    Jest to odpowiednik API \emph{OpenMP} ze środowiska wykorzystywanego w 
-    programach napisanych w \emph{C} lub \emph{C++}. 
-    Do wykonania symulacji na procesorze graficznym wykorzystane zostało API \emph{OpenCL}, jest ono kompatybilne
-    z większością obecnie wykorzystywanych systemów operacyjnych i działa ono na sprzętach różnych producentów, 
-    w przeciwieństwie do technologii \emph{CUDA}, obsługującej jedynie procesory graficzne \emph{Nvidia}. \\
-    
-    Do wyświetlania animacji wykorzystane zostało API \emph{\emph{OpenGL}} w profilu rdzennym (core profile), w projekcie
-    udostępnione przez bibliotekę \emph{glium}. Nie jest ono już rozwijane, ostatnia stabilna wersja 
-    \emph{\emph{OpenGL} 4.6} pojawiła się w roku 2017, jednak jego możliwości są w pełni wystarczające
-    na potrzeby projektu. Główne zasady tworzenia programu są takie same jak w nowocześniejszych rozwiązaniach 
-    takich jak \emph{Vulkan}, jednak samo API jest nieco łatwiejsze w użyciu i pozwala osiągnąć zamierzone 
-    dla tej aplikacji efekty w mniejszej liczbie linijek kodu. \\
-
-    Do wyświetlenia interfejsu graficznego, pozwalającego monitorowanie oraz kontrolowanie stanu symulacji  
-    wykorzystana została biblioteka \emph{eGui} \cite{egui}. Jest ona kompatybilna z językiem \emph{rust} 
-    i API \emph{\emph{OpenGL}}, dostarcza możliwości wyświetlania okienek wraz z elementami wejścia (przyciski, suwaki). \\
 
     
 \chapter{Wstęp teoretyczny}
@@ -298,6 +238,45 @@
     \begin{equation}
         \frac{d^{2} \vec{r_i}}{dt} = \frac{\vec{F}}{m_i}
     \end{equation}
+
+    \clearpage
+    \section{Siatka węzłów}
+
+    \begin{wrapfigure}{r}{0.50\textwidth}
+        \includegraphics[width=0.95\linewidth]{object_shema.png}
+        \caption{
+            Siatka węzłów reprezentująca obiekt kwadratowy - 
+            czarnym kolorem oznaczone zostały węzły wewnętrzne a białym węzły zewnętrzne.
+        }
+    \end{wrapfigure}
+
+    Rzeczywiste obiekty znane z realnego świata są trójwymiarowe. Jednak zdarza się, że rozmiary przestrzenne 
+    obiektu w jednym z trzech kierunków są znacznie mniejsze od dwóch pozostałych. Wówczas taki obiekt można 
+    opisywać stosując przybliżenie dwuwymiarowe, gdyż efekty dynamiczne związane z tymi dwoma kierunkami 
+    stają się dominujące względem trzeciego (np. zmiana długości pod wpływem sił zewnętrznych). 
+    W metodzie dynamiki molekularnej modele dwu i trzy wymiarowe koncepcyjnie niczym się nie różnią, 
+    jednak redukcja wymiarowości pozwala zwiększyć wydajność obliczeniową. 
+    Taki był też powód zastosowania przybliżenia 2D w tej pracy.
+
+    W naszym modelu obiekt elastyczny reprezentowany jest przez dwuwymiarową 
+    siatkę węzłów. Węzły oddziałują ze swoimi sąsiadami siłami typu 
+    Lennarda-Jonesa lub harmonicznymi opisanymi w dalszej części pracy.
+
+
+    Przy tych założeniach oddziaływanie dla węzłów w środku będzie izotropowe (niezależne od kierunku). 
+    Węzły brzegowe mają mniej sąsiadów i w pewnych warunkach mogą zachowywać się inaczej niż węzły w środku, 
+    ich wychylenia z położenia równowagi będą większe podczas zderzeń ze ścianką. Są one z tych powodów 
+    bardziej podatne na oderwanie się od reszty siatki. Zbyt duża siła przyłożona do węzłów brzegowych 
+    może również spowodować nieodwracalną deformację siatki, jest to bardziej prawdopodobne podczas 
+    używania większych kroków czasowych.
+    
+    \subsection{Liczba najbliższych sąsiadów}
+    Oddziaływania międzycząsteczkowe liczone są tylko pomiędzy kilkoma lub kilkunastoma najbliższymi 
+    sąsiadami, w celu zmniejszenia ilości wymaganych obliczeń. W pracy oddziaływanie między węzłami 
+    modelowane jest przy użyciu krótkozasięgowego potencjału Lennarda-Jonesa, który na dużych 
+    odległościach szybko zbliża się do zera. Liczenie oddziaływań pomiędzy bardzo oddalonymi od 
+    siebie cząsteczkami nie wpływa znacząco na wynik, wymaga jednak znacznego nakładu obliczeniowego, 
+    czego zazwyczaj unika się podczas wykonywania symulacji numerycznych.
 
 
     \clearpage
@@ -439,6 +418,7 @@
     ze względu na powyżej przedstawione problemy oraz trudną implementację nie została ona 
     wykorzystana w dalszej części pracy. 
 
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Temperatura z twierdzenia o wiriale}
     Kolejnym podejściem było uzyskanie energii potencjalnej i kinetycznej z twierdzeniu o wiriale.
@@ -494,6 +474,8 @@
         temperatura stało się mniejsze niż w otoczeniu obiektu.
     \end{enumerate}
 
+    \clearpage
+    % --------------------------------------------------------------------------------------------------------------
     \subsection{Obliczanie temperatury}
     \begin{wrapfigure}{R}{0.35\textwidth}
         \includegraphics[width=0.95\linewidth]{avg.drawio}
@@ -528,7 +510,6 @@
     wyraźnie łatwiejsza w implementacji, dlatego ta metoda została użyta w aplikacji do stworzenia widoku 
     temperatury węzłów, przedstawionego w dalszej części pracy.
     
-    \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Obliczanie ciśnienia na węźle}
     Lokalne zmiany temperatury informują nas o dynamice zachodzących zmian w obiekcie.
@@ -553,6 +534,7 @@
         \frac{d}{dl} F_{LJ} = 3\frac{V_0}{(d_0)^2} \left[ -7 \left(\frac{d_0}{l}\right)^{8} + 13 \left(\frac{d_0}{l}\right)^{14} \right]
     \end{equation}
     
+    \clearpage
     Wykorzystując powyżej obliczoną pochodną jesteśmy teraz z stanie opisać ciśnienie 
     na ściankach w dwuwymiarowym układzie za pomocą wzoru:
     \begin{equation}
@@ -598,10 +580,6 @@
     ciśnienie powinno być większe od zera. Dla każdego węzła należy policzyć pochodne siły w czterech punktach w celu 
     uzyskania wartości działającego na niego ciśnienia. Warto zwrócić uwagę na eliminację wpływu 
     pola grawitacyjnego na obliczone ciśnienie, ponieważ jest to wartość stała, której wkład znika po zróżnicowaniu.
-
-    Matematycznie wzór (2.26) odpowiada sumie elementów diagonalnych tensora ciśnienia, gdy dominującą rolę
-    odgdywają zdeżreznia (zmiana pędu). Zakładamy tu, że czynnik kinetycznych (prędkościowy) będzie w dużym stopniu
-    redukował na silne kwazipenloolyczne odziaływanie z siąsiadami.
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
@@ -653,8 +631,48 @@
     i z tego powodu nie został on zastosowany podczas tworzenia aplikacji.
 
 \chapter{Implementacja}
-    \section{Węzły}
 
+    \section{Struktura projektu}
+    Projekt posiada dwa pliki wykonywalne, jeden służy jako pomoc do generowania scen, które zapisywane są 
+    do plików. Drugi plik jest wykonywalny po podaniu ścieżki do pliku zawierającego scenę wyświetla ją, 
+    udostępnia interfejs i pozwala na wykonywanie i monitorowanie symulacji. Struktura repozytorium
+    prezentuje się następująco: \\
+
+    \dirtree{%
+        .1 elastic-objects-rs.
+        .2 data.
+        .2 doc.
+        .3 code.
+        .3 images.
+        .2 glsl.
+        .2 scenes.
+        .2 src.
+        .3 bin.
+        .3 kernels.
+        .3 scene.
+        .3 simulation.
+    }
+
+    \begin{enumerate}
+        \item Folder \emph{src} zawiera główny kod źródłowy programu.
+        
+        \item Znajduje się w nim folder \emph{bin} zawierający pliki wykonywalne, 
+        jeden służący do generowania scen, drugi do wykonywania symulacji. 
+
+        \item Wygenerowane stany symulacji domyślnie zapisywane i czytane są z folderu \emph{scenes}.
+        
+        \item W folderze \emph{kernels} znajduje się kod wykorzystywany przez \emph{OpenCL} do 
+        wykonywania symulacji na procesorze graficznym.
+        
+        \item Pliki generowane przez symulację zapisywane są w folderze \emph{data}. 
+        Są to logi zawierające informacje o stanie energii symulacji w danych chwilach czasowych.
+
+        \item W folderze \emph{glsl} znajdują się kod shaderów wykorzystywanych do rysowania stanu symulacji.
+    \end{enumerate}
+
+    % --------------------------------------------------------------------------------------------------------------
+
+    \section{Węzły}
     Informacje o węzłach znajdujących się w symulacji są przechowywane w strukturze \emph{Node}.
 
     \lstinputlisting[language=C]{code/node.rs}
@@ -680,7 +698,7 @@
         \item \emph{Identyfikator obiektu} - każdy węzeł otrzymuje kolor zależy od jego ciśnienia. 
         Skala kolorów jest taka sama jak w przypadku temperatury.
 
-        \item \emph{Węzeł na brzegu obiektu} - binarna flaga oznaczająca czy węzeł jest węzłem brzegowym.
+        \item \emph{Węzeł na brzegu obiektu} - dwuwartościowa flaga mówiąca o tym czy węzeł jest węzłem brzegowym.
         Wartość \emph{false} oznacza, że węzeł jest węzłem wewnętrznym, 
         natomiast \emph{true} oznacza, że znajduje się na brzegu obiektu.
     \end{enumerate}
@@ -780,9 +798,10 @@
     Z powodu dobrania zbyt dużego kroku czasowego symulacja może być niestabilna.
     Objawy niestabilności to między innymi destrukcja siatki, nadanie węzłów 
     ogromnych prędkości powodujących wyjście poza obserwowalny obszar.
-    Zaczynają występować liczby zmiennoprzecinkowe o wartościach \emph{nan} lub \emph{inf}.
-    Gdy takie wartości się pojawią symulacja wraca do ostatniego zapisanego stanu w którym 
-    te wartości nie występowały. Co pewien czas tworzy nową kopię zapasową.
+    Zaczynają występować niepoprawne wartości odległości take jak \emph{nan} lub \emph{inf}.
+    Gdy takie wartości się pojawią obecny stan uznany jest niepoprawny i symulacja wraca 
+    do ostatniego zapisanego stanu w którym 
+    te wartości nie występowały. Co pewien czas tworzona jest nowa kopia zapasowa.
 
     Jeżeli stan symulacji jest poprawny zapisuje go do pamięci, jeżeli nie jest on poprawny to symulacja 
     przywracana jest do ostatniego poprawnego stanu a krok czasowy jest zmniejszany.
@@ -791,55 +810,80 @@
     Gdy korekta błędów jest włączona za każdym razem gdy zostanie wykryty błąd i powrót do poprzedniego stanu
     krok czasowy zostanie zmniejszony o połowę. Jeżeli użytkownik włączy funkcję automatycznego zwiększania
     kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość większą od 
-    jeden za każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd. \\ \\
+    jeden za każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd. \\ \\ \\ \\
     
     Efektywnie działanie tego algorytmu jest bardzo proste, jeżeli wykryjemy błąd zmniejszamy krok czasowy
     przez co symulacja wykonuje się dłużej i dokładniej, co znacząco zmniejsza ryzyko, że błąd
     ten wystąpi ponownie. Jednocześnie jeżeli błąd nie został wykryty możemy spróbować zwiększyć 
     krok czasowy, wykonując symulację mniej dokładnie ale za to skracając czas obliczeń.
 
-    % --------------------------------------------------------------------------------------------------------------
+    % ---------------------------------------------------------------------------------------------------
     \clearpage
-    \section{Struktura projektu}
-    Projekt posiada dwa pliki wykonywalne, jeden służy jako pomoc do generowania scen, które zapisywane są 
-    do plików. Drugi plik jest wykonywalny po podaniu ścieżki do pliku zawierającego scenę wyświetla ją, 
-    udostępnia interfejs i pozwala na wykonywanie i monitorowanie symulacji. Struktura repozytorium
-    prezentuje się następująco: \\
+    \section{Generowanie grafiki}
+    Do generowania grafiki i animacji został wykorzystany \emph{\emph{OpenGL}}, 
+    wielojęzyczny i wieloplatformowy 
+    interfejs programowania aplikacji do renderowania grafiki wektorowej 2D i 3D, 
+    od 2006 roku zarządzany przez konsorcjum technologiczne non-profit Khronos Group. 
+    Interfejs API jest zwykle używany do interakcji 
+    z procesorem graficznym w celu uzyskania renderowania z przyspieszeniem sprzętowym. 
+    Specyfikacja \emph{OpenGL} opisuje abstrakcyjne API do rysowania grafiki 2D i 3D. Chociaż możliwe jest 
+    zaimplementowanie API w całości programowo, jest ono zaprojektowane do implementacji głównie 
+    lub całkowicie sprzętowej.
 
-    \dirtree{%
-        .1 elastic-objects-rs.
-        .2 data.
-        .2 doc.
-        .3 code.
-        .3 images.
-        .2 glsl.
-        .2 scenes.
-        .2 src.
-        .3 bin.
-        .3 kernels.
-        .3 scene.
-        .3 simulation.
-    }
+    Ten interfejs programowania zdefiniowany jako zestaw funkcji, które mogą być wywoływane przez program.
+    Chociaż definicje tych funkcji są podobne do tych z języka programowania \emph{C}, to tak 
+    naprawdę są one niezależne od języka od jakiegokolwiek języka. 
+    \emph{OpenGL} jest również wieloplatformowy przez co programy go wykorzystujące mogą 
+    działać poprawnie na systemie operacyjnym Windows jak i systemach z rodziny Linux. 
+    Specyfikacja nie mówi nic na temat uzyskiwania i zarządzania kontekstem \emph{OpenGL}, 
+    pozostawiając to systemowi okien; \emph{OpenGL} zajmuje się wyłącznie 
+    renderowaniem, nie dostarczając żadnych interfejsów API związanych z wejściem, dźwiękiem lub oknami. \\
 
+    Na cele aplikacji wykorzystane zostało API \emph{OpenGL} w \emph{profilu rdzennym} (core profile), 
+    pozwalającym samodzielnie programować \emph{shadery} (programy działające na procesorze graficznym, 
+    zazwyczaj odpowiedzialne za ustalenie pozycji werteksów lub obliczenie koloru piksela) \cite{grafika3d}, 
+    co w diametralny sposób zmienia w jaki sposób pisane są programy graficzne w porównaniu 
+    do starszych wersji \emph{OpenGL}, znacznie zwiększając możliwości programistów z niego 
+    korzystających. W nowoczesnym \emph{OpenGL} potok renderowania składa 
+    się z następujących kroków \cite{grafika3d}:
     \begin{enumerate}
-        \item Folder \emph{src} zawiera główny kod źródłowy programu.
-        
-        \item Znajduje się w nim folder \emph{bin} zawierający pliki wykonywalne, 
-        jeden służący do generowania scen, drugi do wykonywania symulacji. 
-
-        \item Wygenerowane stany symulacji domyślnie zapisywane i czytane są z folderu \emph{scenes}.
-        
-        \item W folderze \emph{kernels} znajduje się kod wykorzystywany przez \emph{OpenCL} do 
-        wykonywania symulacji na procesorze graficznym.
-        
-        \item Pliki generowane przez symulację zapisywane są w folderze \emph{data}. 
-        Są to logi zawierające informacje o stanie energii symulacji w danych chwilach czasowych.
-
-        \item W folderze \emph{glsl} znajdują się kod shaderów wykorzystywanych do rysowania stanu symulacji.
+        \item Stworzenia buforów na werteksy i indeksy.
+        \item W shaderze werteksów przekształcenia położeń werteksów 
+        za pomocą macierzy rzutowania i ustalenia koloru dla każdego werteksu.
+        \item Przycinanie i rasteryzacja.
+        \item Shader fragmentów wykonuje operacje na pikselach mających na celu 
+        ustalenie ostatecznego koloru dla każdego piksela.
+        \item Test głębi, blending.
     \end{enumerate}
 
+    Macierz rzutowania odpowiada za transformację z układu współrzędnych kamery do \emph{układu przycinania}
+    (clip coordinate system) \cite{grafika3d}. W aplikacji 
+    zaimplementowana została kamera która pozwala na przemieszczanie się po scenie i jest również w stanie 
+    przybliżać i oddalać obraz. 
+    Ponieważ przestrzeń po której porusza się
+    kamera jest dwuwymiarowa, macierz taka ma wymiary $3 \times 3$, o jeden wymiar więcej niż wymiarowość 
+    przestrzeni, aby poza zwykłymi transformacjami takimi jak rotacja czy skala, uwzględnić również
+    translację (przemieszczenie).
+    W ten sposób zaimplementowana kamera daje duże możliwości użytkownikowi programu, pozwalając 
+    mu na obserwowanie dowolnego miejsca w przestrzeni jednocześnie dając mu możliwość zwiększania
+    lub zmniejszania wielkości obserwowanych obiektów. \\
+
+    Oczywiście podczas projektowania aplikacji graficznej należy również zadbać o
+    wydajność rysowania obiektów. Nawet proste użycie stałego bufora zamiast jego 
+    zmiennego odpowiednika może wyraźnie skrócić czas rysowania.
+    Inną istotną optymalizacją zastosowaną w aplikacji jest użycie 
+    metody \emph{renderowania instancjonowanego} (instanced rendering), 
+    metoda pozwalająca na renderowanie wielu obiektów na raz 
+    przy użyciu jednego wywołania funkcji rysującej (draw call). 
+    Najpierw należy zainicjalizować geometrię obiektu który będzie renderowany, 
+    następnie stworzyć tablicę zwierającą informację 
+    między innymi o położeniu każdego z tych obiektów. 
+    W ten sposób zamiast rysować każdy obiekt w osobnym wywołaniu, 
+    możemy narysować wszystkie obiekty jednocześnie, 
+    w ten sposób wyraźnie zwiększając wydajność programu.
+
     % --------------------------------------------------------------------------------------------------------------
-    \newpage
+    \clearpage
     \section{Widok aplikacji}
     Program ma formę aplikacji okienkowej. Na ekranie widoczny jest aktualny stan symulacji wraz z 
     panelami ustawień zawierającymi interaktywne kontrolki pozwalające zmieniać na 
@@ -1078,7 +1122,6 @@
     to symulacja penetracji/rozrywania obiektów - poprawna obsługa tego przypadku wymagała by odpowiedniej
     modyfikacji brzegów obiektów.
 
-    \clearpage
     \subsection{Opis testu}
     Rozpatrujemy scenariusz z dwoma obiektami, sprawdzamy liczbę iteracji symulacji na sekundę stopniowo
     zwiększając liczbę węzłów w obydwóch obiektach.
@@ -1092,10 +1135,21 @@
     Wyniki z przeprowadzonego testu prezentują się następująco:
     \begin{figure}[H]
         \centering
-        \includegraphics[width=18cm]{performance_side_size}
+        \includegraphics[width=16cm]{performance_side_size}
         \caption{
             Liczba iteracji na sekundę w zależności od 
-            ilości węzłów w bokach obiektów dla dwóch metod obsługi zderzeń
+            ilości węzłów w bokach obiektów dla dwóch metod obsługi zderzeń -
+            oś iteracji na sekundę jest przedstawiona w skali logarytmicznej.
+        }
+    \end{figure}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=16cm]{performance_side_size_log_log}
+        \caption{
+            Liczba iteracji na sekundę w zależności od 
+            ilości węzłów w bokach obiektów dla dwóch metod obsługi zderzeń -
+            oś iteracji na sekundę i oś liczby węzłów w boku obiektu są przedstawione w skali logarytmicznej.
         }
     \end{figure}
 
@@ -1241,12 +1295,25 @@
     \subsection{Różnica pomiędzy najlepszą i najgorszą wydajnością}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=18cm]{performance_all_best_worst.png}
+        \includegraphics[width=16cm]{performance_all_best_worst.png}
         \caption{
-            Liczba iteracji na sekundę w zależności od ilości węzłów
+            Liczba iteracji na sekundę w zależności od ilości węzłów -
+            oś iteracji na sekundę przedstawiona jest w skali logarytmicznej
         }
     \end{figure}
-    Ważniejszym aspektem podczas prób zwiększenia wydajności obliczeniowej algorytmów niż zrównoleglenie 
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=16cm]{performance_all_best_worst_log_log.png}
+        \caption{
+            Liczba iteracji na sekundę w zależności od ilości węzłów - 
+            obydwie osie przedstawione są w skali logarytmicznej
+        }
+    \end{figure}
+
+
+    Po dokonaniu analizy zbiorczej wyników dla wszystkich wersji algorytmu możemy zauważyć, że
+    ważniejszym aspektem podczas prób zwiększenia wydajności obliczeniowej algorytmów niż zrównoleglenie 
     jest optymalizacja wykonywanych obliczeń na przykład poprzez odrzucenie elementów nie wpływających 
     lub znikomo wpływających na wynik obliczeń. Aspekt ten można zauważyć na podstawie powyższego wykresu
     gdzie zmiany w algorytmie są w stanie przyśpieszyć działanie symulacji o ponad trzy rzędy wielkości w
@@ -1438,17 +1505,17 @@
         \begin{subfigure}{0.5\textwidth}
             \centering
             \includegraphics[width=6cm, height=4.5cm]{pressure_02.png}
-            \caption{Fala ciśnienia}
+            \caption{Propagacja fali ciśnienia}
         \end{subfigure}
         \begin{subfigure}{0.5\textwidth}
             \centering
             \includegraphics[width=6cm, height=4.5cm]{pressure_03.png}
-            \caption{Stabilizacja}
+            \caption{Stabilizacja rozkładu ciśnienia}
         \end{subfigure}
         \begin{subfigure}{0.5\textwidth}
             \centering
             \includegraphics[width=6cm, height=4.5cm]{pressure_04.png}
-            \caption{Stan stabilny}
+            \caption{Stan równowagi}
         \end{subfigure}
         
         \caption{Widok ciśnienia w wybranych chwilach czasowych dla obiektu $50 \times 50$}
@@ -1521,13 +1588,13 @@
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
-    \section{Test widoku ciśnienia dla zderzenia dwóch obiektów}
+    \section{Rozkład ciśnienia podczas zderzenia dwóch obiektów}
     \subsection{Opis testu}
     Jeden obiekt o wymiarach $50 \times 50$ węzłów umieszczony zostaje przy podłożu w polu grawitacyjnym a
     drugi obiekt o wymiarach $20 \times 20$ znajduje się nad obiektem pierwszym. Po krótkimi czasie pod wpływem
     działania siły grawitacji obiekt drugi zderza się z obiektem pierwszym. Aktywna jest siła oporu 
     proporcjonalna do prędkości węzła, co powoduje straty energii całkowitej układu i po pewnym czasie osiągnięcie
-    stanu stabilnego.
+    stanu równowagi.
 
     \subsection{Reprezentacja graficzna w czasie}
 
@@ -1635,7 +1702,6 @@
 
 \chapter{Podsumowanie}
     % --------------------------------------------------------------------------------------------------------------
-    \section{Napotkane problemy}
     Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
     było zbyt wolne. Następnie przy użyciu renderowania instancyjnego (instanced rendering) 
     problem ten został zlikwidowany po 
