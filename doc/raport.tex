@@ -585,22 +585,19 @@
     % --------------------------------------------------------------------------------------------------------------
     \section{Algorytm Verleta}
     Dysponując modelem matematycznym układu,
-    możemy ge opisać pod warunkiem że jesteśmy w stanie rozwiązać układ 2N równań różniczkowych 
-    drugiego rzędu jakie jakie otrzymujemy z równań ruchu dla całego układu złożonego z N węzłów siatki.
+    możemy go opisać pod warunkiem że jesteśmy w stanie rozwiązać układ równań różniczkowych 
+    drugiego rzędu jakie jakie otrzymujemy z równań ruchu dla całego układu złożonego z \emph{n} węzłów siatki.
     W ogólnym przypadku, rozwiązanie analityczne nie jest możliwe i jedynym sposobem jego rozwiązania 
     jest użycie metod numerycznych a dokładniej jednej z metod dedykowanych dla problemów jednostkowych.
-    Spośród dostępnych metody jak np. metody Eulera, metody RK4, metody wielokrokowej (Adams-Baskjert, Adams-Moulibu)
-    lub wybrany na cele projektu metoda Verleta.
+    Do tego celu służy wiele metod jak np. metody Eulera, metody RK4, metody Verleta. \\
 
-    Rząd dokładności schematu verleta. Porównanie wersję prędkościową i położeniową algorytmu Verleta.
-    Schemat prędkościowy jest użyteczny ponieważ w niektórych tłumienie i tarcie w modelu zależą od prędkości. \\
-
+    % Rząd dokładności schematu verleta. Porównanie wersję prędkościową i położeniową algorytmu Verleta.
+    % Schemat prędkościowy jest użyteczny ponieważ w niektórych tłumienie i tarcie w modelu zależą od prędkości. \\
 
     Do całkowania przyśpieszenia wybrany został algorytm prędkościowy \emph{Verleta}. 
     Jest to metoda numeryczna stosowana do całkowania równań ruchu Newtona,
     jest często używana do obliczania trajektorii cząstek w symulacjach 
     dynamiki molekularnej i grafice komputerowej.
-     
     ``The velocity form of the Verlet algorithm is one in
         which $v_{n}$ appears directly in the equations to be iterated.
         These equations retain the superior numerical precision
@@ -619,16 +616,16 @@
         $\vec{v}(t + \Delta t) = \vec{v}(t) + \frac{1}{2} \left( \vec{a}(t) + \vec{a}(t + \Delta t) \right) \Delta t$
     \end{enumerate}
 
-    ``Jego podstawową zaleta jest większa dokładność przy 
-    niewiele większym (od algorytmu Eulera) koszcie obliczeniowym. 
-    Jest przy tym łatwy w implementacji, dokładny i stabilny.'' - \cite{numerical}.
-
     Integracja Verleta zapewnia dobrą stabilność numeryczną a także posiada inne właściwości, które 
     są ważne w układach fizycznych, jak na przykład odwracalność w czasie. Możliwości tej metody nie są 
     okupione znaczącymi dodatkowymi kosztami obliczeniowymi w porównaniu z prostą metodą \emph{Eulera}. 
     Inne metody takie jak algorytm \emph{RK4} cechują się lepszą dokładnością ale za 
     to wymagany nakład obliczeniowy jest znacznie większy, co mogło by negatywnie wpłynąć na płynność animacji,
-    i z tego powodu nie został on zastosowany podczas tworzenia aplikacji.
+    i z tego powodu nie został on zastosowany podczas tworzenia aplikacji. \\
+
+    ``Jego podstawową zaleta jest większa dokładność przy 
+    niewiele większym (od algorytmu Eulera) koszcie obliczeniowym. 
+    Jest przy tym łatwy w implementacji, dokładny i stabilny.'' - \cite{numerical}.
 
 \chapter{Implementacja}
 
