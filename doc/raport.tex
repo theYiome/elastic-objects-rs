@@ -242,7 +242,7 @@
     \clearpage
     \section{Siatka węzłów}
 
-    \begin{wrapfigure}{r}{0.50\textwidth}
+    \begin{wrapfigure}{r}{0.55\textwidth}
         \includegraphics[width=0.95\linewidth]{object_shema.png}
         \caption{
             Siatka węzłów reprezentująca obiekt kwadratowy - 
@@ -250,22 +250,20 @@
         }
     \end{wrapfigure}
 
-    Rzeczywiste obiekty znane z realnego świata są trójwymiarowe. Jednak zdarza się, że rozmiary przestrzenne 
-    obiektu w jednym z trzech kierunków są znacznie mniejsze od dwóch pozostałych. Wówczas taki obiekt można 
-    opisywać stosując przybliżenie dwuwymiarowe, gdyż efekty dynamiczne związane z tymi dwoma kierunkami 
-    stają się dominujące względem trzeciego (np. zmiana długości pod wpływem sił zewnętrznych). 
-    W metodzie dynamiki molekularnej modele dwu i trzy wymiarowe koncepcyjnie niczym się nie różnią, 
-    jednak redukcja wymiarowości pozwala zwiększyć wydajność obliczeniową. 
-    Taki był też powód zastosowania przybliżenia 2D w tej pracy.
-
+    % Rzeczywiste obiekty znane z realnego świata są trójwymiarowe. Jednak zdarza się, że rozmiary przestrzenne 
+    % obiektu w jednym z trzech kierunków są znacznie mniejsze od dwóch pozostałych. Wówczas taki obiekt można 
+    % opisywać stosując przybliżenie dwuwymiarowe, gdyż efekty dynamiczne związane z tymi dwoma kierunkami 
+    % stają się dominujące względem trzeciego (np. zmiana długości pod wpływem sił zewnętrznych). 
+    
     W naszym modelu obiekt elastyczny reprezentowany jest przez dwuwymiarową 
     siatkę węzłów. Węzły oddziałują ze swoimi sąsiadami siłami typu 
     Lennarda-Jonesa lub harmonicznymi opisanymi w dalszej części pracy.
+    W metodzie dynamiki molekularnej modele dwu i trzy wymiarowe koncepcyjnie niczym się nie różnią, 
+    jednak redukcja wymiarowości pozwala zwiększyć wydajność obliczeniową. 
+    Taki był też powód zastosowania przybliżenia 2D w tej pracy. \\
 
-
-    Przy tych założeniach oddziaływanie dla węzłów w środku będzie izotropowe (niezależne od kierunku). 
     Węzły brzegowe mają mniej sąsiadów i w pewnych warunkach mogą zachowywać się inaczej niż węzły w środku, 
-    ich wychylenia z położenia równowagi będą większe podczas zderzeń ze ścianką. Są one z tych powodów 
+    ich wychylenia z położenia równowagi będą większe podczas zderzeń. Są one z tych powodów 
     bardziej podatne na oderwanie się od reszty siatki. Zbyt duża siła przyłożona do węzłów brzegowych 
     może również spowodować nieodwracalną deformację siatki, jest to bardziej prawdopodobne podczas 
     używania większych kroków czasowych.
@@ -282,7 +280,7 @@
     \clearpage
     \section{Model oddziaływań}
 
-    \begin{wrapfigure}{l}{0.30\textwidth}
+    \begin{wrapfigure}{l}{0.35\textwidth}
         \includegraphics[width=0.95\linewidth]{four_nebiours.drawio.png} 
         \caption{Połączenie obiektów używając sąsiedztwa von Neumanna}
         \includegraphics[width=0.95\linewidth]{eight_nebiours.drawio.png} 
