@@ -111,7 +111,7 @@
     Jednym z problemów wykonywania symulacji komputerowych może być ich złe uwarunkowanie, które 
     jest wynikiem kumulowania się błędów numerycznych np. podczas całkowania równań ruchu. 
     Problem ten można starać się zminimalizować poprzez dobór odpowiednich algorytmów lub 
-    przez ich modyfikacje, uwzględniające charakterystykę rozwiązywanego zagadnienia. 
+    modyfikację parametrów symulacji. 
     Przykładowo w dowolnym modelu dynamiki molekularnej krytycznym parametrem jest wielkość 
     kroku czasowego. Zbyt duży krok może prowadzić do niestabilności, natomiast zbyt mały 
     prowadzi do wydłużenia czasu wykonywanych symulacji. \\
@@ -186,14 +186,14 @@
     czy tej zarządzanej przez GPU (API \emph{OpenCL}).
     Bibliotekę \emph{rayon} ma bardzo podobne zastosowanie 
     i sposób działania jak interfejs programowania aplikacji 
-    OpenMP, powszechnie używany w programach pisanych w językach \emph{C} i \emph{C++}.
-    Częstym problemem podczas pisania programów z wykorzystaniem OpenMP jest to, że duża 
+    \emph{OpenMP}, powszechnie używany w programach pisanych w językach \emph{C} i \emph{C++}.
+    Częstym problemem podczas pisania programów z wykorzystaniem \emph{OpenMP} jest to, że duża 
     dowolność w czytaniu i pisaniu w 
     współdzielonej pamięci operacyjnej może doprowadzić do problemów, takich jak
     zmiana wartości przez jeden wątek podczas gdy inny wątek próbuję ją odczytać, co 
     przy nieprzemyślanej synchronizacji tychże wątków zapewne doprowadzi do niezdefiniowanego
     zachowania się programu.
-    Ponieważ język programowania Rust bardzo dokładnie kontroluje wszelkie operacje na pamięci 
+    Ponieważ język programowania \emph{Rust} bardzo dokładnie kontroluje wszelkie operacje na pamięci 
     współdzielonej, problemy tego typu są bardzo rzadkie podczas pisania wielowątkowego z
     użyciem biblioteki rayon. Odbywa się to kosztem czasu programisty podczas tworzenia 
     oprogramowanie, gdyż musi on zapewnić aby napisany kod spełniał wszystkie restrykcyjne 
@@ -222,7 +222,7 @@
 
     Modelowanie zachowania obiektu elastycznego metodą dynamiki molekularnej wymaga określenia 
     położenia jego elementów w przestrzeni. Taki rozkład przestrzenny uzyskuje się opisując 
-    obiekt przy pomocy \emph{n} punktów (inaczej nazywanych węzłami, cząsteczkami lub atomami), w 
+    obiekt przy pomocy \emph{n} punktów (inaczej nazywanych węzłami), w 
     których skupione są masy. Punkty te oddziałują ze sobą jak w rzeczywistym materiale, ich 
     zbliżanie lub oddalanie się od siebie wymaga przyłożenia sił zewnętrznych.
     ``In the natural sciences one strives to model the complex 
@@ -236,7 +236,7 @@
     \end{equation}
 
     \begin{equation}
-        \frac{d^{2} \vec{r_i}}{dt} = \frac{\vec{F}}{m_i}
+        \frac{d^{2} \vec{r_i}}{dt^{2}} = \frac{\vec{F}}{m_i}
     \end{equation}
 
     \clearpage
@@ -670,8 +670,8 @@
         \item W folderze \emph{glsl} znajdują się kod shaderów wykorzystywanych do rysowania stanu symulacji.
     \end{enumerate}
 
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
-
     \section{Węzły}
     Informacje o węzłach znajdujących się w symulacji są przechowywane w strukturze \emph{Node}.
 
@@ -703,20 +703,24 @@
         natomiast \emph{true} oznacza, że znajduje się na brzegu obiektu.
     \end{enumerate}
 
+    \clearpage
     \section{Algorytm prędkościowy Verleta}
     \lstinputlisting[language=C]{code/verlet.rs}
 
     \emph{Clousures} w języku Rust to anonimowe funkcje, które można zapisać w zmiennej lub przekazać 
     jako argumenty do innych funkcji. Można utworzyć je w jednym miejscu, a następnie wywołać w innym.
     W przeciwieństwie do zwykłych funkcji, mogą one przechwytywać wartości z miejsca, w 
-    którym zostały zdefiniowane.
+    którym zostały zdefiniowane. Taka właśnie anonimowa funkcja została zdefiniowana i podana jako 
+    argument funkcji \emph{for\_each} operującej na tablicy węzłów.
 
-    \section{Struktury obliczeniowe}
-    W celu uproszczenia algorytmów wykonujących obliczenia przyśpieszeń i zjednolicenia 
-    ułożenia danych dla wersji CPU oraz GPU program przed wykonaniem właściwych obliczeń
-    tworzy następujące struktury.
+    % \section{Struktury obliczeniowe}
+    % W celu uproszczenia algorytmów wykonujących obliczenia przyśpieszeń i zjednolicenia 
+    % ułożenia danych dla wersji CPU oraz GPU program przed wykonaniem właściwych obliczeń
+    % tworzy następujące struktury.
 
     \section{Obliczanie przyśpieszeń}
+
+    \subsection{Implementacja jednowątkowa na CPU}
     \lstinputlisting[language=C]{code/simulate_no_par.rs}
     Wersja jednowątkowa wykonywania obliczeń, na początku pierwszy etap algorytmu verleta na podstawie 
     obecnego stanu sceny obliczane jest zmiana przyspieszenia. 
@@ -725,17 +729,19 @@
     grawitacja, odpychanie od ścianki dolnej oraz opór ruchu proporcjonalny do prędkości węzła.
     Korzystając z tej informacji wykonujemy drugi etap prędkościowego algorytmu verleta.
 
+    \clearpage
+    \subsection{Implementacja wielowątkowa na CPU}
     \lstinputlisting[language=C]{code/simulate_single.rs}
     W tym przypadku zdefiniowana została jedna funkcja która mapuje każdy z węzłów na przyśpieszenie
-    w aktualnym 
-    jest w stanie obliczyć zmianę przyśpieszenia 
+    w aktualnym jest w stanie obliczyć zmianę przyśpieszenia 
     dla każdego z węzłów. W ten sposób podział zadania na wątki wykonywany jest tylko raz, co 
     znacznie zwiększa szybkość wykonania programu.
 
-    \subsection{Implementacja OpenCL}
-    Jak przekazywane są danek, kernel.
+    \clearpage
+    \subsection{Implementacja wielowątkowa na GPU przy użyciu API OpenCL}
     \lstinputlisting[language=C]{code/simulation_types.cl}
-    Definicja typów po stronie OpenCL.
+    Przekazywanie i używanie danych po stronie karty graficznej wymaga zdefiniowania analogicznych
+    struktur po stronie programu \emph{OpenCL}.
 
     \lstinputlisting[language=C]{code/simulation.cl}
     W tym przypadku zdefiniowana została jedna funkcja jest w stanie obliczyć zmianę przyśpieszenia 
@@ -1701,16 +1707,6 @@
     Oscylacje.
 
 \chapter{Podsumowanie}
-    % --------------------------------------------------------------------------------------------------------------
-    Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
-    było zbyt wolne. Następnie przy użyciu renderowania instancyjnego (instanced rendering) 
-    problem ten został zlikwidowany po 
-    stronie interfejsu graficznego. Wydajność symulacji, jest dużym problem gdy ilość obiektów jest znacząca. 
-    Zrównoleglenie algorytmów jest trudne do osiągnięcia, wymaga znacznej modyfikacji programu oraz często 
-    wymaga pewnych ustępstw w celu zniwelowania niezdefiniowanego zachowania wynikającego z wyścigów 
-    (\emph{race conditions}) dostępu do pamięci.
-
-    \section{Wnioski}
     Zastosowanie metoda dynamiki molekularnej daje bardzo interesujące 
     wyniki podczas symulacji zderzeń obiektów. Zastosowanie dużej ilości węzłów pozwala na 
     ukazanie realistycznie wyglądających obiektów elastycznych zdolnych do kolizji między sobą 
@@ -1720,7 +1716,22 @@
     rzeczywistym tworzy wiele problemów z wydajnością programu, wymagając
     od programisty kreatywnego podejścia do optymalizacji. Ukazuje również korzyści wynikające z 
     zastosowania zrównoleglenia algorytmów, pozwalając na wykonywanie ich znacznie znacznie szybciej na 
-    urządzeniach wielowątkowych takich jak procesory czy karty graficzne.
+    urządzeniach wielowątkowych takich jak procesory czy karty graficzne. \\
+
+    Gdy tworzymy algorytm mający działać na procesorze graficznym, bardzo istotnym aspektem jest 
+    koszt związany z przesyłem danych z pamięci głównej do pamięci karty graficznej. Sam proces kopiowania 
+    danych może poważnie wpłynąć na wydajność programu i w niektórych przypadkach może on zająć więcej
+    czasu niż samo wykonanie obliczeń.
+    ``Computing has (...) moved from one limited by computational throughput of the 
+    processor, to one where moving the data is the primary limiting factor'' - \cite{cuda}. \\
+
+    Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
+    było zbyt wolne. Następnie przy użyciu renderowania instancyjnego (instanced rendering) 
+    problem ten został zlikwidowany po stronie interfejsu graficznego. 
+    Wydajność symulacji, jest dużym problem gdy ilość obiektów jest znacząca. 
+    Zrównoleglenie algorytmów jest trudne do osiągnięcia, wymaga znacznej modyfikacji programu oraz często 
+    wymaga pewnych ustępstw w celu zniwelowania niezdefiniowanego zachowania wynikającego z wyścigów 
+    (\emph{race conditions}) dostępu do pamięci.
 
     % --------------------------------------------------------------------------------------------------------------
     % \section{Dodatek}
