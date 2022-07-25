@@ -237,7 +237,7 @@
 \chapter{Wstęp teoretyczny}
 
     Modelowanie zachowania obiektu elastycznego metodą dynamiki molekularnej wymaga określenia 
-    położenia jego elementów w przestrzeni. Taki rozkład przestrzenny uzyskuje się opisując 
+    położenia jego elementów w przestrzeni. Taki rozkład przestrzenny można uzyskać opisując 
     obiekt przy pomocy \emph{n} punktów (inaczej nazywanych węzłami), w 
     których skupione są masy. Punkty te oddziałują ze sobą jak w rzeczywistym materiale, ich 
     zbliżanie lub oddalanie się od siebie wymaga przyłożenia sił zewnętrznych.
@@ -254,6 +254,23 @@
     \begin{equation}
         \frac{d^{2} \vec{r_i}}{dt^{2}} = \frac{\vec{F}}{m_i}
     \end{equation}
+
+    W metodzie dynamiki molekularnej niezwykle ważną wielkością jest energia całkowita układu.
+    Może być ona zachowana w czasie jeżeli wszystkie działające 
+    na układ siły są zachowawcze, jak na przykład \emph{siła grawitacji}). 
+    Jednak jeżeli w układzie występują siły niezachowawcze jak \emph{siła tarcia}. 
+    Energia może stanowic miarę jakości rozwiązania (jeżeli wszystkie siły są zachowawcze), 
+    natomiast jej zmiany w czasie informują o wielkości dyssypacji energii do otoczenia (tarcie). \\
+
+    Znając siły działające na każdy element układu (węzły) możemy zapisać równania ruchu, 
+    których rozwiązania będą opisywać trajektorie węzłów. 
+    Zbiór trajektorii wszystkich węzłów określa jednoznacznie ewolucje czasową układu
+    i to jest podstawowy cel dynamiki molekularnej. Wszystkie interesujące wielkości 
+    takie jak energie, rozkład sił, ciśnienia czy temperatury można wyznaczyć 
+    na podstawie aktualnych (chwilowych) położeń węzłów.
+    Jeśli zbiór wszystkich węzłów ma reprezentować jeden obiekt to konieczne jest 
+    wprowadzenie usystematyzowanego opisu względnych położeń węzłów - innymi słowy 
+    potrzebna jest siatka węzłów. Problem ten jest omówiony w następnym podrozdziale.
 
     \clearpage
     \section{Siatka węzłów}
@@ -598,12 +615,12 @@
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Algorytm Verleta}
-    Dysponując modelem matematycznym układu,
-    możemy go opisać pod warunkiem że jesteśmy w stanie rozwiązać układ równań różniczkowych 
-    drugiego rzędu jakie jakie otrzymujemy z równań ruchu dla całego układu złożonego z \emph{n} węzłów siatki.
+    Dysponując modelem matematycznym układu, możemy go opisać 
+    pod warunkiem że jesteśmy w stanie rozwiązać układ równań różniczkowych 
+    drugiego rzędu jakie otrzymujemy z równań ruchu dla całego układu złożonego z \emph{n} węzłów siatki.
     W ogólnym przypadku, rozwiązanie analityczne nie jest możliwe i jedynym sposobem jego rozwiązania 
-    jest użycie metod numerycznych a dokładniej jednej z metod dedykowanych dla problemów jednostkowych.
-    Do tego celu służy wiele metod jak np. metody Eulera, metody RK4, metody Verleta. \\
+    jest użycie metod numerycznych a dokładniej jednej z metod dedykowanych dla problemów z warunkiem początkowym.
+    Do tego celu służy wiele metod jak na przykład metody \emph{Eulera}, metody \emph{RK4} czy metody \emph{Verleta}. \\
 
     % Rząd dokładności schematu verleta. Porównanie wersję prędkościową i położeniową algorytmu Verleta.
     % Schemat prędkościowy jest użyteczny ponieważ w niektórych tłumienie i tarcie w modelu zależą od prędkości. \\
@@ -630,16 +647,16 @@
         $\vec{v}(t + \Delta t) = \vec{v}(t) + \frac{1}{2} \left( \vec{a}(t) + \vec{a}(t + \Delta t) \right) \Delta t$
     \end{enumerate}
 
-    Integracja Verleta zapewnia dobrą stabilność numeryczną a także posiada inne właściwości, które 
+    Schemat całkujący \emph{Verleta} zapewnia dobrą stabilność numeryczną a także posiada inne właściwości, które 
     są ważne w układach fizycznych, jak na przykład odwracalność w czasie. Możliwości tej metody nie są 
-    okupione znaczącymi dodatkowymi kosztami obliczeniowymi w porównaniu z prostą metodą \emph{Eulera}. 
+    okupione znaczącymi dodatkowymi kosztami obliczeniowymi w porównaniu z prostą metodą \emph{Eulera} \cite{numerical}. 
     Inne metody takie jak algorytm \emph{RK4} cechują się lepszą dokładnością ale za 
     to wymagany nakład obliczeniowy jest znacznie większy, co mogło by negatywnie wpłynąć na płynność animacji,
     i z tego powodu nie został on zastosowany podczas tworzenia aplikacji. \\
 
-    ``Jego podstawową zaleta jest większa dokładność przy 
-    niewiele większym (od algorytmu Eulera) koszcie obliczeniowym. 
-    Jest przy tym łatwy w implementacji, dokładny i stabilny.'' - \cite{numerical}.
+    % ``Jego podstawową zaleta jest większa dokładność przy 
+    % niewiele większym (od algorytmu Eulera) koszcie obliczeniowym. 
+    % Jest przy tym łatwy w implementacji, dokładny i stabilny.'' - \cite{numerical}.
 
 \chapter{Implementacja}
 
@@ -678,7 +695,7 @@
         \item Pliki generowane przez symulację zapisywane są w folderze \emph{data}. 
         Są to logi zawierające informacje o stanie energii symulacji w danych chwilach czasowych.
 
-        \item W folderze \emph{glsl} znajdują się kod shaderów wykorzystywanych do rysowania stanu symulacji.
+        \item W folderze \emph{glsl} znajduje się kod shaderów wykorzystywanych do rysowania stanu symulacji.
     \end{enumerate}
 
     \clearpage
