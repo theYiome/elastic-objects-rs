@@ -97,7 +97,7 @@
     Jedną z popularnych metod wykorzystywanych w modelowaniu zderzeń obiektów w mikro- i makroskali jest 
     metoda dynamiki molekularnej. Mimo iż w pierwotnej postaci stosowana była do opisu własności gazów i 
     cieczy, to dzięki swej wszechstronności pozwala modelować obiekty makroskopowe zachowujące kształt 
-    przy braku sił zewnętrznych oraz modelować ich rozrywanie w trakcie zderzeń z innymi obiektami.
+    przy braku sił zewnętrznych oraz modelować ich rozrywanie w trakcie zderzeń z innymi obiektami. \\
 
     Dynamika molekularna to metoda symulacji komputerowej służąca do analizy fizycznych ruchów cząsteczek. 
     Cząsteczki oddziałują ze sobą przez określony czas, dając obraz dynamicznej ewolucji systemu. 
@@ -106,7 +106,8 @@
     określenie właściwości takich złożonych układów. W takich właśnie sytuacjach wykorzystujemy 
     symulacje komputerowe, które co prawda dają wyniki przybliżone, lecz przy dobrym doborze 
     parametrów i dokładności obliczeń możliwe jest odwzorowanie właściwości badanego obiektu. 
-    Mimo, iż przeprowadzanie eksperymentów komputerowych obecnie staje się nieodzowne w wielu 
+    
+    Mimo że przeprowadzanie eksperymentów komputerowych obecnie staje się nieodzowne w wielu 
     aspektach działalności naukowej i inżynieryjnej, to należy pamiętać o ich ograniczeniach. 
     Jednym z problemów wykonywania symulacji komputerowych może być ich złe uwarunkowanie, które 
     jest wynikiem kumulowania się błędów numerycznych np. podczas całkowania równań ruchu. 
@@ -120,29 +121,39 @@
     symulowanie zderzeń obiektów elastycznych z możliwością ich penetracji i rozrywania. Kluczowym 
     aspektem podczas implementacji algorytmów była wydajność obliczeniowa i dzięki odpowiednim 
     optymalizacjom szybkość wykonywania symulacji pozwala na wizualizację zderzeń w czasie rzeczywistym 
-    pod postacią animacji komputerowych. \\
+    pod postacią animacji komputerowych.
+    
+    Animacja to wizualizacja dynamiki układów w czasie rzeczywistym pozwalająca
+    zobrazować zachodzące procesy fizyczne. W przypadku pracy procesem takim były 
+    zderzające się obiekty - zobrazowanie tego procesu za pomocą animacji pozwala łatwiej zrozumieć jego naturę.
+    Animacje mogą prezentować interesujące zdarzenia, jak na przykład penetracja pancerza przez 
+    pocisk czy uderzenie meteoru o powierzchnię planety - obserwowanie 
+    rozchodzących się w obiektach fal ciśnień i energii pozwala na głębsze zrozumienie zachodzących 
+    procesów fizycznych. \\
 
-    W projekcie rozważane były jedynie zderzenia obiektów dwuwymiarowych. Pozwala uzyskanie dużo lepszej
+
+    W projekcie rozważane były jedynie zderzenia obiektów dwuwymiarowych. Pozwala to na uzyskanie dużo lepszej
     wydajności programu w porównaniu do wersji z trójwymiarowymi obiektami, w której liczba koniecznych obliczeń jest
     znacznie większa. Nie ma jednak istotnych różnic jeżeli chodzi o fizyczny aspekt zderzeń dwu i trzy-wymiarowych, gdyż 
-    równania ruchu mają taką samą strukturę a jedynie wartości wektorowe w nich zawarte mają jeden dodatkowy wymiar.
+    równania ruchu mają taką samą strukturę a jedynie wartości wektorowe w nich zawarte mają jeden dodatkowy wymiar. \\
+
 
 
     % --------------------------------------------------------------------------------------------------------------
-    \clearpage
     \section{Zastosowane technologie}
 
     Głównym narzędziem wykorzystamy do stworzenia aplikacji jest \emph{rust}, szybki kompilowany 
     język programowania zapewniający bezpieczeństwo pamięci i łatwe programowanie wielowątkowe. 
     Język ten jest wybierany co roku zaczynając od roku 2015 w ankiecie społeczności \emph{Stack Overflow} jako 
     \emph{``the most beloved programming language''}. O ile jest on wymagający, to jest 
-    on również wygodny, kod jest prosty do zrozumienia a programy napisane z jego użyciem 
+    on również wygodny, cechuje się prostą strukturą kodu a programy napisane z jego użyciem 
     można łatwo kompilować na wielu systemach nawet jeżeli używają one zewnętrznych bibliotek, gdyż 
-    zależności są zarządzane przez narzędzie \emph{cargo}, będące nieodzowną częścią ekosystemu tego języka.
+    zależności są zarządzane przez narzędzie \emph{cargo}, będące nieodzowną częścią ekosystemu \emph{rust}.
+    
     Kompilator \emph{rustc} jest restrykcyjny, ponieważ wymusza on na kodzie programu bezpieczeństwo pamięci oraz
     nie zezwala na kod generujący niezdefiniowane zachowanie, będące częstym problemem podczas tworzenia aplikacji
     wielowątkowych. ``Rust breaks down these barriers by eliminating the old pitfalls and providing a friendly, 
-    polished set of tools to help you along the way'' - \cite{rustbook}. Surowość kompilatora 
+    polished set of tools to help you along the way'' \cite{rustbook}. Duża restrykcyjność kompilatora 
     nie jest poważnym problemem podczas tworzenia aplikacji, ponieważ kompilator dostarcza dokładnego opisu 
     błędu wraz z referencją do dokumentacji a często również sugeruje sposób jego poprawiania. \\
 
@@ -154,7 +165,7 @@
     z większością obecnie wykorzystywanych systemów operacyjnych i działa ono na sprzętach różnych producentów, 
     w przeciwieństwie do technologii \emph{CUDA}, obsługującej jedynie procesory graficzne \emph{Nvidia}. \\
     
-    Do wyświetlania animacji wykorzystane zostało API \emph{\emph{OpenGL}} w profilu rdzennym (core profile), w projekcie
+    Do wyświetlania animacji wykorzystane zostało API \emph{OpenGL} w profilu rdzennym (core profile), w projekcie
     udostępnione przez bibliotekę \emph{glium}. Nie jest ono już rozwijane, ostatnia stabilna wersja 
     \emph{\emph{OpenGL} 4.6} pojawiła się w roku 2017, jednak jego możliwości są w pełni wystarczające
     na potrzeby projektu. Główne zasady tworzenia programu są takie same jak w nowocześniejszych rozwiązaniach 
@@ -163,7 +174,8 @@
 
     Do wyświetlenia interfejsu graficznego, pozwalającego monitorowanie oraz kontrolowanie stanu symulacji  
     wykorzystana została biblioteka \emph{eGui} \cite{egui}. Jest ona kompatybilna z językiem \emph{Rust} 
-    i API \emph{\emph{OpenGL}}, dostarcza możliwości wyświetlania okienek wraz z elementami wejścia (przyciski, suwaki). \\
+    i API \emph{OpenGL}, dostarcza możliwości wyświetlania okienek wraz z elementami wejścia takimi
+    jak przyciski, suwaki czy pola tekstowe. \\
 
 
     % --------------------------------------------------------------------------------------------------------------
@@ -199,23 +211,27 @@
     oprogramowanie, gdyż musi on zapewnić aby napisany kod spełniał wszystkie restrykcyjne 
     wymagania jak np. "może istnieć tylko jedna mutowalna referencja do danego obiektu". \\
 
+    ``If you can construct a formula where the output data points can be 
+    represented without relation to each other (...) be very happy'' \cite{cuda}.
     Jeżeli projektujemy algorytm mający działać na wielu wątkach warto jest pomyśleć o tym, jak
-    przedstawić pojedynczy wynik w postaci funkcji zależnej jedynie od danych wejściowych. Jest to 
-    możliwe gdy wyniki nie są zależne od siebie i jeżeli proces ten się powiedzie, każdy 
-    z wyników może zostać obliczony niezależnie przez jeden wątek.
-    ``If you can construct a formula where the output data points can be represented without 
-    relation to each other (...) be very happy'' - \cite{cuda}.
-    Bardzo pomaga to z problemami synchronizacji,  
+    przedstawić pojedynczy wynik w postaci funkcji zależnej jedynie od danych wejściowych, jest to 
+    możliwe gdy wyniki nie są zależne od siebie. 
+    
     ``Warto rozważyć pisanie kodu wątków w taki sposób, aby każdy wątek działał we 
-    własnym świecie, nie współużytkując 
-    danych z pozostałymi wątkami.' \cite{cleancode} \\
+    własnym świecie, nie współużytkując danych z pozostałymi wątkami.'' \cite{cleancode}.
+    Jeżeli proces ten się powiedzie, każdy z wyników może zostać obliczony 
+    niezależnie przez jeden wątek, dzięki czemu możemy uniknąć kosztownej 
+    synchronizacji wątków, a kod jest dużo łatwiejszy w utrzymaniu. \\
     
     Gdy tworzymy algorytm mający działać na procesorze graficznym, bardzo istotnym aspektem jest 
-    koszt związany z przesyłem danych z pamięci głównej do pamięci karty graficznej. Sam proces kopiowania 
-    danych może poważnie wpłynąć na wydajność programu i w niektórych przypadkach może on zająć więcej
-    czasu niż samo wykonanie obliczeń.
+    koszt związany z przesyłem danych z pamięci głównej do pamięci karty graficznej. 
     ``Computing has (...) moved from one limited by computational throughput of the 
-    processor, to one where moving the data is the primary limiting factor'' - \cite{cuda}
+    processor, to one where moving the data is the primary limiting factor'' \cite{cuda}.
+    Sam proces kopiowania danych może poważnie wpłynąć na wydajność programu i w 
+    niektórych przypadkach może on zająć więcej czasu niż samo wykonanie obliczeń.
+    Podczas projektowania programu należy zadbać o to aby pomiędzy pamięcią operacyjną a 
+    pamięcią karty graficznej przesyłać jedynie niezbędne dane i robić to 
+    jedynie wtedy gdy poprzednio przekazane informacje są już nieaktualne.
 
     
 \chapter{Wstęp teoretyczny}
@@ -228,7 +244,7 @@
     ``In the natural sciences one strives to model the complex 
         processes occurring in nature as accurately as possible. 
         The first step in this direction is the description of nature. 
-        It serves to develop an appropriate system of concepts.'' - \cite{moleculardynamics}. 
+        It serves to develop an appropriate system of concepts.'' \cite{moleculardynamics}. 
     Ważnym zadaniem modelu jest rzeczywiste odwzorowanie zachowania obiektów elastycznych.
 
     \begin{equation}
@@ -273,7 +289,7 @@
     sąsiadami, w celu zmniejszenia ilości wymaganych obliczeń. W pracy oddziaływanie między węzłami 
     modelowane jest przy użyciu krótkozasięgowego potencjału Lennarda-Jonesa, który na dużych 
     odległościach szybko zbliża się do zera. Liczenie oddziaływań pomiędzy bardzo oddalonymi od 
-    siebie cząsteczkami nie wpływa znacząco na wynik, wymaga jednak znacznego nakładu obliczeniowego, 
+    siebie węzłami nie wpływa znacząco na wynik, wymaga jednak znacznego nakładu obliczeniowego, 
     czego zazwyczaj unika się podczas wykonywania symulacji numerycznych.
 
 
@@ -754,13 +770,14 @@
     \end{wrapfigure}
 
     Siatka sąsiedztwa minimalizuje liczbę obliczeń kolizji pomiędzy węzłami 
-    należącymi do różnych obiektów. Jest on bardzo potrzebny do utrzymania 
+    należącymi do różnych obiektów. Tego typu schemat obliczeniowy jest 
+    bardzo potrzebny do utrzymania 
     pożądanej prędkości wykonywania symulacji w przypadkach gdy składa się ona 
     z dużej liczy obiektów, które mogą ze sobą potencjalnie kolidować. \\
     
     Na podstawie znajdującego się po prawej stronie rysunku można łatwo opisać
     działanie tego algorytmu. Z perspektywy czarnego węzła
-    potencjale kolizje między nim a innymi węzłami mogą wystąpić tylko 
+    potencjalne kolizje między nim a innymi węzłami mogą wystąpić tylko 
     jeżeli środek innego węzła znajduje się w tej 
     samej komórce co on lub w komórce sąsiadującej z jego komórką. Na rysunku 
     węzły z którymi sprawdzona będzie kolizja z węzłem czarnym oznaczone zostały
@@ -795,23 +812,24 @@
         }
     \end{wrapfigure}
 
-    \subsection{Korekta błędów}
+    \subsection{Korekcja błędów}
     Z powodu dobrania zbyt dużego kroku czasowego symulacja może być niestabilna.
-    Objawy niestabilności to między innymi destrukcja siatki, nadanie węzłów 
+    Objawy niestabilności to między innymi destrukcja siatki lub nadanie węzłowi 
     ogromnych prędkości powodujących wyjście poza obserwowalny obszar.
     Zaczynają występować niepoprawne wartości odległości take jak \emph{nan} lub \emph{inf}.
-    Gdy takie wartości się pojawią obecny stan uznany jest niepoprawny i symulacja wraca 
+    Gdy takie wartości się pojawią obecny stan uznany jest za niepoprawny i symulacja wraca 
     do ostatniego zapisanego stanu w którym 
-    te wartości nie występowały. Co pewien czas tworzona jest nowa kopia zapasowa.
+    te wartości nie występowały. Co pewien czas tworzona jest nowa kopia zapasowa. \\
 
     Jeżeli stan symulacji jest poprawny zapisuje go do pamięci, jeżeli nie jest on poprawny to symulacja 
     przywracana jest do ostatniego poprawnego stanu a krok czasowy jest zmniejszany.
 
     \subsection{Automatyczny dobór kroku czasowego}
-    Gdy korekta błędów jest włączona za każdym razem gdy zostanie wykryty błąd i powrót do poprzedniego stanu
-    krok czasowy zostanie zmniejszony o połowę. Jeżeli użytkownik włączy funkcję automatycznego zwiększania
+    Gdy korekcja błędów jest włączona za każdym razem gdy zostanie wykryty błąd,
+    zostanie wykonany powrót do poprzedniego stanu a krok czasowy zostanie zmniejszony o połowę. 
+    Jeżeli użytkownik włączy funkcję automatycznego zwiększania
     kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość większą od 
-    jeden za każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd. \\ \\ \\ \\
+    jeden za każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd. \\
     
     Efektywnie działanie tego algorytmu jest bardzo proste, jeżeli wykryjemy błąd zmniejszamy krok czasowy
     przez co symulacja wykonuje się dłużej i dokładniej, co znacząco zmniejsza ryzyko, że błąd
@@ -821,19 +839,20 @@
     % ---------------------------------------------------------------------------------------------------
     \clearpage
     \section{Generowanie grafiki}
-    Do generowania grafiki i animacji został wykorzystany \emph{\emph{OpenGL}}, 
-    wielojęzyczny i wieloplatformowy 
-    interfejs programowania aplikacji do renderowania grafiki wektorowej 2D i 3D, 
-    od 2006 roku zarządzany przez konsorcjum technologiczne non-profit Khronos Group. 
-    Interfejs API jest zwykle używany do interakcji 
-    z procesorem graficznym w celu uzyskania renderowania z przyspieszeniem sprzętowym. 
+    Do generowania grafiki i animacji został wykorzystany wielojęzyczny i wieloplatformowy 
+    interfejs programowania aplikacji \emph{OpenGL}, służący głównie do 
+    renderowania grafiki wektorowej 2D i 3D.
+    Od 2006 roku rozwój \emph{OpenGL} zarządzany jest przez konsorcjum 
+    technologiczne non-profit Khronos Group. 
+    Interfejs ten głównie stosuje się do programowania programów współdziałających z 
+    procesorem graficznym w celu uzyskania renderowania z przyspieszeniem sprzętowym. 
     Specyfikacja \emph{OpenGL} opisuje abstrakcyjne API do rysowania grafiki 2D i 3D. Chociaż możliwe jest 
     zaimplementowanie API w całości programowo, jest ono zaprojektowane do implementacji głównie 
     lub całkowicie sprzętowej.
 
     Ten interfejs programowania zdefiniowany jako zestaw funkcji, które mogą być wywoływane przez program.
     Chociaż definicje tych funkcji są podobne do tych z języka programowania \emph{C}, to tak 
-    naprawdę są one niezależne od języka od jakiegokolwiek języka. 
+    naprawdę są one niezależne od jakiegokolwiek języka. 
     \emph{OpenGL} jest również wieloplatformowy przez co programy go wykorzystujące mogą 
     działać poprawnie na systemie operacyjnym Windows jak i systemach z rodziny Linux. 
     Specyfikacja nie mówi nic na temat uzyskiwania i zarządzania kontekstem \emph{OpenGL}, 
@@ -954,7 +973,7 @@
     \clearpage
     \subsection{Dostępne tryby rysowania}
     Funkcje rysowania \emph{połączeń węzłowych}, \emph{węzłów} i \emph{siatki obliczeniowej} domyślnie 
-    jest włączone ale można w każdej chwili wyłączyć dowolną z nich korzystając z panelu ustawień rysowania.
+    są włączone ale można w każdej chwili wyłączyć dowolną z nich korzystając z panelu ustawień rysowania.
     Węzły można kolorować na następujące sposoby:
 
     \begin{enumerate}
@@ -1086,9 +1105,11 @@
 
     Po upłynięciu kilku sekund obiekty zostają przy podłożu, energia będąca początkowo energią
     potencjalną grawitacji została w większości zamieniona na energię kinetyczną oraz energię
-    wewnętrzną. Obiekty nie odbijają się one już między sobą.
-    Zmiana energii całkowitej w czasie działania całej symulacji była mniejsza niż $1\%$. Na tej
-    podstawie można uznać, że algorytmy zostały zaimplementowane poprawnie.
+    wewnętrzną. Obiekty nie zderzają się już między sobą.
+    Zmiana energii całkowitej w czasie działania całej symulacji była mniejsza niż $1\%$. 
+    Algorytm działa stabilnie, natomiast ewentualne niewielkie zmiany energi całkowitej
+    można skorygować dobierając odpowiednio mniejszy krok czasowy.
+    Na tej podstawie można uznać, że algorytmy zostały zaimplementowane poprawnie.
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
@@ -1153,6 +1174,10 @@
             oś iteracji na sekundę i oś liczby węzłów w boku obiektu są przedstawione w skali logarytmicznej.
         }
     \end{figure}
+
+    Krzywe przedstawiające liczbę iteracji na sekundę w zależności od ilości węzłów są w przybliżeniu liniowe,
+    jednakże nachylenie krzywej niebieskiej jest znacznie większe, co oznacza szybszy spadek wydajności.
+    Liniowe nachylenie pozwala ekstrapolować wydajność dla większych obiektów o większej liczbie węzłów. \\
 
     \begin{table}[H]
         \centering
@@ -1246,7 +1271,7 @@
     brzegami obiektów znacząco wpływa na wydajność. Możemy zauważyć ponad pięciokrotny wzrost iteracji
     na sekundę dla liczby węzłów $>15000$ na korzyść wersji algorytmu szukającego jedynie kolizji między 
     węzłami brzegowymi. Ze względu na wyraźną poprawę wyników w następnych prezentowanych algorytmach
-    pod uwagę będą jedynie węzły brzegowe podczas detekcji kolizji.
+    podczas detekcji kolizji pod uwagę będą brane jedynie węzły brzegowe.
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Test wydajności z siatką sąsiedztwa}
@@ -1287,10 +1312,10 @@
         }
     \end{figure}
     Wersja wykonywana na CPU jest nieco szybsza niż ta wykonywana na GPU.
-    Raportowane przez menażer zadań systemu Windows zużycie procesora graficznego podczas testu
+    Raportowane przez menadżera zadań systemu Windows zużycie procesora graficznego podczas testu
     nie przekracza $30\%$ a zużycie CPU jest również niskie. Może to wynikać z 
     dużej ilości danych które muszą zostać skopiowane do pamięci karty graficznej, dlatego 
-    duża część czasu obliczeniowego nie jest w pełni utylizowana.
+    duża część czasu obliczeniowego nie jest w pełni wykorzystywana.
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Różnica pomiędzy najlepszą i najgorszą wydajnością}
@@ -1312,7 +1337,6 @@
         }
     \end{figure}
 
-
     Po dokonaniu analizy zbiorczej wyników dla wszystkich wersji algorytmu możemy zauważyć, że
     ważniejszym aspektem podczas prób zwiększenia wydajności obliczeniowej algorytmów niż zrównoleglenie 
     jest optymalizacja wykonywanych obliczeń na przykład poprzez odrzucenie elementów nie wpływających 
@@ -1323,7 +1347,7 @@
     programu jest znacznie mniej efektowne. \\
     
     Oczywiście nie oznacza to, że nie warto zrównoleglić obliczeń
-    jeżeli mamy taką możliwość, warto jednak pamiętać, że niezoptymalizowanych algorytm działający 
+    jeżeli mamy taką możliwość, warto jednak pamiętać, że niezoptymalizowany algorytm działający 
     na wielu rdzeniach obliczeniowych w większości przypadków będzie wyraźnie wolniejszy niż dobrze
     zoptymalizowany algorytm działający na jednym wątku obliczeniowym.
 
@@ -1335,7 +1359,7 @@
     przy podłożu a drugi o wymiarach $2 \times 2$ znajduje się nad obiektem pierwszym. Siła grawitacji jest aktywna co 
     sprawia że obiekt drugi zaczyna spadać w kierunku obiektu pierwszego i po chwili następuje zderzenie. 
     Symulacja jest wykonywana dopóki układ nie znajduje się w stanie równowagi rozumianym jako wygaśnięcie ruchu
-    węzłów.\\ 
+    węzłów. Zanik drgań węzłów w czasie wymuszony jest poprzez sztucznie wprowadzoną siłę tarcia.\\ 
 
     Jeżeli odległość między dwoma połączonymi węzłami zwiększy się powyżej $1.5$ odległości równowagi dla 
     tego połączenia ($d_x$), połączenie to zostaje zerwane - w ten sposób symulujemy rozrywanie obiektów pod dużym 
@@ -1487,7 +1511,7 @@
 
     % --------------------------------------------------------------------------------------------------------------
     \clearpage
-    \section{Test widoku ciśnienia dla jednego obiektu}
+    \section{Symulacja zmian energii i rozkładu ciśnienia w pojedynczym obiekcie}
     \subsection{Opis testu}
     Jeden obiekt o wymiarach $50 \times 50$ węzłów umieszczony zostaje przy podłożu w polu grawitacyjnym.
     Konsystencja obiektu przypomina galaretę, nie jest on sztywny. W czasie trwania symulacji 
@@ -1535,8 +1559,9 @@
     górnej ściance.
 
     \subsection{Zmiana energii układu w czasie}
-    Pomiar energii pozwala na głębsze zrozumienie zmian zachodzących w układu podczas
-    wykonywania testu.
+    Analiza energii pozwala na głębsze zrozumienie zmian zachodzących w układzie podczas
+    wykonywania testu. Wyniki uzyskano dla parametrów obiektu identycznych jak w poprzednim podrozdziale
+    przy wyznaczaniu rozkładu ciśnienia.
 
     \begin{figure}[H]
         \centering
@@ -1669,13 +1694,14 @@
     tym podłożu spoczywa również niebezpośrednio masa  obiektu $20 \times 20$. \\
     
     Zaobserwować można również wzrost oznaczonej linią zieloną energii międzywęzłowej wewnętrznej obiektu, wynikającej ze 
-    zmniejszenia odległości pomiędzy węzłami na wskutek zgniecenia obiektu. Energia wewnętrzna wzrasta w dwóch momentach: 
+    zmniejszenia odległości pomiędzy węzłami na wskutek ściskania obiektu. Energia wewnętrzna wzrasta w dwóch momentach: 
     najpierw obiekt $50 \times 50$ zmienia swój kształt pod wpływem działania siły grawitacji, co powoduje zmniejszenie 
     odległości pomiędzy węzłami znajdującymi sę w nim, ten etap widoczny jest w przedziale czasu $[0, 0.6] s$. 
-    Następnie w momencie $\approx 0.6 s$ następuje zderzenie powodujące wyraźne zgniecenie obiektu a zatem znaczny wzrost
+    Następnie w momencie $\approx 0.6 s$ następuje zderzenie powodujące wyraźne ściśnięcie obiektu a zatem znaczny wzrost
     energii wewnętrznej międzywęzłowej. Energia ta po momencie zderzenia zmniejsza się na wskutek częściowego rozprężenia
-    obiektów, jednak nie powraca do swojej poprzedniej wartości, ponieważ spoczywające na sobie obiekty nadal są 
-    częściowo zniekształcone.
+    obiektów, jednak nie powraca do swojej poprzedniej wartości, ponieważ spoczywające na sobie obiekty nadal 
+    wywierają na siebie nacisk ze względu na niezerową się grawitacji a obiekty nadal 
+    są częściowo zniekształcone.
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Największa wartość ciśnienia na węźle w czasie}
