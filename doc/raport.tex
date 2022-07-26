@@ -262,10 +262,10 @@
     Energia może stanowic miarę jakości rozwiązania (jeżeli wszystkie siły są zachowawcze), 
     natomiast jej zmiany w czasie informują o wielkości dyssypacji energii do otoczenia (tarcie). \\
 
-    Znając siły działające na każdy element układu (węzły) możemy zapisać równania ruchu, 
+    Znając siły działające na każdy element (węzeł) układu możemy zapisać równania ruchu, 
     których rozwiązania będą opisywać trajektorie węzłów. 
     Zbiór trajektorii wszystkich węzłów określa jednoznacznie ewolucje czasową układu
-    i to jest podstawowy cel dynamiki molekularnej. Wszystkie interesujące wielkości 
+    i to jest podstawowy cel dynamiki molekularnej. Wszystkie interesujące nas wielkości 
     takie jak energie, rozkład sił, ciśnienia czy temperatury można wyznaczyć 
     na podstawie aktualnych (chwilowych) położeń węzłów.
     Jeśli zbiór wszystkich węzłów ma reprezentować jeden obiekt to konieczne jest 
@@ -544,10 +544,10 @@
     % --------------------------------------------------------------------------------------------------------------
     \section{Obliczanie ciśnienia na węźle}
     Lokalne zmiany temperatury informują nas o dynamice zachodzących zmian w obiekcie.
-    Inne wielkości, które mogą dostarczać nam informacji o stanie układu jest ciśnienie.
+    Inną wielkością, mogącą dostarczyć nam informacji o stanie układu jest ciśnienie.
     W stanie o dużej dynamice, rozkład temperatury i ciśnienia są ze sobą połączone, gdyż 
     pokazują rozchodzenie się energii zderzenia w obiekcie. Różnica ujawnia się w przypadku statycznym,
-    gdy $T_k = 0$, i węzły nie przemieszczać się względem siebie ale wywierają na siebie duży wpływ poprzez 
+    gdy $T_k = 0$, i węzły nie mogą przemieszczać się względem siebie ale wywierają na siebie duży wpływ poprzez 
     ciśnienie, dające obraz ilości zakumulowanej w obiekcie energii.
 
     W celu obliczenia ciśnienia działającego na węzeł, zamykamy go w komórce 
@@ -610,7 +610,8 @@
     Dodajemy ujemny znak do $p_x$ oraz $d_x$ ponieważ siła jest skierowana do środka komórki a 
     ciśnienie powinno być większe od zera. Dla każdego węzła należy policzyć pochodne siły w czterech punktach w celu 
     uzyskania wartości działającego na niego ciśnienia. Warto zwrócić uwagę na eliminację wpływu 
-    pola grawitacyjnego na obliczone ciśnienie, ponieważ jest to wartość stała, której wkład znika po zróżnicowaniu.
+    pola grawitacyjnego na obliczone ciśnienie, ponieważ 
+    jest to wartość stała, której wkład znika po obliczeniu ilorazu różnicowego.
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
@@ -701,7 +702,7 @@
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Węzły}
-    Informacje o węzłach znajdujących się w symulacji są przechowywane w strukturze \emph{Node}.
+    Informacje o węzłach używanych w symulacji są przechowywane w strukturze \emph{Node}.
 
     \lstinputlisting[language=C]{code/node.rs}
     Atrybut $repr(C)$ zapewnia taką samą reprezentację obiektu w pamięci jak, gdyby była to
@@ -720,7 +721,7 @@
 
         \item \emph{Masa węzła} - przechowuje masę danego węzła, każdy węzeł może mieć inną masę.
 
-        \item \emph{Współczynnik oporu} - wartość zero odpowiada braku jakiegokolwiek oporu ruchu dla danego
+        \item \emph{Współczynnik oporu} - wartość zero odpowiada brakowi jakiegokolwiek oporu ruchu dla danego
         węzła, większe wartości wprowadzają dyssypację energii do układu.
 
         \item \emph{Identyfikator obiektu} - każdy węzeł otrzymuje kolor zależy od jego ciśnienia. 
@@ -750,19 +751,19 @@
 
     \subsection{Implementacja jednowątkowa na CPU}
     \lstinputlisting[language=C]{code/simulate_no_par.rs}
-    Wersja jednowątkowa wykonywania obliczeń, na początku pierwszy etap algorytmu verleta na podstawie 
-    obecnego stanu sceny obliczane jest zmiana przyspieszenia. 
-    Pod uwagę brane są siły pochodzące od połączeń między 
-    węzami znajdującymi się w tym samym obiekcie, odpychanie się węzłów znajdujących się w innych obiektach, 
+    Wersja jednowątkowa wykonywania obliczeń - pierwszy etap algorytmu \emph{Verleta} na podstawie 
+    obecnego stanu sceny oblicza zmianę przyspieszenia każdego węzła. 
+    Pod uwagę brane są siły pochodzące od połączeń między węzami znajdującymi 
+    się w tym samym obiekcie, odpychanie się węzłów znajdujących się w innych obiektach, 
     grawitacja, odpychanie od ścianki dolnej oraz opór ruchu proporcjonalny do prędkości węzła.
-    Korzystając z tej informacji wykonujemy drugi etap prędkościowego algorytmu verleta.
+    Korzystając z tej informacji wykonujemy drugi etap prędkościowego algorytmu \emph{Verleta}.
 
     \clearpage
     \subsection{Implementacja wielowątkowa na CPU}
     \lstinputlisting[language=C]{code/simulate_single.rs}
-    W tym przypadku zdefiniowana została jedna funkcja która mapuje każdy z węzłów na przyśpieszenie
-    w aktualnym jest w stanie obliczyć zmianę przyśpieszenia 
-    dla każdego z węzłów. W ten sposób podział zadania na wątki wykonywany jest tylko raz, co 
+    W tym przypadku zdefiniowana została jedna funkcja, która odwzorowuje każdy z 
+    węzłów na aktualne przyśpieszenie tego węzła.
+    W ten sposób podział zadania na wątki wykonywany jest tylko raz, co 
     znacznie zwiększa szybkość wykonania programu.
 
     \clearpage
@@ -831,19 +832,19 @@
 
     \subsection{Korekcja błędów}
     Z powodu dobrania zbyt dużego kroku czasowego symulacja może być niestabilna.
-    Objawy niestabilności to między innymi destrukcja siatki lub nadanie węzłowi 
+    Objawy niestabilności to między innymi destrukcja siatki lub nadanie węzłom 
     ogromnych prędkości powodujących wyjście poza obserwowalny obszar.
     Zaczynają występować niepoprawne wartości odległości take jak \emph{nan} lub \emph{inf}.
-    Gdy takie wartości się pojawią obecny stan uznany jest za niepoprawny i symulacja wraca 
-    do ostatniego zapisanego stanu w którym 
+    Gdy takie wartości się pojawią obecny stan uznany jest za niepoprawny i 
+    symulacja wraca do ostatniego zapisanego stanu w którym 
     te wartości nie występowały. Co pewien czas tworzona jest nowa kopia zapasowa. \\
 
     Jeżeli stan symulacji jest poprawny zapisuje go do pamięci, jeżeli nie jest on poprawny to symulacja 
     przywracana jest do ostatniego poprawnego stanu a krok czasowy jest zmniejszany.
 
     \subsection{Automatyczny dobór kroku czasowego}
-    Gdy korekcja błędów jest włączona za każdym razem gdy zostanie wykryty błąd,
-    zostanie wykonany powrót do poprzedniego stanu a krok czasowy zostanie zmniejszony o połowę. 
+    Gdy korekcja błędów jest włączona, za każdym razem gdy zostanie wykryty błąd,
+    zostanie również wykonany powrót do poprzedniego stanu a krok czasowy zostanie zmniejszony o połowę. 
     Jeżeli użytkownik włączy funkcję automatycznego zwiększania
     kroku czasowego, krok czasowy będzie przemnażany przez wybraną przez użytkownika wartość większą od 
     jeden za każdym razem gdy podczas tworzenia nowej kopii nie zostanie wykryty błąd. \\
@@ -1488,7 +1489,7 @@
         \caption{Zderzenie spadającego obiektu $2 \times 2$ o masie 200 kg na obiekt $12 \times 24$ o masie 288 kg}
     \end{figure}
 
-    Zwiększamy masę węzłów w obiekcie $2 \times 2$ z 30 kg do 50 kg. Ponieważ w reprezentacja wizualnej węzła jego pole 
+    Zwiększamy masę węzłów w obiekcie $2 \times 2$ z 30 kg do 50 kg. Ponieważ w reprezentacji wizualnej węzła jego pole 
     jest proporcjonalne do jego masy, tym razem obiekt $2 \times 2$ jest większy.
     Większa energia kinetyczna przy zderzeniu powoduje przerwanie kilku połączeń międzywęzłowych, a obiekt $2 \times 2$ 
     utyka w wytworzonej wnęce. Część pierwotnego obiektu $12 \times 24$ oderwała się i utknęła w obiekcie $2 \times 2$.
@@ -1751,25 +1752,34 @@
     i rozrywających się gdy działa na nie odpowiednio duża siła. \\
     
     Konieczność wykonywania i wyświetlania symulacji z dużą ilością węzłów w czasie 
-    rzeczywistym tworzy wiele problemów z wydajnością programu, wymagając
+    rzeczywistym tworzy wiele problemów związanych z wydajnością programu, wymagając
     od programisty kreatywnego podejścia do optymalizacji. Ukazuje również korzyści wynikające z 
     zastosowania zrównoleglenia algorytmów, pozwalając na wykonywanie ich znacznie znacznie szybciej na 
-    urządzeniach wielowątkowych takich jak procesory czy karty graficzne. \\
+    urządzeniach wielowątkowych takich jak procesory czy karty graficzne.
+
+    Wydajność symulacji, jest dużym problem gdy zwiększa się liczba oddziałujących obiektów. 
+    Zrównoleglenie algorytmów jest trudne do osiągnięcia, wymaga znacznej modyfikacji programu oraz często 
+    wymaga pewnych ustępstw w celu zniwelowania niezdefiniowanego zachowania wynikającego z wyścigów 
+    (\emph{race conditions}) dostępu do pamięci.
 
     Gdy tworzymy algorytm mający działać na procesorze graficznym, bardzo istotnym aspektem jest 
     koszt związany z przesyłem danych z pamięci głównej do pamięci karty graficznej. Sam proces kopiowania 
     danych może poważnie wpłynąć na wydajność programu i w niektórych przypadkach może on zająć więcej
-    czasu niż samo wykonanie obliczeń.
-    ``Computing has (...) moved from one limited by computational throughput of the 
-    processor, to one where moving the data is the primary limiting factor'' - \cite{cuda}. \\
+    czasu niż samo wykonanie obliczeń \cite{cuda}. \\
 
-    Podstawowym problemem jest wydajność, najpierw każdy węzeł był rysowany osobno ale to podejście 
-    było zbyt wolne. Następnie przy użyciu renderowania instancyjnego (instanced rendering) 
+    Podstawowym problemem podczas wykonywania symulacji i rysowania animacji jest wydajność. 
+    W pierwszym podejściu każdy węzeł i każde połączenie międzywęzłowe było rysowane osobno,
+    jednak takie sposób tworzenia animacji bardzo niekorzystnie skaluje się wraz z liczbą rysowanych
+    obiektów, powodując znaczące spowolnienia wraz z wzrostem ich liczby.
+    Następnie przy użyciu renderowania instancyjnego (\emph{instanced rendering}) 
     problem ten został zlikwidowany po stronie interfejsu graficznego. 
-    Wydajność symulacji, jest dużym problem gdy ilość obiektów jest znacząca. 
-    Zrównoleglenie algorytmów jest trudne do osiągnięcia, wymaga znacznej modyfikacji programu oraz często 
-    wymaga pewnych ustępstw w celu zniwelowania niezdefiniowanego zachowania wynikającego z wyścigów 
-    (\emph{race conditions}) dostępu do pamięci.
+    Metoda ta pozwala na grupowanie wielu siatek wielokątów 
+    (reprezentacja węzła składających się z wielu trójkątów równoramiennych ułożonych w okrąg) i
+    rysowania ich w jednym wywołaniu, przesyłając wszystkie niezbędne informacje do karty 
+    graficznej jednocześnie co znacznie zwiększa wydajność. \\
+
+    Algorytm zostały zaimplementowane poprawnie czego dowodem jest zachowanie energii całkowitej układu
+    w testach w których nie występowały żadne siły niezachowawcze.
 
     % --------------------------------------------------------------------------------------------------------------
     % \section{Dodatek}
