@@ -451,7 +451,7 @@
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
-    \section{Temperatura z twierdzenia o wiriale}
+    \section{Temperatura wyznaczana z twierdzenia o wiriale}
     Kolejnym podejściem było uzyskanie energii potencjalnej i kinetycznej z twierdzeniu o wiriale.
     Prędkości węzłów zmieniają się w czasie, więc będzie też zmieniać się średnia energia kinetyczna układu
     a przez to i rozkład temperatury.
@@ -507,7 +507,7 @@
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
-    \subsection{Obliczanie temperatury}
+    \subsection{Wyznaczanie i wizualizacja rozkładu przestrzennego temperatury}
     \begin{wrapfigure}{R}{0.35\textwidth}
         \includegraphics[width=0.95\linewidth]{avg.drawio}
         \caption{
@@ -517,12 +517,19 @@
         }
     \end{wrapfigure}
 
-    Obliczona za pomocą powyższych wzorów temperatura wykazywała się bardzo dużą zmiennością w czasie,
-    powodując bardzo szybką zmianę kolorów węzłów, co poważnie utrudniało analizę stanu symulacji. 
-    Z tego powodu ostateczny kolor węzła w widoku temperatury kalkulowany jest w następujący sposób:
+    Jednym z celów projektu jest stworzenie oprogramowania do wizualizacji zderzeń obiektów.
+    Oprogramowanie to zawiera moduł odpowiedzialny z wyznaczanie temperatury w węzłach 
+    przy użyciu twierdzenia o wiriale. Wizualizacja rozkładu przestrzennego temperatury polega 
+    na przypisaniu węzłowi koloru odpowiadającego jego temperaturze. Jednakże ze względu na 
+    stosunkowo małą liczbę węzłów reprezentujących obiekty (wydajność programu jest priorytetem) 
+    powodowało to bardzo szybkie zmiany temperatury w węzłach co podczas wizualizacji 
+    objawiało się migotaniem kolorów tych węzłów, poważnie utrudniając analizę stanu symulacji. \\
+
+    Aby zapobiec powyższemu problemowi wyniki muszą być odpowiednio wygładzone w czasie, dlatego
+    ostateczny kolor węzła w widoku temperatury kalkulowany jest w następujący sposób:
     \begin{enumerate}
-        \item Dla każdego węzła obliczamy temperaturę wedle wzoru i zapisujemy ją wraz z czasem w
-        symulacji do tablicy, każdy węzeł ma osobną tablicę.
+        \item Dla każdego węzła obliczamy temperaturę wedle wzoru i zapisujemy ją 
+        oraz chwilę czasowa do tablicy, każdy węzeł ma osobną tablicę.
         \item Dla każdego węzła $n$ obliczamy średnią temperaturę w czasie, w ten sposób każdemu węzłowi
         odpowiada jedna liczba.
         \item Ostateczna temperatura jaka będzie wyświetlona w widoku temperatury dla węzła $n$
@@ -541,6 +548,7 @@
     wyraźnie łatwiejsza w implementacji, dlatego ta metoda została użyta w aplikacji do stworzenia widoku 
     temperatury węzłów, przedstawionego w dalszej części pracy.
     
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \section{Obliczanie ciśnienia na węźle}
     Lokalne zmiany temperatury informują nas o dynamice zachodzących zmian w obiekcie.
@@ -565,7 +573,7 @@
         \frac{d}{dl} F_{LJ} = 3\frac{V_0}{(d_0)^2} \left[ -7 \left(\frac{d_0}{l}\right)^{8} + 13 \left(\frac{d_0}{l}\right)^{14} \right]
     \end{equation}
     
-    \clearpage
+    % \clearpage
     Wykorzystując powyżej obliczoną pochodną jesteśmy teraz z stanie opisać ciśnienie 
     na ściankach w dwuwymiarowym układzie za pomocą wzoru:
     \begin{equation}
@@ -762,9 +770,11 @@
     \subsection{Implementacja wielowątkowa na CPU}
     \lstinputlisting[language=C]{code/simulate_single.rs}
     W tym przypadku zdefiniowana została jedna funkcja, która odwzorowuje każdy z 
-    węzłów na aktualne przyśpieszenie tego węzła.
-    W ten sposób podział zadania na wątki wykonywany jest tylko raz, co 
-    znacznie zwiększa szybkość wykonania programu.
+    węzłów na aktualne przyśpieszenie tego węzła i zapisuje te wartości w tablicy.
+    Dla jednego węzła obliczany jest jeden wektor przyśpieszenia, dzięki czemu z wyprzedzeniem
+    znamy wielkość tablicy i wiemy dokładnie w 
+    jakim miejscu pamięci operacyjnej zapisać uzyskane wyniki.
+    Dzięki takiemu jasno zdefiniowanemu przepływowi danych możemy z łatwością zrównoleglić to zadanie.
 
     \clearpage
     \subsection{Implementacja wielowątkowa na GPU przy użyciu API OpenCL}
@@ -773,8 +783,12 @@
     struktur po stronie programu \emph{OpenCL}.
 
     \lstinputlisting[language=C]{code/simulation.cl}
-    W tym przypadku zdefiniowana została jedna funkcja jest w stanie obliczyć zmianę przyśpieszenia 
-    dla każdego z węzłów.
+    Zdefiniowana została jedna funkcja jest w stanie obliczyć zmianę przyśpieszenia 
+    dla każdego z węzłów. Wszystkie operatory i struktury danych używane w funkcjach
+    obliczających poszczególne siły działające na węzeł po stronie części programu napisanej
+    w \emph{Rust} ma swoje odpowiedniki w \emph{OpenCL} co znacznie ułatwiło implementację
+    tych funkcji po stronie karty graficznej. 
+
 
     \clearpage
     % --------------------------------------------------------------------------------------------------
@@ -1339,7 +1353,7 @@
     \subsection{Różnica pomiędzy najlepszą i najgorszą wydajnością}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{performance_all_best_worst.png}
+        \includegraphics[width=18cm]{performance_all_best_worst.png}
         \caption{
             Liczba iteracji na sekundę w zależności od ilości węzłów -
             oś iteracji na sekundę przedstawiona jest w skali logarytmicznej
@@ -1348,7 +1362,7 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{performance_all_best_worst_log_log.png}
+        \includegraphics[width=18cm]{performance_all_best_worst_log_log.png}
         \caption{
             Liczba iteracji na sekundę w zależności od ilości węzłów - 
             obydwie osie przedstawione są w skali logarytmicznej
@@ -1607,28 +1621,33 @@
 
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Największa wartość ciśnienia na węźle w czasie}
-    Pozwala lepiej zrozumieć kolory.
+    Daje dokładniejszy podgląd sytuacji w czasie. W każdej chwili czasowej wybierany jest węzeł 
+    który cechuje się w danej chwili największą wartością ciśnienia.
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=14cm]{pressure_pressure_01}
+        \includegraphics[width=16cm]{pressure_pressure_01}
         \caption{
             Największa wartość ciśnienia na węźle w czasie dla pierwszych 0.5 sekundy
         }
     \end{figure}
 
-    Szybki wzrost.
+    W pierwszych $0.3s$ symulacji wartość największego ciśnienia wzrasta, ponieważ obiekt
+    ugina się pod wpływem działania siły grawitacji.
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=14cm]{pressure_pressure_02}
+        \includegraphics[width=16cm]{pressure_pressure_02}
         \caption{
             Największa wartość ciśnienia na węźle w czasie dla pierwszych 3.0 sekundy
         }
     \end{figure}
 
-    Oscylacje.
-
+    Oscylacje ciśnienia w węźle sa wynikiem powstawania fali ciśnienia w obiekcie.
+    Fala ta propaguje sie w kierunku pionowym. Jeśli w danej chwili propagacja odbywa sie 
+    do gory to następuje ``odprężenie materiału'' i spadek ciśnienia, natomiast propagacja w dół 
+    powoduje wzrost ciśnienia i kompresję obiektu. Uśredniona wysokość obiektu podzielona przez okres
+    oscylacji jest w przybliżeniu równa prędkości rozchodzenia sie dźwięku w materiale.
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
@@ -1715,35 +1734,48 @@
     zmniejszenia odległości pomiędzy węzłami na wskutek ściskania obiektu. Energia wewnętrzna wzrasta w dwóch momentach: 
     najpierw obiekt $50 \times 50$ zmienia swój kształt pod wpływem działania siły grawitacji, co powoduje zmniejszenie 
     odległości pomiędzy węzłami znajdującymi sę w nim, ten etap widoczny jest w przedziale czasu $[0, 0.6] s$. 
+    
     Następnie w momencie $\approx 0.6 s$ następuje zderzenie powodujące wyraźne ściśnięcie obiektu a zatem znaczny wzrost
     energii wewnętrznej międzywęzłowej. Energia ta po momencie zderzenia zmniejsza się na wskutek częściowego rozprężenia
-    obiektów, jednak nie powraca do swojej poprzedniej wartości, ponieważ spoczywające na sobie obiekty nadal 
-    wywierają na siebie nacisk ze względu na niezerową się grawitacji a obiekty nadal 
-    są częściowo zniekształcone.
+    obiektów jednak nie powraca do swojej poprzedniej wartości, ponieważ spoczywające na sobie obiekty nadal 
+    wywierają na siebie nacisk ze względu na niezerową się grawitacji, co powoduje ich zniekształcenie.
 
+    \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Największa wartość ciśnienia na węźle w czasie}
-    Pozwala lepiej zrozumieć kolory.
+    Daje dokładniejszy podgląd sytuacji w czasie. W każdej chwili czasowej wybierany jest węzeł 
+    który cechuje się w danej chwili największą wartością ciśnienia.
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=14cm]{pressure_pressure02_01}
+        \includegraphics[width=16cm]{pressure_pressure02_01}
         \caption{
             Największa wartość ciśnienia na węźle w czasie dla pierwszych 0.35 sekundy
         }
     \end{figure}
 
-    Szybki wzrost.
+    W pierwszych $0.3s$ symulacji wartość największego ciśnienia wzrasta, ponieważ obiekt
+    ugina się pod wpływem działania siły grawitacji.
 
+    \clearpage
+    % --------------------------------------------------------------------------------------------------------------
     \begin{figure}[H]
         \centering
-        \includegraphics[width=14cm]{pressure_pressure02_02}
+        \includegraphics[width=16cm]{pressure_pressure02_02}
         \caption{
             Największa wartość ciśnienia na węźle w czasie dla pierwszych 1.6 sekundy
         }
     \end{figure}
 
-    Oscylacje.
+    Podczas zderzenia dwóch obiektów zmiana ciśnienia opisywana jest bardziej złożona krzywa.
+    Kumulują sie tu 4 efekty:
+
+    \begin{enumerate}
+        \item zderzenie i odbicie obiektów (nacisk) - szczególnie dobrze widoczne w kilku początkowych chwilach czasowych
+        \item fala ciśnienia rozchodząca sie w obiekcie spoczywającym
+        \item fala ciśnienia rozchodząca sie w obiekcie spadającym 
+        \item wpływ czynnika tłumiącego, który szybko tłumi oscylacje o dużej amplitudzie
+    \end{enumerate}
 
 \chapter{Podsumowanie}
     Zastosowanie metoda dynamiki molekularnej daje bardzo interesujące 

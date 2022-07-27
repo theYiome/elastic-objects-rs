@@ -9,12 +9,10 @@ __kernel void main(
     read_only const __global struct Connection * const connections,
     write_only __global float2 *result
 ) {
-
     size_t i = get_global_id(0);
 
     if (i < node_count) {
         float2 acceleration = (float2)(0.0f, 0.0f);
-
         // Collisions
         acceleration -= collision_force(i, nodes, collisions_index, collisions);
         // Connections
