@@ -245,34 +245,78 @@
         processes occurring in nature as accurately as possible. 
         The first step in this direction is the description of nature. 
         It serves to develop an appropriate system of concepts.'' \cite{moleculardynamics}. 
-    Ważnym zadaniem modelu jest rzeczywiste odwzorowanie zachowania obiektów elastycznych.
+    Ważnym zadaniem modelu jest rzeczywiste odwzorowanie zachowania obiektów elastycznych. \\
+
+    W metodzie dynamiki molekularnej niezwykle ważną wielkością jest energia całkowita układu.
+    Może być ona zachowana w czasie jeżeli wszystkie działające 
+    na układ siły są zachowawcze, jak na przykład \emph{siła grawitacji}). 
+    Jednak jeżeli w układzie występują siły niezachowawcze jak \emph{siła oporu}. 
+    Energia może stanowic miarę jakości rozwiązania (jeżeli wszystkie siły są zachowawcze), 
+    natomiast jej zmiany w czasie informują o wielkości dyssypacji energii do otoczenia (\emph{opór ruchu}). \\
+
+    Energię całkowitą pojedynczego węzła w przypadku zachowawczym 
+    możemy opisać jako sumę jego energii kinetycznej i 
+    energii potencjalnych związanych z jego położeniem:
 
     \begin{equation}
         E_{c} = E_{k} + E_{g} + E_{p} + E_{w} + E_{o}
     \end{equation}
 
-    \begin{equation}
-        \frac{d^{2} \vec{r_i}}{dt^{2}} = \frac{\vec{F}}{m_i}
-    \end{equation}
+    \begin{itemize}
+        \item $E_{c}$ - energia całkowita
+        \item $E_{k}$ - energia kinetyczna
+        \item $E_{g}$ - energia potencjalna grawitacji
+        \item $E_{p}$ - energia potencjalna \emph{Lennarda-Jonesa} 
+        pomiędzy węzłem i podłożem
+        \item $E_{w}$ - energia potencjalna \emph{Lennarda-Jonesa} 
+        pomiędzy węzłem a innymi węzłami z nim połączonymi
+        \item $E_{o}$ - energia potencjalna \emph{Lennarda-Jonesa} 
+        pomiędzy węzłem a węzłami w innych obiektach
+    \end{itemize}
 
-    W metodzie dynamiki molekularnej niezwykle ważną wielkością jest energia całkowita układu.
-    Może być ona zachowana w czasie jeżeli wszystkie działające 
-    na układ siły są zachowawcze, jak na przykład \emph{siła grawitacji}). 
-    Jednak jeżeli w układzie występują siły niezachowawcze jak \emph{siła tarcia}. 
-    Energia może stanowic miarę jakości rozwiązania (jeżeli wszystkie siły są zachowawcze), 
-    natomiast jej zmiany w czasie informują o wielkości dyssypacji energii do otoczenia (tarcie). \\
-
+    Potencjał \emph{Lennarda-Jonesa} używany jest do opisania 
+    energii odpychających pomiędzy węzłem a innymi węzłami oraz pomiędzy węzłem a podłożem, zagadnienie 
+    to jest dokładniej opisane w podrozdziale \ref{sec:model}.
     Znając siły działające na każdy element (węzeł) układu możemy zapisać równania ruchu, 
     których rozwiązania będą opisywać trajektorie węzłów. 
     Zbiór trajektorii wszystkich węzłów określa jednoznacznie ewolucje czasową układu
-    i to jest podstawowy cel dynamiki molekularnej. Wszystkie interesujące nas wielkości 
+    i to jest podstawowy cel dynamiki molekularnej. 
+
+    Wszystkie interesujące nas wielkości 
     takie jak energie, rozkład sił, ciśnienia czy temperatury można wyznaczyć 
     na podstawie aktualnych (chwilowych) położeń węzłów.
     Jeśli zbiór wszystkich węzłów ma reprezentować jeden obiekt to konieczne jest 
     wprowadzenie usystematyzowanego opisu względnych położeń węzłów - innymi słowy 
-    potrzebna jest siatka węzłów. Problem ten jest omówiony w następnym podrozdziale.
+    potrzebna jest siatka węzłów. Problem ten jest omówiony w następnym podrozdziale. \\
 
-    \clearpage
+    Aby uzyskać równanie ruchu pojedynczego węzła musimy znać siłę wypadkową na niego oddziaływującą.
+    Możemy zapisać ją jako sumę siłą działających na niego sił:
+    \begin{equation}
+        \vec{F} = \vec{F_{g}} + \vec{F_{p}} + \vec{F_{w}} + \vec{F_{o}}
+    \end{equation}
+
+    \begin{itemize}
+        \item $E_{g}$ - siła grawitacji
+        \item $E_{p}$ - siła odpychająca pomiędzy węzłem i podłożem
+        \item $E_{w}$ - siła przyciągająca i odpychająca pomiędzy węzłem a innymi węzłami z nim połączonymi
+        \item $E_{o}$ - siła odpychająca pomiędzy węzłem a węzłami w innych obiektach
+    \end{itemize}
+
+    Jeżeli w układzie występuje opór ruchu, siła z niego wynikająca
+    jest dodawana do siły wypadkowej.
+    Siła oporu ruchu jest proporcjonalna do prędkości węzła,
+    swoim działaniem przypomina opór powietrza:
+    \begin{equation}
+        \vec{F_{t}} = - c \vec{v}
+    \end{equation}
+
+    Gdzie $\vec{v}$ to prędkość węzła a $c$ to współczynnik oporu ruchu ($c > 0$).
+    Korzystając z siły wypadkowej działającej na dany węzeł możemy zapisać jego równanie ruchu:
+    \begin{equation}
+        \frac{d^{2} \vec{r_i}}{dt^{2}} = \frac{\vec{F}}{m_i}
+    \end{equation}
+
+    % \clearpage
     \section{Siatka węzłów}
 
     \begin{wrapfigure}{r}{0.55\textwidth}
@@ -310,8 +354,9 @@
     czego zazwyczaj unika się podczas wykonywania symulacji numerycznych.
 
 
-    \clearpage
+    % \clearpage
     \section{Model oddziaływań}
+    \label{sec:model}
 
     \begin{wrapfigure}{l}{0.35\textwidth}
         \includegraphics[width=0.95\linewidth]{four_nebiours.drawio.png} 
@@ -491,7 +536,7 @@
         \left< E_{kinetyczna} , k \right> = 
         -\frac{1}{2} \frac{1}{n} \sum_{j = 0}^{n} \left[  F_{kx}(t_j) \cdot x_n(t_j) + F_{ky}(t_j) \cdot y_k(t_j) \right]
     \end{equation}
-    Elementy sumy zapisywane są tak samo jak poprzednio w tablicy. Przyjmujemy $n > 100$ lub więcej. 
+    Elementy sumy zapisywane są w tablicy. Przyjmujemy $n > 100$ lub więcej. 
 
     \begin{equation}
         \left< E_{kinetyczna, k} \right> = k_B T_k \Rightarrow T_k = \frac{\left< E_{kinetyczna, k} \right>}{k_B}
@@ -709,6 +754,45 @@
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
+
+    \subsection{Schematy blokowe opisujące wybrane części aplikacji}
+
+    \begin{figure}[h]
+
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=8cm]{main_flow.drawio.png}
+            \caption{
+                Ogólne działanie aplikacji
+            }
+        \end{subfigure}
+        \begin{subfigure}{0.5\textwidth}
+            \centering
+            \includegraphics[width=3.5cm]{next_step.drawio.png}
+            \caption{
+                Wykonanie następnego kroku symulacji
+            }
+        \end{subfigure}
+        
+        \caption{Schematy blokowe przedstawiające wybrane algorytmy}
+    \end{figure}
+    
+    Aplikacja kończy swoje działanie gdy zostanie naciśnięty przycisk zamknięcia jej okna - w 
+    systemie Windows znajduje się on w prawym górnym rogu okna, dla innych systemów operacyjnych 
+    położenie tego przycisku może się różnić. Plik z zapisywanymi wartościami energii oraz największego
+    ciśnienia znaleźć można w folderze \emph{data} pod nazwą \emph{log.csv}, informacje te 
+    zapisywane są w formacie \emph{comma separated values} (\emph{CSV}). \\
+
+    Algorytm weryfikujący poprawność stanu symulacji został dokładniej opisany w podrozdziałach
+    \ref{subsec:error_correction} oraz \ref{subsec:auto_dt} a schemat blokowy 
+    przedstawiający jego działanie znajduje się na rysunku \ref{fig:error_correction}.
+    Sposób rysowania stanu symulacji oraz interfejsu graficznego służącego do modyfikacji jej 
+    parametrów w czasie rzeczywistym opisany został w rozdziale \ref{sec:graphics}.
+
+
+    % ---------------------------------------------------------------------------------------------------
+    \clearpage
+
     \section{Węzły}
     Informacje o węzłach używanych w symulacji są przechowywane w strukturze \emph{Node}.
 
@@ -750,13 +834,7 @@
     którym zostały zdefiniowane. Taka właśnie anonimowa funkcja została zdefiniowana i podana jako 
     argument funkcji \emph{for\_each} operującej na tablicy węzłów.
 
-    % \section{Struktury obliczeniowe}
-    % W celu uproszczenia algorytmów wykonujących obliczenia przyśpieszeń i zjednolicenia 
-    % ułożenia danych dla wersji CPU oraz GPU program przed wykonaniem właściwych obliczeń
-    % tworzy następujące struktury.
-
     \section{Obliczanie przyśpieszeń}
-
     \subsection{Implementacja jednowątkowa na CPU}
     \lstinputlisting[language=C]{code/simulate_no_par.rs}
     Wersja jednowątkowa wykonywania obliczeń - pierwszy etap algorytmu \emph{Verleta} na podstawie 
@@ -842,9 +920,11 @@
             algorytmu sprawdzającego co klatkę
             błędy w symulacji i zarządzającego wartością kroku czasowego
         }
+        \label{fig:error_correction}
     \end{wrapfigure}
 
     \subsection{Korekcja błędów}
+    \label{subsec:error_correction}
     Z powodu dobrania zbyt dużego kroku czasowego symulacja może być niestabilna.
     Objawy niestabilności to między innymi destrukcja siatki lub nadanie węzłom 
     ogromnych prędkości powodujących wyjście poza obserwowalny obszar.
@@ -857,6 +937,7 @@
     przywracana jest do ostatniego poprawnego stanu a krok czasowy jest zmniejszany.
 
     \subsection{Automatyczny dobór kroku czasowego}
+    \label{subsec:auto_dt}
     Gdy korekcja błędów jest włączona, za każdym razem gdy zostanie wykryty błąd,
     zostanie również wykonany powrót do poprzedniego stanu a krok czasowy zostanie zmniejszony o połowę. 
     Jeżeli użytkownik włączy funkcję automatycznego zwiększania
@@ -869,8 +950,8 @@
     krok czasowy, wykonując symulację mniej dokładnie ale za to skracając czas obliczeń.
 
     % ---------------------------------------------------------------------------------------------------
-    \clearpage
     \section{Generowanie grafiki}
+    \label{sec:graphics}
     Do generowania grafiki i animacji został wykorzystany wielojęzyczny i wieloplatformowy 
     interfejs programowania aplikacji \emph{OpenGL}, służący głównie do 
     renderowania grafiki wektorowej 2D i 3D.
@@ -924,9 +1005,9 @@
     wydajność rysowania obiektów. Nawet proste użycie stałego bufora zamiast jego 
     zmiennego odpowiednika może wyraźnie skrócić czas rysowania.
     Inną istotną optymalizacją zastosowaną w aplikacji jest użycie 
-    metody \emph{renderowania instancjonowanego} (instanced rendering), 
+    metody \emph{renderowania instancjonowanego} (\emph{instanced rendering}), 
     metoda pozwalająca na renderowanie wielu obiektów na raz 
-    przy użyciu jednego wywołania funkcji rysującej (draw call). 
+    przy użyciu jednego wywołania funkcji rysującej (\emph{draw call}). 
     Najpierw należy zainicjalizować geometrię obiektu który będzie renderowany, 
     następnie stworzyć tablicę zwierającą informację 
     między innymi o położeniu każdego z tych obiektów. 
@@ -1074,13 +1155,26 @@
     odpowiednio $8 \times 8$ i $6 \times 4$ oraz statyczne podłoże. Obiekty
     znajdują się w polu grawitacyjnym, nie ma żadnych sił oporu/tarcia.
 
-    \subsubsection{Parametry symulacji}
-    \begin{align*}
-        g &= 9.81 [\frac{m}{s^2}] \\
-        dt &= 10^{-5} [s] \\
-        t_{max} &= 8 [s] \\
-        n = \frac{t_{max}}{dt} &= 8 \times 10^{5}
-    \end{align*}
+    \begin{multicols}{2}
+        [
+            \subsubsection{Parametry symulacji}
+            Do symulacji zostały wykorzystane poniższe parametry:
+        ]
+        \begin{itemize}
+            \item $g = 9.81 [\frac{m}{s^2}]$
+            \item $dt = 10^{-5} [s]$
+        \end{itemize}
+        \begin{itemize}
+            \item $t_{max} = 8 [s]$
+            \item $n = \frac{t_{max}}{dt} = 8 \times 10^{5}$
+        \end{itemize}
+    \end{multicols}
+    % \begin{align*}
+    %     g &= 9.81 [\frac{m}{s^2}] \\
+    %     dt &= 10^{-5} [s] \\
+    %     t_{max} &= 8 [s] \\
+    %     n = \frac{t_{max}}{dt} &= 8 \times 10^{5}
+    % \end{align*}
 
     \subsection{Wyniki}
     \begin{figure}[H]
@@ -1092,7 +1186,7 @@
 
     W początkowej fazie testu wyżej zawieszony obiekt zaczyna spadać
     pod wpływem siły ciążenia na stacjonarny drugi obiekt znajdujący
-    się przy podłożu. Po nieco ponad $0.2 [s]$ dochodzi do pierwszego kontaktu.
+    się przy podłożu. Po nieco ponad $0.2s$ dochodzi do pierwszego kontaktu.
     Przy zderzeniach pomiędzy obiektami oraz pomiędzy obiektem i podłożem energia potencjalna
     odpychająca Lennarda-Jonesa oznaczona kolejno kolorami pomarańczowym i czerwonym
     wyraźnie wzrasta. Zaraz po zderzeniu możemy obserwować ponowny wzrosty energii potencjalnej grawitacji,
@@ -1107,7 +1201,7 @@
     
     Obiekt $6 \times 4$ odbija się jeszcze kilkukrotnie od obiektu $8 \times 8$, za każdym 
     razem na nieco mniejszą wysokość, przez co następuje utrata energi potencjalnej grawitacji 
-    na rzecz energii wewnętrznych obydwóch obiektów. Po nieco ponad $3.0 [s]$ obiekt 
+    na rzecz energii wewnętrznych obydwóch obiektów. Po nieco ponad $3.0s$ obiekt 
     $6 \times 4$ zsuwa sie z drugiego obiektu i spada na podłoże
 
     \begin{figure}[H]
@@ -1176,6 +1270,7 @@
     to symulacja penetracji/rozrywania obiektów - poprawna obsługa tego przypadku wymagała by odpowiedniej
     modyfikacji brzegów obiektów.
 
+    \clearpage
     \subsection{Opis testu}
     Rozpatrujemy scenariusz z dwoma obiektami, sprawdzamy liczbę iteracji symulacji na sekundę stopniowo
     zwiększając liczbę węzłów w obydwóch obiektach.
@@ -1185,11 +1280,48 @@
     3, 5, 9, 10, 15, 21, 25, 30, 35, 40, 45, 50, 55, 60. Parametry symulacji dobrane są 
     w taki sposób, aby obiekty nie uległy uszkodzeniu/rozerwaniu.
     
+
+    \begin{multicols}{2}
+        [
+            \subsection{Parametry symulacji}
+            Do symulacji zostały wykorzystane poniższe parametry:
+        ]
+
+        \begin{itemize}
+            \item $g = 9.81$
+            \item $dt = 10^{-5}$
+        \end{itemize}
+        Odpychanie międzyobiektowe (parametry potencjału Lennarda-Jonesa dla dwóch zderzających się obiektów):
+        \begin{itemize}
+            \item $V_{0} = 100$
+            \item $d_{0} = 0.07$
+        \end{itemize}
+        Parametry pierwszego obiektu:
+        \begin{itemize}
+            \item $c_{1} = 0.0$
+            \item $m_{1} = 1.0$
+            \item $V_{1} = 500.0$
+            \item $r_{1} = [-0.92, -0.925]$
+        \end{itemize}
+        Parametry drugiego obiektu:
+        \begin{itemize}
+            \item $c_{2} = 0.0$
+            \item $m_{2} = 1.0$
+            \item $V_{2} = 500.0$
+            \item $r_{2} = [-0.12, 0.7]$
+        \end{itemize}
+    \end{multicols}
+
+    Parametry $r_x$ oznaczają pozycję początkową obiektu a $m_x$ masę węzłów w obiekcie.
+    $V_x$ współczynnik oddziaływania międzywęzłowego, $g$ przyśpieszenie grawitacyjne, 
+    $c_x$ współczynnik oporu dla każdego z węzłów w danym obiekcie.
+
+    \clearpage
     \subsection{Wyniki}
     Wyniki z przeprowadzonego testu prezentują się następująco:
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{performance_side_size}
+        \includegraphics[width=15cm]{performance_side_size}
         \caption{
             Liczba iteracji na sekundę w zależności od 
             ilości węzłów w bokach obiektów dla dwóch metod obsługi zderzeń -
@@ -1199,7 +1331,7 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{performance_side_size_log_log}
+        \includegraphics[width=15cm]{performance_side_size_log_log}
         \caption{
             Liczba iteracji na sekundę w zależności od 
             ilości węzłów w bokach obiektów dla dwóch metod obsługi zderzeń -
@@ -1353,7 +1485,7 @@
     \subsection{Różnica pomiędzy najlepszą i najgorszą wydajnością}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=18cm]{performance_all_best_worst.png}
+        \includegraphics[width=16cm]{performance_all_best_worst.png}
         \caption{
             Liczba iteracji na sekundę w zależności od ilości węzłów -
             oś iteracji na sekundę przedstawiona jest w skali logarytmicznej
@@ -1362,7 +1494,7 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=18cm]{performance_all_best_worst_log_log.png}
+        \includegraphics[width=16cm]{performance_all_best_worst_log_log.png}
         \caption{
             Liczba iteracji na sekundę w zależności od ilości węzłów - 
             obydwie osie przedstawione są w skali logarytmicznej
@@ -1435,7 +1567,7 @@
 
     Parametry $r_x$ oznaczają pozycję początkową obiektu, $m_x$ masę węzłów w obiekcie, 
     $d_x$ pozycję równowagi przyciągania/odpychania pomiędzy dwoma węzłami dla tego
-    samego obiektu lub jedynie odpychania dla oddziaływań międzywęzłowych,
+    samego obiektu.
     $V_x$ współczynnik oddziaływania międzywęzłowego, $g$ przyśpieszenie grawitacyjne, 
     $c_x$ współczynnik oporu dla każdego z węzłów w danym obiekcie.
 
@@ -1622,22 +1754,24 @@
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Największa wartość ciśnienia na węźle w czasie}
     Daje dokładniejszy podgląd sytuacji w czasie. W każdej chwili czasowej wybierany jest węzeł 
-    który cechuje się w danej chwili największą wartością ciśnienia.
+    który cechuje się w tej chwili największą wartością ciśnienia.
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{pressure_pressure_01}
+        \includegraphics[width=17cm]{pressure_pressure_01}
         \caption{
             Największa wartość ciśnienia na węźle w czasie dla pierwszych 0.5 sekundy
         }
     \end{figure}
 
     W pierwszych $0.3s$ symulacji wartość największego ciśnienia wzrasta, ponieważ obiekt
-    ugina się pod wpływem działania siły grawitacji.
+    ugina się pod wpływem działania siły grawitacji. W czasie $0.35s$ wartość ciśnienia 
+    osiąga swoje maksimum, po czym zaczyna ono spadać. Dzieje się tak, ponieważ 
+    ściśnięty obiekt zaczyna się rozprężać.
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{pressure_pressure_02}
+        \includegraphics[width=17cm]{pressure_pressure_02}
         \caption{
             Największa wartość ciśnienia na węźle w czasie dla pierwszych 3.0 sekundy
         }
@@ -1645,7 +1779,7 @@
 
     Oscylacje ciśnienia w węźle sa wynikiem powstawania fali ciśnienia w obiekcie.
     Fala ta propaguje sie w kierunku pionowym. Jeśli w danej chwili propagacja odbywa sie 
-    do gory to następuje ``odprężenie materiału'' i spadek ciśnienia, natomiast propagacja w dół 
+    do góry to następuje ``odprężenie materiału'' oraz spadek ciśnienia, natomiast propagacja w dół 
     powoduje wzrost ciśnienia i kompresję obiektu. Uśredniona wysokość obiektu podzielona przez okres
     oscylacji jest w przybliżeniu równa prędkości rozchodzenia sie dźwięku w materiale.
 
@@ -1704,7 +1838,7 @@
     \subsection{Zmiana energii układu w czasie}
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{pressure_energy02_01}
+        \includegraphics[width=17cm]{pressure_energy02_01}
         \caption{
             Zmiana energi układu w czasie dla pierwszych 0.35 sekundy
         }
@@ -1717,7 +1851,7 @@
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{pressure_energy02_02}
+        \includegraphics[width=17cm]{pressure_energy02_02}
         \caption{
             Zmiana energi układu w czasie dla pierwszych 1.6 sekundy
         }
@@ -1744,62 +1878,68 @@
     % --------------------------------------------------------------------------------------------------------------
     \subsection{Największa wartość ciśnienia na węźle w czasie}
     Daje dokładniejszy podgląd sytuacji w czasie. W każdej chwili czasowej wybierany jest węzeł 
-    który cechuje się w danej chwili największą wartością ciśnienia.
+    który cechuje się w tej chwili największą wartością ciśnienia.
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{pressure_pressure02_01}
+        \includegraphics[width=17cm]{pressure_pressure02_01}
         \caption{
             Największa wartość ciśnienia na węźle w czasie dla pierwszych 0.35 sekundy
         }
     \end{figure}
 
-    W pierwszych $0.3s$ symulacji wartość największego ciśnienia wzrasta, ponieważ obiekt
-    ugina się pod wpływem działania siły grawitacji.
+    W pierwszych $0.35s$ symulacji wartość największego ciśnienia wzrasta, ponieważ obiekt
+    ugina się pod wpływem działania siły grawitacji. W tym przedziale czasowym nie występuje 
+    jeszcze zderzenie dwóch obiektów, dlatego krzywa ta jest relatywnie gładka.
 
     \clearpage
     % --------------------------------------------------------------------------------------------------------------
     \begin{figure}[H]
         \centering
-        \includegraphics[width=16cm]{pressure_pressure02_02}
+        \includegraphics[width=17cm]{pressure_pressure02_02}
         \caption{
             Największa wartość ciśnienia na węźle w czasie dla pierwszych 1.6 sekundy
         }
     \end{figure}
 
-    Podczas zderzenia dwóch obiektów zmiana ciśnienia opisywana jest bardziej złożona krzywa.
-    Kumulują sie tu 4 efekty:
+    Po początkowym etapie wzrostu ciśnienia pod wpływem ugięcia się obiektu przy podłożu 
+    z powodu swojego własnego ciężaru, następuje jego rozprężenie, obserwowane w czasie $0.6s$.
+    Chwilę później, w momencie $\approx 0.65 s$ następuje zderzenie, powodujące wyraźne 
+    ściśnięcie obiektu a zatem znaczne zwiększenie wartości maksymalnego ciśnienia. 
+    Podczas zderzenia dwóch obiektów zmiana ciśnienia opisywana jest bardziej złożona krzywą.
+    Kumulują sie tu następujące efekty:
 
     \begin{enumerate}
-        \item zderzenie i odbicie obiektów (nacisk) - szczególnie dobrze widoczne w kilku początkowych chwilach czasowych
-        \item fala ciśnienia rozchodząca sie w obiekcie spoczywającym
-        \item fala ciśnienia rozchodząca sie w obiekcie spadającym 
-        \item wpływ czynnika tłumiącego, który szybko tłumi oscylacje o dużej amplitudzie
+        \item Zderzenie i odbicie obiektów (nacisk) - szczególnie dobrze widoczne w kilku początkowych chwilach czasowych.
+        \item Fala ciśnienia rozchodząca sie w obiekcie spoczywającym.
+        \item Fala ciśnienia rozchodząca sie w obiekcie spadającym.
+        \item Wpływ czynnika tłumiącego, który szybko tłumi oscylacje o dużej amplitudzie.
     \end{enumerate}
 
 \chapter{Podsumowanie}
     Zastosowanie metoda dynamiki molekularnej daje bardzo interesujące 
     wyniki podczas symulacji zderzeń obiektów. Zastosowanie dużej ilości węzłów pozwala na 
     ukazanie realistycznie wyglądających obiektów elastycznych zdolnych do kolizji między sobą 
-    i rozrywających się gdy działa na nie odpowiednio duża siła. \\
+    i rozrywających się gdy działa na nie odpowiednio duża siła.
     
     Konieczność wykonywania i wyświetlania symulacji z dużą ilością węzłów w czasie 
     rzeczywistym tworzy wiele problemów związanych z wydajnością programu, wymagając
     od programisty kreatywnego podejścia do optymalizacji. Ukazuje również korzyści wynikające z 
     zastosowania zrównoleglenia algorytmów, pozwalając na wykonywanie ich znacznie znacznie szybciej na 
-    urządzeniach wielowątkowych takich jak procesory czy karty graficzne.
+    urządzeniach do przetwarzania wielu obliczeń 
+    jednocześnie takich jak procesory wielordzeniowe czy karty graficzne.
 
     Wydajność symulacji, jest dużym problem gdy zwiększa się liczba oddziałujących obiektów. 
     Zrównoleglenie algorytmów jest trudne do osiągnięcia, wymaga znacznej modyfikacji programu oraz często 
     wymaga pewnych ustępstw w celu zniwelowania niezdefiniowanego zachowania wynikającego z wyścigów 
-    (\emph{race conditions}) dostępu do pamięci.
+    dostępu do pamięci (\emph{race conditions}) i innych problemów z synchronizacją wątków.
 
     Gdy tworzymy algorytm mający działać na procesorze graficznym, bardzo istotnym aspektem jest 
     koszt związany z przesyłem danych z pamięci głównej do pamięci karty graficznej. Sam proces kopiowania 
     danych może poważnie wpłynąć na wydajność programu i w niektórych przypadkach może on zająć więcej
     czasu niż samo wykonanie obliczeń \cite{cuda}. \\
 
-    Podstawowym problemem podczas wykonywania symulacji i rysowania animacji jest wydajność. 
+    Podstawowym problemem podczas rysowania animacji jest wydajność. 
     W pierwszym podejściu każdy węzeł i każde połączenie międzywęzłowe było rysowane osobno,
     jednak takie sposób tworzenia animacji bardzo niekorzystnie skaluje się wraz z liczbą rysowanych
     obiektów, powodując znaczące spowolnienia wraz z wzrostem ich liczby.
@@ -1808,10 +1948,28 @@
     Metoda ta pozwala na grupowanie wielu siatek wielokątów 
     (reprezentacja węzła składających się z wielu trójkątów równoramiennych ułożonych w okrąg) i
     rysowania ich w jednym wywołaniu, przesyłając wszystkie niezbędne informacje do karty 
-    graficznej jednocześnie co znacznie zwiększa wydajność. \\
+    graficznej jednocześnie co znacznie zwiększa wydajność.
+    
+    \clearpage
+    \section{Wnioski}
+    
+    Podczas testów poprawności działania algorytmów, gdy wszystkie działające na węzły siły były siłami 
+    zachowawczymi, fluktuacje energii całkowitej były zaniedbywalnie małe. Fakt ten wskazuje na to, że 
+    moduł aplikacji odpowiedzialny za wykonywanie symulacji został zaimplementowany poprawnie. \\
 
-    Algorytm zostały zaimplementowane poprawnie czego dowodem jest zachowanie energii całkowitej układu
-    w testach w których nie występowały żadne siły niezachowawcze.
+    Na początku symulacji większość energii układu znajduje się pod postacią energii potencjalnej grawitacji.
+    Jednak wraz z czasem trwania symulacji energia zaczyna rozchodzić się na inne jej rodzaje, inaczej mówiąc
+    wrasta entropia układu. Efekt ten widoczny jest we wszystkich wykonywanych symulacjach. \\
+
+    Ważniejszym aspektem podczas prób zwiększenia wydajności obliczeniowej algorytmów niż zrównoleglenie jest optymalizacja
+    algorytmów, na przykład poprzez odrzucenie elementów nie wpływających lub znikomo wpływających 
+    na ostateczny wynik obliczeń. 
+
+    Samo zrównoleglenie również dostarcza skoku wydajności jednak wzrost ten jest proporcjonalny do liczby wątków obliczeniowych,
+    zazwyczaj jest to kilka lub kilkanaście razy szybciej. Jednak optymalizacja algorytmów jest w stanie 
+    zwiększyć wydajność o kilka rzędów wielkości, co można było zaobserwować podczas porównania wydajności 
+    niezoptymalizowanej wersji algorytmu wykrywania kolizji, do tej zoptymalizowanej z użyciem siatki sąsiedztwa.
+
 
     % --------------------------------------------------------------------------------------------------------------
     % \section{Dodatek}
