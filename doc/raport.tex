@@ -296,10 +296,10 @@
     \end{equation}
 
     \begin{itemize}
-        \item $E_{g}$ - siła grawitacji
-        \item $E_{p}$ - siła odpychająca pomiędzy węzłem i podłożem
-        \item $E_{w}$ - siła przyciągająca i odpychająca pomiędzy węzłem a innymi węzłami z nim połączonymi
-        \item $E_{o}$ - siła odpychająca pomiędzy węzłem a węzłami w innych obiektach
+        \item $F_{g}$ - siła grawitacji
+        \item $F_{p}$ - siła odpychająca pomiędzy węzłem i podłożem
+        \item $F_{w}$ - siła przyciągająca i odpychająca pomiędzy węzłem a innymi węzłami z nim połączonymi
+        \item $F_{o}$ - siła odpychająca pomiędzy węzłem a węzłami w innych obiektach
     \end{itemize}
 
     Jeżeli w układzie występuje opór ruchu, siła z niego wynikająca
@@ -1970,55 +1970,6 @@
     zwiększyć wydajność o kilka rzędów wielkości, co można było zaobserwować podczas porównania wydajności 
     niezoptymalizowanej wersji algorytmu wykrywania kolizji, do tej zoptymalizowanej z użyciem siatki sąsiedztwa.
 
-
-    % --------------------------------------------------------------------------------------------------------------
-    % \section{Dodatek}
-    % \subsection{Animacje prezentujące działanie aplikacji}
-    
-    % \subsubsection{Przekazanie energii między dwoma sztywnimi obiektami}
-    % \url{https://youtu.be/nolLh6CSa-8} \\
-
-    % Mniejszy obiekt $3 \times 3$ po odbiciu od większego obiektu $8 \times  8$ 
-    % znajdującego się  pod nim wznosi się na
-    % wysokość o wiele większą, niż ta z której rozpoczął spadek swobodny.
-    % Występuje tutaj przekazanie części energii z obiektu 
-    % większego do mniejszego - sama zasada energii jest zachowana.
-
-    % \subsubsection{Przekazanie energii między dwoma miękkimi obiektami}
-    % \url{https://youtu.be/q2uYx8uLl3w} \\
-
-    % W tym przypadku obiekty są mniej sztywne, obiekt $3 \times 3$ po odbiciu 
-    % od obiektu $8 \times  8$ wznosi się na wyraźnie mniejszą wysokość niż w przypadku bardziej sztywnych obiektów
-    % (jednak wciąż wyżej niż punkt z którego zaczął spadać). Można to wytłumaczyć tym,
-    % że znaczna część energii która w poprzednim przypadku była częścią ruchu postępowego,
-    % teraz stała się energią wewnętrzną obiektów (wibracje obiektów pochłaniają część energii).
-
-    % \subsubsection{Proste zderzenie dwóch obiektów}
-    % \url{https://www.youtube.com/watch?v=4cGcL_5yUt4} \\ 
-
-    % Przypadek pokazujący zderzenie dwóch obiektów nieznajdujących się w polu grawitacyjnym.
-    % Jednemu z obiektów nadana jest prędkość początkowa, po chwili obiekty zderzają się i 
-    % odbijają się od siebie.
-
-    % \subsubsection{Zderzenie obiektów 120 kg z 288 kg}
-    % \url{https://youtu.be/3dV6EpRacyA} \\
-
-    % Wolny spadek, brak zniszczeń obiektów.
-
-    % \subsubsection{Zderzenie obiektów 200 kg z 288 kg}
-    % \url{https://youtu.be/lRGl7CJiqFU} \\
-
-    % Wolny spadek, częściowe uszkodzenie jednego z obiektów.
-
-    % \subsubsection{Zderzenie obiektów 320 kg z 288 kg}
-    % \url{https://youtu.be/VYeCsaqNxAY} \\
-
-    % Wolny spadek, pełne zniszczenie obydwóch obiektów.
-
-    % \subsection{Repozytorium}
-    % \subsubsection{Link do repozytorium z kodem}
-    % \url{https://github.com/theYiome/elastic-objects-rs}
-
     \begin{thebibliography}{9}
 
         \bibitem{grafika3d}
@@ -2073,5 +2024,54 @@
         \url{https://docs.rs/egui/0.15.0/egui/}
 
     \end{thebibliography}
+
+    \clearpage
+    % --------------------------------------------------------------------------------------------------------------
+    \section{Dodatek}
+
+    \subsection{Repozytorium}
+    \url{https://github.com/theYiome/elastic-objects-rs}
+
+    \subsection{Animacje prezentujące działanie aplikacji}
+    
+    \subsubsection{Przekazanie energii między dwoma sztywnimi obiektami}
+    \url{https://youtu.be/nolLh6CSa-8} \\
+
+    Mniejszy obiekt $3 \times 3$ po odbiciu od większego obiektu $8 \times  8$ 
+    znajdującego się  pod nim wznosi się na
+    wysokość o wiele większą, niż ta z której rozpoczął spadek swobodny.
+    Występuje tutaj przekazanie części energii z obiektu 
+    większego do mniejszego - sama zasada energii jest zachowana.
+
+    \subsubsection{Przekazanie energii między dwoma miękkimi obiektami}
+    \url{https://youtu.be/q2uYx8uLl3w} \\
+
+    W tym przypadku obiekty są mniej sztywne, obiekt $3 \times 3$ po odbiciu 
+    od obiektu $8 \times  8$ wznosi się na wyraźnie mniejszą wysokość niż w przypadku bardziej sztywnych obiektów
+    (jednak wciąż wyżej niż punkt z którego zaczął spadać). Można to wytłumaczyć tym,
+    że znaczna część energii która w poprzednim przypadku była częścią ruchu postępowego,
+    teraz stała się energią wewnętrzną obiektów (wibracje obiektów pochłaniają część energii).
+
+    \subsubsection{Proste zderzenie dwóch obiektów}
+    \url{https://www.youtube.com/watch?v=4cGcL_5yUt4} \\ 
+
+    Przypadek pokazujący zderzenie dwóch obiektów nieznajdujących się w polu grawitacyjnym.
+    Jednemu z obiektów nadana jest prędkość początkowa, po chwili obiekty zderzają się i 
+    odbijają się od siebie.
+
+    \subsubsection{Zderzenie obiektów 120 kg z 288 kg}
+    \url{https://youtu.be/3dV6EpRacyA} \\
+
+    Wolny spadek, brak zniszczeń obiektów.
+
+    \subsubsection{Zderzenie obiektów 200 kg z 288 kg}
+    \url{https://youtu.be/lRGl7CJiqFU} \\
+
+    Wolny spadek, częściowe uszkodzenie jednego z obiektów.
+
+    \subsubsection{Zderzenie obiektów 320 kg z 288 kg}
+    \url{https://youtu.be/VYeCsaqNxAY} \\
+
+    Wolny spadek, pełne zniszczenie obydwóch obiektów.
 
 \end{document}
