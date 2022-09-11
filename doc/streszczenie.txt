@@ -1,0 +1,18 @@
+Dynamika molekularna to metoda symulacji komputerowej służąca do analizy fizycznych ruchów cząsteczek. 
+Cząsteczki oddziałują ze sobą przez określony czas, dając obraz dynamicznej ewolucji systemu.
+Trajektorie tych cząsteczek są określane przez numeryczne rozwiązanie równań ruchu Newtona. Ponieważ
+układy zazwyczaj składają się z bardzo dużej liczby cząstek, niemożliwe jest analityczne określenie 
+właściwości takich złożonych układów.
+
+W pracy został zaadoptowany sparametryzowany model dynamiki molekularnej, który pozwala na symulowanie 
+zderzeń obiektów elastycznych z możliwością ich penetracji i rozrywania, 
+w projekcie rozważane były zderzenia obiektów dwuwymiarowych. Kluczowym aspektem
+podczas implementacji algorytmów była wydajność obliczeniowa i dzięki odpowiednim optymalizacjom 
+szybkość wykonywania symulacji pozwala na wizualizację zderzeń w czasie rzeczywistym pod postacią animacji
+komputerowych. W aplikacji dostępny jest graficzny interfejs pozwalający modyfikować niektóre
+parametry symulacji w czasie jej trwania.
+
+Głównymi narzędziami wykorzystamy do stworzenia aplikacji był rust (szybki kompilowany język programowania),
+OpenGL (w profilu rdzennym, 4.0+) oraz OpenCL (API do programowania na urządzeniach wielowątkowych, takich jak karty graficzne).
+Zrównoleglenie wymagających obliczeń oraz zastosowane optymalizacje algorytmiczne pozwoliły na 
+szybkie wykonywanie symulacji, zaprezentowane przy użyciu płynnych animacji.

@@ -4,8 +4,8 @@ use super::node::Node;
 use glam::Vec2;
 use rayon::prelude::*;
 
-pub const WALL_REPULSION_V0: f32 = 200.0;
-pub const WALL_REPULSION_DX: f32 = 0.05;
+pub const WALL_REPULSION_V0: f32 = 100.0;
+pub const WALL_REPULSION_DX: f32 = 0.04;
 pub const GRAVITY_CONSTANT: f32 = -9.81;
 
 fn nodes_too_far(nodes: &mut Vec<Node>, connections: &mut HashMap<(usize, usize), (f32, f32)>) -> Vec<(usize, usize)> {

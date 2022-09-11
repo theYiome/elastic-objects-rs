@@ -58,8 +58,8 @@ pub fn run_with_gui(scene: Scene) {
         camera_position: Vec2::new(0.0, 0.0),
     };
 
-    let initial_window_width: u32 = 1280;
-    let initial_window_height: u32 = 720;
+    let initial_window_width: u32 = 800;
+    let initial_window_height: u32 = 800;
     let event_loop = glutin::event_loop::EventLoop::new();
     let display = {
         let wb = glutin::window::WindowBuilder::new()
