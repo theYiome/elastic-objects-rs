@@ -1,18 +1,27 @@
-Dynamika molekularna to metoda symulacji komputerowej służąca do analizy fizycznych ruchów cząsteczek. 
-Cząsteczki oddziałują ze sobą przez określony czas, dając obraz dynamicznej ewolucji systemu.
-Trajektorie tych cząsteczek są określane przez numeryczne rozwiązanie równań ruchu Newtona. Ponieważ
-układy zazwyczaj składają się z bardzo dużej liczby cząstek, niemożliwe jest analityczne określenie 
-właściwości takich złożonych układów.
+Dynamika molekularna to metoda symulacji komputerowej służąca do analizy fizycznych ruchów cząsteczek. Cząsteczki oddziałują ze sobą przez określony czas, dając obraz dynamicznej ewolucji systemu. Trajektorie tych cząsteczek są określane przez numeryczne rozwiązanie równań ruchu Newtona. Ponieważ układy zazwyczaj składają się z bardzo dużej liczby cząstek, niemożliwe jest analityczne określenie właściwości tak złożonych układów.
 
-W pracy został zaadoptowany sparametryzowany model dynamiki molekularnej, który pozwala na symulowanie 
-zderzeń obiektów elastycznych z możliwością ich penetracji i rozrywania, 
-w projekcie rozważane były zderzenia obiektów dwuwymiarowych. Kluczowym aspektem
-podczas implementacji algorytmów była wydajność obliczeniowa i dzięki odpowiednim optymalizacjom 
-szybkość wykonywania symulacji pozwala na wizualizację zderzeń w czasie rzeczywistym pod postacią animacji
-komputerowych. W aplikacji dostępny jest graficzny interfejs pozwalający modyfikować niektóre
-parametry symulacji w czasie jej trwania.
+Modelowanie zachowania obiektu elastycznego metodą dynamiki molekularnej wymaga określenia położenia jego elementów w przestrzeni. Taki rozkład przestrzenny można uzyskać opisując obiekt przy pomocy n punktów (inaczej nazywanych węzłami), w których skupione są masy. Punkty te oddziałują ze sobą jak w rzeczywistym materiale, ich zbliżanie lub oddalanie się od siebie wymaga przyłożenia sił zewnętrznych.
 
-Głównymi narzędziami wykorzystamy do stworzenia aplikacji był rust (szybki kompilowany język programowania),
-OpenGL (w profilu rdzennym, 4.0+) oraz OpenCL (API do programowania na urządzeniach wielowątkowych, takich jak karty graficzne).
-Zrównoleglenie wymagających obliczeń oraz zastosowane optymalizacje algorytmiczne pozwoliły na 
-szybkie wykonywanie symulacji, zaprezentowane przy użyciu płynnych animacji.
+Głównym celem pracy było stworzenie aplikacji komputerowej pozwalającej w czasie rzeczywistym symulować zderzenia i rozrywanie obiektów sprężystych, jednocześnie wyświetlając zachodzące zjawiska w postaci animacji komputerowej. Animacja to wizualizacja dynamiki układów w czasie rzeczywistym pozwalająca zobrazować zachodzące procesy fizyczne. Animacje mogą prezentować interesujące zdarzenia, jak na przykład obserwowanie rozchodzących się w kolidujących obiektach fal ciśnień. Istotnym celem pracy była również analiza zmian energii różnego rodzaju, jak np. energii potencjalnej grawitacji czy energii kinetycznej węzłów znajdujących się w układzie.
+
+W pracy został zaadoptowany sparametryzowany model dynamiki molekularnej, który pozwala na symulowanie zderzeń obiektów elastycznych z możliwością ich penetracji i rozrywania; w projekcie rozważane były zderzenia obiektów dwuwymiarowych. Kluczowym aspektem podczas implementacji algorytmów była wydajność obliczeniowa i dzięki odpowiednim optymalizacjom szybkość wykonywania symulacji pozwala na wizualizację zderzeń w czasie rzeczywistym. W aplikacji dostępny jest graficzny interfejs pozwalający modyfikować niektóre parametry symulacji w czasie jej trwania.
+
+Głównymi narzędziami wykorzystanymi do stworzenia aplikacji był Rust, OpenGL w profilu rdzennym oraz OpenCL. Zrównoleglenie wymagających obliczeń oraz zastosowane optymalizacje algorytmiczne pozwoliły na szybkie wykonywanie symulacji oraz płynne jej wyświetlanie.
+
+
+aplikacja, symulacja, zderzenia, dynamika molekularna, animacja, graficzny interfejs użytkownika, wielowątkowość
+
+
+
+Molecular dynamics is a computer simulation method for analyzing the physical movements of molecules. The molecules interact with each other for a certain period of time, giving a picture of the dynamic evolution of the system. The trajectories of these molecules are determined by the numerical solution of Newton's equations of motion. Since systems usually consist of a very large number of particles, it is impossible to analytically determine the properties of such complex systems.
+
+Modeling the behavior of an elastic object using the molecular dynamics method requires determining the location of its elements in space. Such a spatial distribution can be obtained by describing the object with n points (otherwise known as nodes) in which the masses are concentrated. These points interact with each other as in the real material, their approaching or moving away from each other requires the application of external forces.
+
+The main goal of the thesis was to create a computer application that would simulate real-time collisions and tearing of elastic objects, while displaying the phenomena in the form of computer animation. Animation is a real-time visualization of the dynamics of systems that allows to visualize the physical processes taking place. Animations can present interesting events, such as observing pressure waves propagating in colliding objects. An important aim of the study was also to analyze energy changes of various kinds, such as the potential energy of gravity or the kinetic energy of nodes in the system.
+
+The paper adopted a parameterized model of molecular dynamics, which allows simulating collisions of elastic objects with the possibility of penetrating and tearing them apart; the project considered collisions of two-dimensional objects. The key aspect during the implementation of the algorithms was computational efficiency; thanks to appropriate optimizations, the speed of simulation allows for real-time visualization of collisions. The application offers a graphical interface that allows modification of some parameters of the simulation during its duration.
+
+The main tools used to create the application were Rust, OpenGL in the core profile and OpenCL. The parallelization of demanding calculations and the applied algorithmic optimizations allowed for quick progression of simulation.
+
+
+application, simulation, collisions, molecular dynamics, animation, graphical user interface, multithreading

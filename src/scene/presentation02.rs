@@ -38,7 +38,7 @@ pub fn generate() -> Scene {
     nodes.append(&mut nodes3);
     connections_map.extend(connections_map_3);
 
-    let mut nodes4 = objects::build_circle(6, spacing1, -0.71, -0.88, 3.0, damping, 4);
+    let mut nodes4 = objects::build_circle(6, spacing1, -0.74, -0.88, 3.0, damping, 4);
     let connections_map_4 = objects::build_connections_map(&nodes4, spacing1 * 1.5, 20.0, nodes.len());
     nodes.append(&mut nodes4);
     connections_map.extend(connections_map_4);
